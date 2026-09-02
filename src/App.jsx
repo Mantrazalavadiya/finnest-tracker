@@ -21,18 +21,18 @@ import {
   Sparkles,
   ArrowRight,
   AlertCircle,
-  CheckCircle2,
   Zap,
   ArrowLeftRight,
   LogOut,
   Loader2,
   Mail,
   Lock,
-  RotateCcw,
   Bell,
   History,
   Settings,
-  Landmark
+  Landmark,
+  TrendingUp,
+  Activity
 } from 'lucide-react';
 
 const CATEGORY_PRESETS = [
@@ -193,7 +193,6 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [loadingSession, setLoadingSession] = useState(true);
 
-  // Bottom Navigation tab: 'home' | 'history' | 'goals' | 'settings'
   const [activeTab, setActiveTab] = useState('goals');
 
   const [goals, setGoals] = useState([]);
@@ -206,7 +205,7 @@ export default function App() {
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
 
   // Standard Keypad Transaction states
-  const [actionType, setActionType] = useState('deposit'); // strictly deposit | withdraw
+  const [actionType, setActionType] = useState('deposit');
   const [walletType, setWalletType] = useState('online');
   const [amountStr, setAmountStr] = useState('');
   const [note, setNote] = useState('');
@@ -397,7 +396,6 @@ export default function App() {
     }
   }, [activeGoal, isCompleted, daysElapsed, totalDurationDays, totalSaved, baselineDailyPace]);
 
-  // Keypad Handlers
   const handleTxKeypad = (digit) => {
     if (amountStr.length >= 8) return;
     setAmountStr((prev) => (prev === '0' ? digit : prev + digit));
@@ -408,7 +406,6 @@ export default function App() {
     setTransferAmountStr((prev) => (prev === '0' ? digit : prev + digit));
   };
 
-  // Submit Transaction
   const handleTransactionSubmit = async (e) => {
     e.preventDefault();
     const val = Number(amountStr);
@@ -450,7 +447,6 @@ export default function App() {
     fetchData();
   };
 
-  // Submit Transfer
   const handleTransferSubmit = async (e) => {
     e.preventDefault();
     const val = Number(transferAmountStr);
@@ -572,472 +568,589 @@ export default function App() {
   const ActiveIcon = activeGoal ? (ICON_MAP[activeGoal.category] || Target) : Target;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col pb-24 font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col md:flex-row pb-24 md:pb-0 font-sans">
       
-      {/* Top Header Bar */}
-      <header className="bg-white px-5 pt-4 pb-3 border-b border-slate-100 sticky top-0 z-20 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-full bg-[#EEF2FF] flex items-center justify-center text-indigo-600 font-black text-sm">
-            {user.email ? user.email.charAt(0).toUpperCase() : 'A'}
+      {/* LAPTOP / DESKTOP SIDEBAR NAVIGATION */}
+      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 p-5 shrink-0 justify-between sticky top-0 h-screen">
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md">
+              <Layers className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-xl font-black text-indigo-600 block leading-tight">FinTrack</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Vault Studio</span>
+            </div>
           </div>
-          <span className="text-xl font-black tracking-tight text-indigo-600">FinTrack</span>
+
+          <nav className="space-y-1.5">
+            <button
+              onClick={() => setActiveTab('home')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
+                activeTab === 'home' ? 'bg-[#E6FBF5] text-[#009360]' : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <HomeIcon className="w-4 h-4" /> Home
+            </button>
+
+            <button
+              onClick={() => setActiveTab('goals')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
+                activeTab === 'goals' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <Target className="w-4 h-4" /> Goals & Tracker
+            </button>
+
+            <button
+              onClick={() => setActiveTab('history')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
+                activeTab === 'history' ? 'bg-[#E6FBF5] text-[#009360]' : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <History className="w-4 h-4" /> Transactions
+            </button>
+
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
+                activeTab === 'settings' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <Settings className="w-4 h-4" /> Settings
+            </button>
+          </nav>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="space-y-3 pt-4 border-t border-slate-100">
+          <div className="bg-[#FAFBFD] p-3 rounded-2xl border border-slate-100">
+            <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">PORTFOLIO VAULT</span>
+            <p className="text-lg font-black text-slate-900 mt-0.5">₹{portfolioTotal.toLocaleString()}</p>
+          </div>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-400 hover:text-rose-600 transition"
+          >
+            <LogOut className="w-4 h-4" /> Sign Out
+          </button>
+        </div>
+      </aside>
+
+      {/* RIGHT MAIN WORKSPACE */}
+      <div className="flex-1 flex flex-col min-w-0">
+        
+        {/* Mobile Top Header (Hidden on Laptop) */}
+        <header className="md:hidden bg-white px-5 pt-4 pb-3 border-b border-slate-100 sticky top-0 z-20 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-full bg-[#EEF2FF] flex items-center justify-center text-indigo-600 font-black text-sm">
+              {user.email ? user.email.charAt(0).toUpperCase() : 'A'}
+            </div>
+            <span className="text-xl font-black tracking-tight text-indigo-600">FinTrack</span>
+          </div>
+
           <button className="p-2 text-indigo-600 hover:bg-slate-50 rounded-full transition">
             <Bell className="w-5 h-5" />
           </button>
-        </div>
-      </header>
+        </header>
 
-      {/* VIEW 1: HOME */}
-      {activeTab === 'home' && (
-        <main className="max-w-md mx-auto w-full px-4 pt-4 space-y-4">
-          <div className="space-y-0.5">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              Good morning, {user.email?.split('@')[0] || 'Member'}
-            </h1>
-            <p className="text-xs font-semibold text-slate-400">
-              Here's a quick look at your sanctuary today.
-            </p>
+        {/* Laptop Top Subheader */}
+        <div className="hidden md:flex items-center justify-between px-8 py-4 bg-white border-b border-slate-200">
+          <div>
+            <h1 className="text-lg font-black text-slate-900 capitalize">{activeTab}</h1>
+            <p className="text-xs text-slate-400 font-medium">Logged in as {user.email}</p>
           </div>
-
-          {/* Total Vault Card */}
-          <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-xs flex items-center justify-between">
-            <div>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
-                Total Vault
-              </span>
-              <p className="text-3xl font-black text-slate-900 mt-1 tracking-tight">
-                ₹{portfolioTotal.toLocaleString()}
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-full bg-[#E6FBF5] text-[#00E599] flex items-center justify-center">
-              <Landmark className="w-6 h-6 text-[#00C482]" />
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="space-y-2 pt-2">
-            <h2 className="text-lg font-black text-slate-900">Quick Actions</h2>
-            <div className="space-y-2.5">
-              <button
-                onClick={() => {
-                  setTransferAmountStr('');
-                  setTransferNote('');
-                  setIsTransferModalOpen(true);
-                }}
-                className="w-full bg-white border border-slate-200 text-indigo-600 font-bold text-xs py-3.5 rounded-2xl flex items-center justify-center gap-2 active:scale-98 shadow-xs"
-              >
-                <ArrowLeftRight className="w-4 h-4" /> Shift Funds
-              </button>
-
-              <button
-                onClick={() => {
-                  setActionType('deposit');
-                  setAmountStr('');
-                  setNote('');
-                  setIsTxModalOpen(true);
-                }}
-                className="w-full bg-indigo-600 text-white font-bold text-xs py-3.5 rounded-2xl flex items-center justify-center gap-2 active:scale-98 shadow-md shadow-indigo-600/20"
-              >
-                <Plus className="w-4 h-4" /> Add / Withdraw
-              </button>
-            </div>
-          </div>
-        </main>
-      )}
-
-      {/* VIEW 2: HISTORY */}
-      {activeTab === 'history' && (
-        <main className="max-w-md mx-auto w-full px-4 pt-4 space-y-3">
-          <div className="space-y-0.5">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Transaction Stream</h1>
-            <p className="text-xs font-semibold text-slate-400">Recent savings and deposit records.</p>
-          </div>
-
-          <div className="bg-white border border-slate-100 rounded-3xl p-4 sm:p-5 shadow-xs space-y-4">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block border-b border-slate-100 pb-2">
-              All Activity
-            </span>
-
-            <div className="divide-y divide-slate-100">
-              {allTransactions.length === 0 ? (
-                <p className="text-xs text-slate-400 py-6 text-center">No transactions recorded yet.</p>
-              ) : (
-                allTransactions.map((tx) => (
-                  <div key={tx.id} className="py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-[#EEF2FF] text-indigo-600 flex items-center justify-center">
-                        {tx.type === 'online' ? <Smartphone className="w-5 h-5" /> : <Banknote className="w-5 h-5" />}
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900 leading-snug">{tx.note || 'Savings Transaction'}</p>
-                        <p className="text-[10px] text-slate-400 font-medium">
-                          {tx.goalName} • {tx.type} • {tx.date}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-[#E6FBF5] text-[#00C482] font-mono inline-block">
-                        {tx.action === 'withdraw' ? '-' : '+'}₹{tx.amount.toLocaleString()}
-                      </span>
-                      <p className="text-[9px] text-slate-400 font-medium mt-0.5">Completed</p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </main>
-      )}
-
-      {/* VIEW 3: GOALS (Main View from Screenshots) */}
-      {activeTab === 'goals' && (
-        <main className="max-w-md mx-auto w-full px-4 pt-3 space-y-3.5">
-          
-          {/* Active Goals Carousel Top */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-slate-500 font-bold">
-                Active Goals ({goals.length})
-              </span>
-              <button 
-                onClick={() => setIsAddGoalOpen(true)}
-                className="text-xs font-bold text-indigo-600 hover:text-indigo-700"
-              >
-                + Create
-              </button>
-            </div>
-
-            {goals.length === 0 ? (
-              <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-6 text-center">
-                <button
-                  onClick={() => setIsAddGoalOpen(true)}
-                  className="w-10 h-10 rounded-full border border-slate-300 text-slate-400 mx-auto flex items-center justify-center"
-                >
-                  <Plus className="w-5 h-5" />
-                </button>
-                <p className="text-xs font-bold text-slate-500 mt-2">No goals created yet</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto no-scrollbar flex gap-2.5 pb-1">
-                {goals.map((g) => {
-                  const isSelected = g.id === selectedGoalId;
-                  const gTxs = txStore[g.id] || [];
-                  let gSaved = 0;
-                  gTxs.forEach((t) => {
-                    gSaved += (t.action === 'withdraw' ? -t.amount : t.amount);
-                  });
-                  gSaved = Math.max(0, gSaved);
-                  const gPct = Math.min(100, Math.round((gSaved / g.targetAmount) * 100));
-
-                  const gStart = new Date(g.startDate || today);
-                  const gTarget = new Date(g.targetDate);
-                  const gTotalDays = Math.max(1, Math.floor((gTarget - gStart) / (1000 * 60 * 60 * 24)));
-                  const gElapsed = Math.max(0, Math.floor((today - gStart) / (1000 * 60 * 60 * 24)));
-                  const gExpected = Math.round(g.targetAmount * Math.min(1, gElapsed / gTotalDays));
-                  const gDailyPace = Math.max(1, Math.round(g.targetAmount / gTotalDays));
-                  const isDelayed = gSaved < gExpected - 1000 && gSaved < g.targetAmount;
-                  const sidebarDaysGap = Math.round(Math.abs(gSaved - gExpected) / gDailyPace);
-
-                  return (
-                    <div
-                      key={g.id}
-                      onClick={() => setSelectedGoalId(g.id)}
-                      className={`min-w-[270px] flex-1 bg-white p-4 rounded-3xl border transition-all cursor-pointer ${
-                        isSelected 
-                          ? 'border-indigo-500 ring-2 ring-indigo-500/10 shadow-sm' 
-                          : 'border-slate-200/80 shadow-2xs'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-xl bg-[#EEF2FF] text-indigo-600 flex items-center justify-center">
-                            <Laptop className="w-4 h-4" />
-                          </div>
-                          <span className="text-[9px] font-mono uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full font-bold">
-                            {g.badge || 'Goal'}
-                          </span>
-                        </div>
-                        <span className="text-xs font-mono font-black text-[#00C482]">{gPct}%</span>
-                      </div>
-
-                      <h3 className="text-base font-black text-slate-900 mt-2">{g.name}</h3>
-                      
-                      <div className="flex items-center justify-between text-xs mt-1">
-                        <span className="font-semibold text-slate-900">
-                          ₹{gSaved.toLocaleString()} <span className="text-slate-400 font-normal">/ ₹{g.targetAmount.toLocaleString()}</span>
-                        </span>
-                        {isDelayed && (
-                          <span className="text-[10px] font-mono font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">
-                            -{sidebarDaysGap}d delay
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-3">
-                        <div className="h-full bg-[#00E599] rounded-full" style={{ width: `${gPct}%` }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Active Goal Detailed Card */}
-          {activeGoal && (
-            <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-xs space-y-4">
-              
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-2xl bg-[#EEF2FF] text-indigo-600 flex items-center justify-center">
-                    <ActiveIcon className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-black text-slate-900 tracking-tight">{activeGoal.name}</h2>
-                      <span className="text-[9px] font-mono uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full font-bold">
-                        {activeGoal.badge}
-                      </span>
-                    </div>
-                    <p className="text-xs font-medium text-slate-400 mt-0.5">
-                      Target Ceiling: ₹{activeGoal.targetAmount.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-
-                <button 
-                  onClick={() => handleDeleteGoal(activeGoal.id)}
-                  className="p-2 text-slate-300 hover:text-rose-600 transition"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Date Box */}
-              <div className="bg-[#FAFBFD] border border-slate-100 rounded-2xl p-3 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2 text-slate-600 font-semibold text-[11px]">
-                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                  <span>{activeGoal.startDate}</span>
-                  <ArrowRight className="w-3 h-3 text-slate-400" />
-                  <span>{activeGoal.targetDate}</span>
-                </div>
-                <span className="text-[11px] font-bold text-indigo-700 bg-[#EEF2FF] px-2.5 py-1 rounded-xl">
-                  {daysLeft}d left
-                </span>
-              </div>
-
-              {/* Action Buttons (Shift Funds vs Add/Withdraw) */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <button
-                  onClick={() => {
-                    setTransferAmountStr('');
-                    setTransferNote('');
-                    setIsTransferModalOpen(true);
-                  }}
-                  className="bg-white border border-slate-200 hover:bg-slate-50 text-indigo-600 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 active:scale-98 shadow-xs transition"
-                >
-                  <ArrowLeftRight className="w-4 h-4" /> Shift Funds
-                </button>
-                <button
-                  onClick={() => {
-                    setActionType('deposit');
-                    setAmountStr('');
-                    setNote('');
-                    setIsTxModalOpen(true);
-                  }}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 active:scale-98 shadow-md shadow-indigo-600/20 transition"
-                >
-                  <Plus className="w-4 h-4" /> Add / Withdraw
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Schedule Status Banner */}
-          {activeGoal && (
-            <div className={`p-4 rounded-3xl border flex flex-col gap-2 ${
-              trajectoryStatus === 'delay' 
-                ? 'bg-rose-50/70 border-rose-100 text-rose-950' 
-                : 'bg-[#E6FBF5] border-[#B7F4E0] text-emerald-950'
-            }`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className={`w-4 h-4 ${trajectoryStatus === 'delay' ? 'text-rose-500' : 'text-emerald-500'}`} />
-                  <span className="text-[11px] font-black uppercase tracking-wider font-mono">
-                    Schedule Status:
-                  </span>
-                </div>
-                <span className={`text-[10px] font-mono font-black px-2.5 py-0.5 rounded-full text-white ${
-                  trajectoryStatus === 'delay' ? 'bg-rose-500' : 'bg-emerald-500'
-                }`}>
-                  {trajectoryStatus === 'delay' ? `-${daysDifference}d Behind (-₹${varianceAmount.toLocaleString()})` : 'On Track'}
-                </span>
-              </div>
-              <p className="text-xs font-semibold opacity-90 leading-snug">
-                Schedule gap: {daysDifference} days. Suggested rate: ₹{requiredPace}/day.
-              </p>
-            </div>
-          )}
-
-          {/* Timeline Horizon Card */}
-          {activeGoal && (
-            <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-xs space-y-4">
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[11px] font-mono font-bold text-slate-400">
-                  <span>TIMELINE WINDOW</span>
-                  <span>{daysElapsed} OF {totalDurationDays} DAYS ({timeProgressPct}%)</span>
-                </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-slate-900 rounded-full" style={{ width: `${timeProgressPct}%` }} />
-                </div>
-              </div>
-
-              {/* Total Vault Saved */}
-              <div className="pt-1 flex items-baseline justify-between">
-                <div>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
-                    TOTAL VAULT SAVED
-                  </span>
-                  <span className="text-3xl font-black text-slate-900 tracking-tight">
-                    ₹{totalSaved.toLocaleString()}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="text-2xl font-black text-[#00C482] font-mono">{percentage}%</span>
-                  <span className="text-[11px] text-slate-400 block font-medium">₹{remainingNeeded.toLocaleString()} remaining</span>
-                </div>
-              </div>
-
-              {/* Balance Fill Bar */}
-              <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full bg-[#00E599] rounded-full" style={{ width: `${percentage}%` }} />
-              </div>
-
-              {/* Cash vs Bank Chips */}
-              <div className="flex items-center gap-2 pt-1 overflow-x-auto no-scrollbar">
-                <div className="bg-[#E6FBF5] border border-[#B7F4E0] px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shrink-0">
-                  <Banknote className="w-3.5 h-3.5 text-[#00C482]" />
-                  <span className="text-xs font-mono font-black text-[#009360]">
-                    Cash: ₹{totalCash.toLocaleString()}
-                  </span>
-                </div>
-
-                <div className="bg-[#E6FBF5] border border-[#B7F4E0] px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shrink-0">
-                  <Smartphone className="w-3.5 h-3.5 text-[#00C482]" />
-                  <span className="text-xs font-mono font-black text-[#009360]">
-                    Bank: ₹{totalOnline.toLocaleString()}
-                  </span>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setTransferDirection('bank_to_cash');
-                    setTransferAmountStr('');
-                    setTransferNote('');
-                    setIsTransferModalOpen(true);
-                  }}
-                  className="bg-white border border-slate-200 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-2xl shrink-0 active:bg-slate-50"
-                >
-                  Withdraw to Cash ➔
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Metric Tiles from Screenshot */}
-          {activeGoal && (
-            <div className="space-y-2.5">
-              <div className="bg-white border border-slate-200/80 rounded-3xl p-4 shadow-xs">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-slate-400" /> REQUIRED PACE
-                </span>
-                <p className="text-xl font-black text-slate-900 mt-1">
-                  ₹{requiredPace}<span className="text-xs text-slate-400 font-normal">/d</span>
-                </p>
-              </div>
-
-              <div className="bg-white border-l-4 border-l-rose-500 border border-slate-200/80 rounded-3xl p-4 shadow-xs">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-rose-500 font-bold block flex items-center gap-1.5">
-                  <AlertCircle className="w-3.5 h-3.5" /> OFFSET
-                </span>
-                <p className="text-xl font-black text-rose-500 mt-1">
-                  -{daysDifference}d
-                </p>
-              </div>
-
-              <div className="bg-white border border-slate-200/80 rounded-3xl p-4 shadow-xs">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5" /> HORIZON
-                </span>
-                <p className="text-xl font-black text-slate-900 mt-1">
-                  {daysLeft} days
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Transaction Stream Card */}
-          {activeGoal && (
-            <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-xs space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-black text-slate-900 tracking-wide uppercase">Transaction Stream</h3>
-                <span className="text-[10px] font-mono font-bold bg-[#EEF2FF] text-indigo-700 px-2.5 py-0.5 rounded-full">
-                  {currentTxs.length} records
-                </span>
-              </div>
-
-              <div className="divide-y divide-slate-100">
-                {currentTxs.length === 0 ? (
-                  <p className="text-xs text-slate-400 py-4 text-center">No transactions logged yet.</p>
-                ) : (
-                  currentTxs.slice(0, 5).map((tx) => (
-                    <div key={tx.id} className="py-2.5 flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-[#EEF2FF] text-indigo-600 flex items-center justify-center">
-                          {tx.type === 'online' ? <Smartphone className="w-4 h-4" /> : <Banknote className="w-4 h-4" />}
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-slate-900 leading-tight">{tx.note || 'Savings Entry'}</p>
-                          <p className="text-[10px] text-slate-400 capitalize">{tx.type} • {tx.date}</p>
-                        </div>
-                      </div>
-                      <span className="text-xs font-black px-2 py-0.5 rounded-lg bg-[#E6FBF5] text-[#00C482] font-mono">
-                        {tx.action === 'withdraw' ? '-' : '+'}₹{tx.amount.toLocaleString()}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-        </main>
-      )}
-
-      {/* VIEW 4: SETTINGS */}
-      {activeTab === 'settings' && (
-        <main className="max-w-md mx-auto w-full px-4 pt-4 space-y-4">
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Vault Settings</h1>
-          
-          <div className="bg-white border border-slate-200/80 rounded-3xl p-5 space-y-3 shadow-xs">
-            <div className="text-xs font-semibold text-slate-500">
-              Signed in as: <span className="text-slate-900 font-bold">{user.email}</span>
-            </div>
-
+          <div className="flex items-center gap-2.5">
             <button
-              onClick={() => supabase.auth.signOut()}
-              className="w-full bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 transition"
+              onClick={() => {
+                setTransferAmountStr('');
+                setTransferNote('');
+                setIsTransferModalOpen(true);
+              }}
+              className="bg-white border border-slate-200 hover:bg-slate-50 text-indigo-600 font-bold text-xs px-4 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95 shadow-xs"
             >
-              <LogOut className="w-4 h-4" /> Sign Out
+              <ArrowLeftRight className="w-3.5 h-3.5" /> Shift Funds
+            </button>
+            <button
+              onClick={() => setIsAddGoalOpen(true)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95 shadow-md shadow-indigo-600/20"
+            >
+              <Plus className="w-3.5 h-3.5" /> New Goal
             </button>
           </div>
-        </main>
-      )}
+        </div>
 
-      {/* FIXED BOTTOM NAVIGATION BAR */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-6 py-2 z-40">
+        {/* CONTENT CONTAINER */}
+        <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full flex-1">
+
+          {/* TAB 1: HOME */}
+          {activeTab === 'home' && (
+            <div className="space-y-6 max-w-2xl mx-auto">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                  Good morning, {user.email?.split('@')[0] || 'Member'}
+                </h1>
+                <p className="text-xs sm:text-sm font-semibold text-slate-400 mt-0.5">
+                  Here's a quick look at your sanctuary today.
+                </p>
+              </div>
+
+              {/* Total Vault Card */}
+              <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-xs flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold block">
+                    Total Vault
+                  </span>
+                  <p className="text-3xl sm:text-4xl font-black text-slate-900 mt-1 tracking-tight">
+                    ₹{portfolioTotal.toLocaleString()}
+                  </p>
+                </div>
+                <div className="w-14 h-14 rounded-full bg-[#E6FBF5] text-[#00E599] flex items-center justify-center">
+                  <Landmark className="w-7 h-7 text-[#00C482]" />
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="space-y-3 pt-2">
+                <h2 className="text-lg font-black text-slate-900">Quick Actions</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    onClick={() => {
+                      setTransferAmountStr('');
+                      setTransferNote('');
+                      setIsTransferModalOpen(true);
+                    }}
+                    className="bg-white border border-slate-200 hover:bg-slate-50 text-indigo-600 font-bold text-xs py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-98 shadow-xs transition"
+                  >
+                    <ArrowLeftRight className="w-4 h-4" /> Shift Funds
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActionType('deposit');
+                      setAmountStr('');
+                      setNote('');
+                      setIsTxModalOpen(true);
+                    }}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-98 shadow-md shadow-indigo-600/20 transition"
+                  >
+                    <Plus className="w-4 h-4" /> Add / Withdraw
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: HISTORY */}
+          {activeTab === 'history' && (
+            <div className="space-y-4 max-w-3xl mx-auto">
+              <div>
+                <h1 className="text-2xl font-black text-slate-900 tracking-tight">Transaction Stream</h1>
+                <p className="text-xs font-semibold text-slate-400">Recent savings and deposit records.</p>
+              </div>
+
+              <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-xs space-y-4">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block border-b border-slate-100 pb-2">
+                  All Records
+                </span>
+
+                <div className="divide-y divide-slate-100">
+                  {allTransactions.length === 0 ? (
+                    <p className="text-xs text-slate-400 py-8 text-center">No transactions recorded yet.</p>
+                  ) : (
+                    allTransactions.map((tx) => (
+                      <div key={tx.id} className="py-3.5 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-2xl bg-[#EEF2FF] text-indigo-600 flex items-center justify-center">
+                            {tx.type === 'online' ? <Smartphone className="w-5 h-5" /> : <Banknote className="w-5 h-5" />}
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-900 leading-snug">{tx.note || 'Savings Entry'}</p>
+                            <p className="text-[10px] text-slate-400 font-medium">
+                              {tx.goalName} • {tx.type} • {tx.date}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-[#E6FBF5] text-[#00C482] font-mono inline-block">
+                            {tx.action === 'withdraw' ? '-' : '+'}₹{tx.amount.toLocaleString()}
+                          </span>
+                          <p className="text-[9px] text-slate-400 font-medium mt-0.5">Completed</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: GOALS (Responsive Grid for Laptop) */}
+          {activeTab === 'goals' && (
+            <div className="space-y-6">
+              
+              {/* Top Horizontal Carousel of Active Goals */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-slate-500 font-bold">
+                    Active Goals ({goals.length})
+                  </span>
+                  <button 
+                    onClick={() => setIsAddGoalOpen(true)}
+                    className="text-xs font-bold text-indigo-600 hover:text-indigo-700"
+                  >
+                    + Create Goal
+                  </button>
+                </div>
+
+                {goals.length === 0 ? (
+                  <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-8 text-center">
+                    <button
+                      onClick={() => setIsAddGoalOpen(true)}
+                      className="w-10 h-10 rounded-full border border-slate-300 text-slate-400 mx-auto flex items-center justify-center"
+                    >
+                      <Plus className="w-5 h-5" />
+                    </button>
+                    <p className="text-xs font-bold text-slate-500 mt-2">No goals created yet</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {goals.map((g) => {
+                      const isSelected = g.id === selectedGoalId;
+                      const gTxs = txStore[g.id] || [];
+                      let gSaved = 0;
+                      gTxs.forEach((t) => {
+                        gSaved += (t.action === 'withdraw' ? -t.amount : t.amount);
+                      });
+                      gSaved = Math.max(0, gSaved);
+                      const gPct = Math.min(100, Math.round((gSaved / g.targetAmount) * 100));
+
+                      const gStart = new Date(g.startDate || today);
+                      const gTarget = new Date(g.targetDate);
+                      const gTotalDays = Math.max(1, Math.floor((gTarget - gStart) / (1000 * 60 * 60 * 24)));
+                      const gElapsed = Math.max(0, Math.floor((today - gStart) / (1000 * 60 * 60 * 24)));
+                      const gExpected = Math.round(g.targetAmount * Math.min(1, gElapsed / gTotalDays));
+                      const gDailyPace = Math.max(1, Math.round(g.targetAmount / gTotalDays));
+                      const isDelayed = gSaved < gExpected - 1000 && gSaved < g.targetAmount;
+                      const sidebarDaysGap = Math.round(Math.abs(gSaved - gExpected) / gDailyPace);
+
+                      return (
+                        <div
+                          key={g.id}
+                          onClick={() => setSelectedGoalId(g.id)}
+                          className={`bg-white p-4 sm:p-5 rounded-3xl border transition-all cursor-pointer ${
+                            isSelected 
+                              ? 'border-indigo-500 ring-2 ring-indigo-500/10 shadow-sm' 
+                              : 'border-slate-200/80 hover:border-slate-300 shadow-2xs'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-xl bg-[#EEF2FF] text-indigo-600 flex items-center justify-center">
+                                <Laptop className="w-4 h-4" />
+                              </div>
+                              <span className="text-[9px] font-mono uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full font-bold">
+                                {g.badge || 'Goal'}
+                              </span>
+                            </div>
+                            <span className="text-xs font-mono font-black text-[#00C482]">{gPct}%</span>
+                          </div>
+
+                          <h3 className="text-base font-black text-slate-900 mt-2">{g.name}</h3>
+                          
+                          <div className="flex items-center justify-between text-xs mt-1">
+                            <span className="font-semibold text-slate-900">
+                              ₹{gSaved.toLocaleString()} <span className="text-slate-400 font-normal">/ ₹{g.targetAmount.toLocaleString()}</span>
+                            </span>
+                            {isDelayed && (
+                              <span className="text-[10px] font-mono font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">
+                                -{sidebarDaysGap}d delay
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-3">
+                            <div className="h-full bg-[#00E599] rounded-full" style={{ width: `${gPct}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* ACTIVE GOAL VIEW GRID (Laptop 2-Column Split) */}
+              {activeGoal && (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                  
+                  {/* Left Column (Main Vault details + Progress) */}
+                  <div className="lg:col-span-7 space-y-4">
+                    
+                    {/* Goal Header Card */}
+                    <div className="bg-white border border-slate-200/80 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-2xl bg-[#EEF2FF] text-indigo-600 flex items-center justify-center">
+                            <ActiveIcon className="w-6 h-6" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{activeGoal.name}</h2>
+                              <span className="text-[9px] font-mono uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full font-bold">
+                                {activeGoal.badge}
+                              </span>
+                            </div>
+                            <p className="text-xs font-medium text-slate-400 mt-0.5">
+                              Target Ceiling: ₹{activeGoal.targetAmount.toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+
+                        <button 
+                          onClick={() => handleDeleteGoal(activeGoal.id)}
+                          className="p-2 text-slate-300 hover:text-rose-600 transition"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Date Box */}
+                      <div className="bg-[#FAFBFD] border border-slate-100 rounded-2xl p-3 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2 text-slate-600 font-semibold text-[11px]">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{activeGoal.startDate}</span>
+                          <ArrowRight className="w-3 h-3 text-slate-400" />
+                          <span>{activeGoal.targetDate}</span>
+                        </div>
+                        <span className="text-[11px] font-bold text-indigo-700 bg-[#EEF2FF] px-2.5 py-1 rounded-xl">
+                          {daysLeft}d left
+                        </span>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => {
+                            setTransferAmountStr('');
+                            setTransferNote('');
+                            setIsTransferModalOpen(true);
+                          }}
+                          className="bg-white border border-slate-200 hover:bg-slate-50 text-indigo-600 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 active:scale-98 shadow-xs transition"
+                        >
+                          <ArrowLeftRight className="w-4 h-4" /> Shift Funds
+                        </button>
+                        <button
+                          onClick={() => {
+                            setActionType('deposit');
+                            setAmountStr('');
+                            setNote('');
+                            setIsTxModalOpen(true);
+                          }}
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 active:scale-98 shadow-md shadow-indigo-600/20 transition"
+                        >
+                          <Plus className="w-4 h-4" /> Add / Withdraw
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Schedule Status Card */}
+                    <div className={`p-4 rounded-3xl border flex flex-col gap-2 ${
+                      trajectoryStatus === 'delay' 
+                        ? 'bg-rose-50/70 border-rose-100 text-rose-950' 
+                        : 'bg-[#E6FBF5] border-[#B7F4E0] text-emerald-950'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <AlertCircle className={`w-4 h-4 ${trajectoryStatus === 'delay' ? 'text-rose-500' : 'text-emerald-500'}`} />
+                          <span className="text-[11px] font-black uppercase tracking-wider font-mono">
+                            Schedule Status:
+                          </span>
+                        </div>
+                        <span className={`text-[10px] font-mono font-black px-2.5 py-0.5 rounded-full text-white ${
+                          trajectoryStatus === 'delay' ? 'bg-rose-500' : 'bg-emerald-500'
+                        }`}>
+                          {trajectoryStatus === 'delay' ? `-${daysDifference}d Behind (-₹${varianceAmount.toLocaleString()})` : 'On Track'}
+                        </span>
+                      </div>
+                      <p className="text-xs font-semibold opacity-90 leading-snug">
+                        Schedule gap: {daysDifference} days. Suggested rate: ₹{requiredPace}/day.
+                      </p>
+                    </div>
+
+                    {/* Total Saved Card & Progress */}
+                    <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-xs space-y-4">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-[11px] font-mono font-bold text-slate-400">
+                          <span>TIMELINE WINDOW</span>
+                          <span>{daysElapsed} OF {totalDurationDays} DAYS ({timeProgressPct}%)</span>
+                        </div>
+                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-slate-900 rounded-full" style={{ width: `${timeProgressPct}%` }} />
+                        </div>
+                      </div>
+
+                      <div className="pt-1 flex items-baseline justify-between">
+                        <div>
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
+                            TOTAL VAULT SAVED
+                          </span>
+                          <span className="text-3xl font-black text-slate-900 tracking-tight">
+                            ₹{totalSaved.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-2xl font-black text-[#00C482] font-mono">{percentage}%</span>
+                          <span className="text-[11px] text-slate-400 block font-medium">₹{remainingNeeded.toLocaleString()} remaining</span>
+                        </div>
+                      </div>
+
+                      <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-[#00E599] rounded-full" style={{ width: `${percentage}%` }} />
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-1 overflow-x-auto no-scrollbar">
+                        <div className="bg-[#E6FBF5] border border-[#B7F4E0] px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shrink-0">
+                          <Banknote className="w-3.5 h-3.5 text-[#00C482]" />
+                          <span className="text-xs font-mono font-black text-[#009360]">
+                            Cash: ₹{totalCash.toLocaleString()}
+                          </span>
+                        </div>
+
+                        <div className="bg-[#E6FBF5] border border-[#B7F4E0] px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shrink-0">
+                          <Smartphone className="w-3.5 h-3.5 text-[#00C482]" />
+                          <span className="text-xs font-mono font-black text-[#009360]">
+                            Bank: ₹{totalOnline.toLocaleString()}
+                          </span>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            setTransferDirection('bank_to_cash');
+                            setTransferAmountStr('');
+                            setTransferNote('');
+                            setIsTransferModalOpen(true);
+                          }}
+                          className="bg-white border border-slate-200 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-2xl shrink-0 active:bg-slate-50"
+                        >
+                          Withdraw to Cash ➔
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column (Pace & Timeline Dashboard as in Screenshot 2026-09-02 092021) */}
+                  <div className="lg:col-span-5 space-y-4">
+                    
+                    {/* Pace & Timeline Card */}
+                    <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-xs space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-indigo-600" />
+                        <h3 className="text-base font-black text-slate-900 tracking-tight">Pace & Timeline</h3>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-[#FAFBFD] border border-slate-100 rounded-2xl p-4 space-y-1">
+                          <span className="text-[9px] font-mono uppercase font-bold text-slate-400 block flex items-center gap-1">
+                            <TrendingUp className="w-3 h-3 text-[#00C482]" /> REQUIRED PACE
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-medium block">Daily target</span>
+                          <p className="text-xl font-black text-indigo-700 font-mono">
+                            ₹{requiredPace}<span className="text-xs text-slate-400 font-normal">/d</span>
+                          </p>
+                          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mt-2">
+                            <div className="h-full bg-[#00C482] rounded-full" style={{ width: '45%' }} />
+                          </div>
+                        </div>
+
+                        <div className="bg-[#FAFBFD] border border-slate-100 rounded-2xl p-4 space-y-1">
+                          <span className="text-[9px] font-mono uppercase font-bold text-slate-400 block flex items-center gap-1">
+                            <Calendar className="w-3 h-3 text-indigo-600" /> HORIZON
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-medium block">Time remaining</span>
+                          <p className="text-xl font-black text-slate-900 font-mono">
+                            {daysLeft} <span className="text-xs font-normal text-slate-400">days</span>
+                          </p>
+                          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mt-2">
+                            <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${timeProgressPct}%` }} />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-semibold">
+                        <span className="text-slate-500">
+                          {trajectoryStatus === 'delay' ? 'Pace adjustment recommended' : 'On track to meet goals.'}
+                        </span>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                          trajectoryStatus === 'delay' ? 'bg-rose-50 text-rose-600' : 'bg-[#E6FBF5] text-[#00C482]'
+                        }`}>
+                          {trajectoryStatus === 'delay' ? 'Needs Focus' : 'Healthy'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Transaction Stream Card */}
+                    <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-xs space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xs font-black text-slate-900 tracking-wide uppercase">Transaction Stream</h3>
+                        <span className="text-[10px] font-mono font-bold bg-[#EEF2FF] text-indigo-700 px-2.5 py-0.5 rounded-full">
+                          {currentTxs.length} records
+                        </span>
+                      </div>
+
+                      <div className="divide-y divide-slate-100 max-h-60 overflow-y-auto">
+                        {currentTxs.length === 0 ? (
+                          <p className="text-xs text-slate-400 py-4 text-center">No transactions logged yet.</p>
+                        ) : (
+                          currentTxs.slice(0, 6).map((tx) => (
+                            <div key={tx.id} className="py-2.5 flex items-center justify-between">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-xl bg-[#EEF2FF] text-indigo-600 flex items-center justify-center">
+                                  {tx.type === 'online' ? <Smartphone className="w-4 h-4" /> : <Banknote className="w-4 h-4" />}
+                                </div>
+                                <div>
+                                  <p className="text-xs font-bold text-slate-900 leading-tight">{tx.note || 'Savings Entry'}</p>
+                                  <p className="text-[10px] text-slate-400 capitalize">{tx.type} • {tx.date}</p>
+                                </div>
+                              </div>
+                              <span className="text-xs font-black px-2 py-0.5 rounded-lg bg-[#E6FBF5] text-[#00C482] font-mono">
+                                {tx.action === 'withdraw' ? '-' : '+'}₹{tx.amount.toLocaleString()}
+                              </span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 4: SETTINGS */}
+          {activeTab === 'settings' && (
+            <div className="space-y-4 max-w-lg mx-auto">
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Vault Settings</h1>
+              
+              <div className="bg-white border border-slate-200/80 rounded-3xl p-5 space-y-4 shadow-xs">
+                <div className="text-xs font-semibold text-slate-500">
+                  Signed in as: <span className="text-slate-900 font-bold">{user.email}</span>
+                </div>
+
+                <button
+                  onClick={() => supabase.auth.signOut()}
+                  className="w-full bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 transition"
+                >
+                  <LogOut className="w-4 h-4" /> Sign Out
+                </button>
+              </div>
+            </div>
+          )}
+
+        </div>
+      </div>
+
+      {/* MOBILE BOTTOM NAVIGATION BAR (Hidden on Laptop) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-6 py-2 z-40">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <button
             onClick={() => setActiveTab('home')}
@@ -1081,12 +1194,11 @@ export default function App() {
         </div>
       </nav>
 
-      {/* 1. TRANSACTION KEYPAD MODAL (Exact match to 1.png) */}
+      {/* 1. TRANSACTION KEYPAD MODAL (Centered on Laptop, Bottom Sheet on Mobile) */}
       {isTxModalOpen && activeGoal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center">
-          <div className="relative w-full max-w-sm bg-white rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto mb-2">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
             
-            {/* Top Toggle Switch */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1 bg-[#EEF2FF] p-1 rounded-full flex">
                 <button
@@ -1117,7 +1229,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Display Screen */}
             <div className="bg-[#EEF2FF]/60 border border-indigo-100/60 rounded-2xl p-4 text-center mt-4">
               <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700 block">
                 {actionType === 'deposit' ? 'ADD TO GOAL' : 'WITHDRAW FROM GOAL'} ({activeGoal.name.toUpperCase()})
@@ -1128,7 +1239,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Online vs Cash Switch Cards */}
             <div className="grid grid-cols-2 gap-2.5 mt-3">
               <button
                 type="button"
@@ -1163,7 +1273,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Keypad */}
             <div className="grid grid-cols-3 gap-2 mt-4">
               {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
                 <button
@@ -1218,10 +1327,10 @@ export default function App() {
         </div>
       )}
 
-      {/* 2. DEDICATED TRANSFER MODAL (Exact match to 9.png) */}
+      {/* 2. DEDICATED TRANSFER MODAL (Shift Funds) */}
       {isTransferModalOpen && activeGoal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center">
-          <div className="relative w-full max-w-sm bg-white rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto mb-2">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
             
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
@@ -1241,7 +1350,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Direction Selector */}
             <div className="grid grid-cols-2 gap-2 mt-3">
               <button
                 type="button"
@@ -1296,7 +1404,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Quick Fill Max Button */}
             <div className="flex items-center justify-between px-1 text-xs mt-3">
               <span className="text-slate-500 font-medium">
                 Source: {transferDirection === 'cash_to_bank' ? 'Cash Stash' : 'Bank Account'}
@@ -1310,7 +1417,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Amount Screen */}
             <div className="bg-[#EEF2FF]/60 border border-indigo-100 rounded-2xl p-3.5 text-center mt-2">
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block">
                 TRANSFER SUM
@@ -1321,7 +1427,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Transfer Pad */}
             <div className="grid grid-cols-3 gap-2 mt-3">
               {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
                 <button
@@ -1376,10 +1481,10 @@ export default function App() {
         </div>
       )}
 
-      {/* 3. NEW FINANCIAL GOAL MODAL (Exact match to 7.png) */}
+      {/* 3. NEW FINANCIAL GOAL MODAL */}
       {isAddGoalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center">
-          <div className="relative w-full max-w-sm bg-white rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto mb-2">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
             
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
