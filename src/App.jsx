@@ -779,7 +779,7 @@ export default function App() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h1 className="text-lg sm:text-2xl font-black text-slate-900 leading-tight">{activeGoal.name}</h1>
+                          <h1 className="text-lg sm:2xl font-black text-slate-900 leading-tight">{activeGoal.name}</h1>
                           <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-slate-100 sm:bg-white/70 border border-slate-200 sm:border-white/60 text-slate-700 rounded-md">
                             {activeGoal.badge}
                           </span>
@@ -1048,26 +1048,73 @@ export default function App() {
               </button>
             </div>
 
+            {/* Dynamic Transfer Selector */}
             {actionType === 'transfer' && (
-              <div className="mt-2">
-                <div className="grid grid-cols-2 gap-1.5 bg-slate-100 p-1 rounded-xl">
+              <div className="mt-2 space-y-2">
+                <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/70">
                   <button
                     type="button"
-                    onClick={() => setTransferDirection('cash_to_bank')}
-                    className={`py-1 px-2 rounded-lg text-[10px] font-extrabold flex items-center justify-center gap-1 transition ${
-                      transferDirection === 'cash_to_bank' ? 'bg-white text-indigo-700 shadow-xs border border-slate-200' : 'text-slate-600'
+                    onClick={() => {
+                      setTransferDirection('cash_to_bank');
+                      setAmountStr('');
+                    }}
+                    className={`py-2 px-2.5 rounded-xl text-left transition flex flex-col justify-between ${
+                      transferDirection === 'cash_to_bank' 
+                        ? 'bg-white text-indigo-900 shadow-sm border border-slate-200/80 ring-1 ring-indigo-500/20' 
+                        : 'text-slate-600 hover:text-slate-900 active:bg-slate-200/60'
                     }`}
                   >
-                    <Banknote className="w-3 h-3" /> Cash ➔ Bank
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[11px] font-black flex items-center gap-1.5">
+                        <Banknote className="w-3.5 h-3.5 text-emerald-600" /> Cash ➔ Bank
+                      </span>
+                      {transferDirection === 'cash_to_bank' && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
+                      )}
+                    </div>
+                    <div className="mt-1 flex items-center justify-between">
+                      <span className="text-[10px] font-semibold text-slate-500">Available:</span>
+                      <span className="text-[11px] font-black text-emerald-700">₹{totalCash.toLocaleString()}</span>
+                    </div>
                   </button>
+
                   <button
                     type="button"
-                    onClick={() => setTransferDirection('bank_to_cash')}
-                    className={`py-1 px-2 rounded-lg text-[10px] font-extrabold flex items-center justify-center gap-1 transition ${
-                      transferDirection === 'bank_to_cash' ? 'bg-white text-emerald-700 shadow-xs border border-slate-200' : 'text-slate-600'
+                    onClick={() => {
+                      setTransferDirection('bank_to_cash');
+                      setAmountStr('');
+                    }}
+                    className={`py-2 px-2.5 rounded-xl text-left transition flex flex-col justify-between ${
+                      transferDirection === 'bank_to_cash' 
+                        ? 'bg-white text-indigo-900 shadow-sm border border-slate-200/80 ring-1 ring-indigo-500/20' 
+                        : 'text-slate-600 hover:text-slate-900 active:bg-slate-200/60'
                     }`}
                   >
-                    <Smartphone className="w-3 h-3" /> Bank ➔ Cash
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[11px] font-black flex items-center gap-1.5">
+                        <Smartphone className="w-3.5 h-3.5 text-indigo-600" /> Bank ➔ Cash
+                      </span>
+                      {transferDirection === 'bank_to_cash' && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
+                      )}
+                    </div>
+                    <div className="mt-1 flex items-center justify-between">
+                      <span className="text-[10px] font-semibold text-slate-500">Available:</span>
+                      <span className="text-[11px] font-black text-indigo-700">₹{totalOnline.toLocaleString()}</span>
+                    </div>
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between px-1 text-[11px]">
+                  <span className="text-slate-500 font-medium">
+                    Source: {transferDirection === 'cash_to_bank' ? 'Cash Stash' : 'Bank Account'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setAmountStr(String(transferDirection === 'cash_to_bank' ? totalCash : totalOnline))}
+                    className="font-black text-indigo-700 hover:text-indigo-900 active:scale-95 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200/70"
+                  >
+                    Transfer Max (₹{(transferDirection === 'cash_to_bank' ? totalCash : totalOnline).toLocaleString()})
                   </button>
                 </div>
               </div>
@@ -1094,7 +1141,7 @@ export default function App() {
                     walletType === 'online' ? 'bg-indigo-50 border-indigo-300 text-indigo-800 font-black shadow-xs' : 'bg-white border-slate-200 text-slate-600'
                   }`}
                 >
-                  <Smartphone className="w-3 h-3" /> Online (₹{totalOnline.toLocaleString()})
+                  <Smartphone className="w-3.5 h-3.5" /> Online (₹{totalOnline.toLocaleString()})
                 </button>
                 <button
                   type="button"
@@ -1103,7 +1150,7 @@ export default function App() {
                     walletType === 'cash' ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-black shadow-xs' : 'bg-white border-slate-200 text-slate-600'
                   }`}
                 >
-                  <Banknote className="w-3 h-3" /> Cash (₹{totalCash.toLocaleString()})
+                  <Banknote className="w-3.5 h-3.5" /> Cash (₹{totalCash.toLocaleString()})
                 </button>
               </div>
             )}
