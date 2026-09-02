@@ -32,7 +32,8 @@ import {
   Settings,
   Landmark,
   TrendingUp,
-  Activity
+  Activity,
+  RotateCcw
 } from 'lucide-react';
 
 const CATEGORY_PRESETS = [
@@ -159,7 +160,7 @@ function AuthScreen({ onLogin }) {
                 required
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-[#F1F5F9]/50 border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold focus:outline-none focus:bg-white focus:border-indigo-600 transition"
               />
             </div>
@@ -203,6 +204,9 @@ export default function App() {
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [resetInput, setResetInput] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
 
   // Standard Keypad Transaction states
   const [actionType, setActionType] = useState('deposit');
@@ -568,6 +572,45 @@ export default function App() {
     }
   };
 
+  // FULL RESET ALL DATA HANDLER
+  const handleResetAllData = async (e) => {
+    e.preventDefault();
+    if (resetInput.trim().toUpperCase() !== 'RESET') {
+      alert('Please type "RESET" exactly to confirm.');
+      return;
+    }
+
+    setIsResetting(true);
+    try {
+      // 1. Delete all transactions for the user
+      await supabase.from('transactions').delete().eq('user_id', user.id);
+
+      // 2. Delete all goals for the user
+      await supabase.from('goals').delete().eq('user_id', user.id);
+
+      // 3. Clear any local cache
+      localStorage.removeItem('fintrack_cache');
+      localStorage.removeItem('finnest_goals');
+      localStorage.removeItem('finnest_txs');
+
+      // 4. Reset local states
+      setGoals([]);
+      setTxStore({});
+      setSelectedGoalId(null);
+      playSound('withdraw');
+
+      setIsResetModalOpen(false);
+      setResetInput('');
+      setActiveTab('goals');
+      alert('All goals and transaction records have been completely reset.');
+    } catch (err) {
+      console.error('Reset error:', err.message);
+      alert('Failed to reset: ' + err.message);
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   if (loadingSession) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
@@ -753,7 +796,7 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 2: HISTORY (Withdrawals show in RED) */}
+          {/* TAB 2: HISTORY */}
           {activeTab === 'history' && (
             <div className="space-y-4 max-w-3xl mx-auto">
               <div>
@@ -854,7 +897,6 @@ export default function App() {
                       const gExpected = Math.round(g.targetAmount * Math.min(1, gElapsed / gTotalDays));
                       const gDailyPace = Math.max(1, Math.round(g.targetAmount / gTotalDays));
                       
-                      // Strict ₹20 rule for the card delay pill
                       const isDelayed = gSaved < (gExpected - 20) && gSaved < g.targetAmount;
                       const sidebarDaysGap = Math.max(1, Math.round(Math.abs(gSaved - gExpected) / gDailyPace));
 
@@ -1111,7 +1153,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Goal-Specific Transaction Stream (Withdrawals in RED) */}
+                    {/* Goal-Specific Transaction Stream */}
                     <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-xs space-y-3">
                       <div className="flex items-center justify-between">
                         <h3 className="text-xs font-black text-slate-900 tracking-wide uppercase">Transaction Stream</h3>
@@ -1159,21 +1201,50 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 4: SETTINGS */}
+          {/* TAB 4: SETTINGS (Includes RESET ALL DATA) */}
           {activeTab === 'settings' && (
-            <div className="space-y-4 max-w-lg mx-auto">
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Vault Settings</h1>
+            <div className="space-y-6 max-w-lg mx-auto">
+              <div>
+                <h1 className="text-2xl font-black text-slate-900 tracking-tight">Vault Settings</h1>
+                <p className="text-xs text-slate-500 font-medium">Manage preferences, records, and access.</p>
+              </div>
               
+              {/* Account Card */}
               <div className="bg-white border border-slate-200/80 rounded-3xl p-5 space-y-4 shadow-xs">
-                <div className="text-xs font-semibold text-slate-500">
-                  Signed in as: <span className="text-slate-900 font-bold">{user.email}</span>
+                <h3 className="text-xs font-mono font-bold uppercase text-slate-400 tracking-wider">Account Details</h3>
+                <div className="flex items-center justify-between text-xs font-semibold">
+                  <span className="text-slate-500">Signed in user</span>
+                  <span className="text-slate-900 font-bold">{user.email}</span>
                 </div>
 
                 <button
                   onClick={() => supabase.auth.signOut()}
-                  className="w-full bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 transition"
+                  className="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 border border-slate-200 transition"
                 >
-                  <LogOut className="w-4 h-4" /> Sign Out
+                  <LogOut className="w-4 h-4 text-slate-500" /> Sign Out
+                </button>
+              </div>
+
+              {/* Danger Zone Card (Reset All Data) */}
+              <div className="bg-white border border-rose-200 rounded-3xl p-5 space-y-3 shadow-xs">
+                <div className="flex items-center gap-2 text-rose-600">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider">Danger Zone</h3>
+                </div>
+
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Resetting all data will permanently wipe every goal, historical ledger record, and cash/bank balance for this account.
+                </p>
+
+                <button
+                  onClick={() => {
+                    setResetInput('');
+                    setIsResetModalOpen(true);
+                  }}
+                  className="w-full bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold text-xs py-3.5 rounded-2xl flex items-center justify-center gap-2 transition active:scale-98 shadow-xs"
+                >
+                  <RotateCcw className="w-4 h-4 text-rose-600" />
+                  <span>Reset All Data</span>
                 </button>
               </div>
             </div>
@@ -1628,6 +1699,68 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* 4. RESET ALL DATA CONFIRMATION MODAL */}
+      {isResetModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border border-rose-100 flex flex-col animate-sheet-up">
+            
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2 text-rose-600">
+                <div className="w-9 h-9 rounded-full bg-rose-50 flex items-center justify-center">
+                  <RotateCcw className="w-5 h-5 text-rose-600" />
+                </div>
+                <h3 className="font-black text-slate-900 text-base">Reset All Data</h3>
+              </div>
+              <button 
+                onClick={() => setIsResetModalOpen(false)} 
+                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleResetAllData} className="mt-4 space-y-4">
+              <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                This action is <span className="text-rose-600 font-bold">permanent and irreversible</span>. All your savings goals, timelines, and transaction records will be permanently deleted from the cloud.
+              </p>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                  Type <span className="text-rose-600 font-black">RESET</span> to confirm
+                </label>
+                <input
+                  type="text"
+                  placeholder="RESET"
+                  value={resetInput}
+                  onChange={(e) => setResetInput(e.target.value)}
+                  className="w-full bg-rose-50/40 border border-rose-200 rounded-2xl px-4 py-3 text-xs font-mono font-bold uppercase text-slate-900 focus:outline-none focus:bg-white focus:border-rose-500"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setIsResetModalOpen(false)}
+                  className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-2xl transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={resetInput.trim().toUpperCase() !== 'RESET' || isResetting}
+                  className="w-full py-3 bg-rose-600 hover:bg-rose-700 active:scale-98 text-white font-bold text-xs rounded-2xl transition shadow-md shadow-rose-600/20 disabled:opacity-40 flex items-center justify-center gap-1.5"
+                >
+                  {isResetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                  <span>Wipe Everything</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
