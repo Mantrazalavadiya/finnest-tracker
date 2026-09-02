@@ -7,9 +7,9 @@
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior-y: none;
-    background-color: #FDFBF7;
-    color: #2D2A26;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    background-color: #F8FAFC;
+    color: #1E293B;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
 
   * {
@@ -18,10 +18,18 @@
   }
 }
 
-@keyframes warmFadeUp {
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes sheetUp {
   from {
     opacity: 0;
-    transform: translateY(12px) scale(0.985);
+    transform: translateY(24px) scale(0.98);
   }
   to {
     opacity: 1;
@@ -29,14 +37,6 @@
   }
 }
 
-.animate-warm-up {
-  animation: warmFadeUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.animate-sheet-up {
+  animation: sheetUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
