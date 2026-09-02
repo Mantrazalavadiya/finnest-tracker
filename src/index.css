@@ -7,8 +7,8 @@
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior-y: none;
-    background-color: #f8fafc;
-    color: #0f172a;
+    background-color: #FDFBF7;
+    color: #2D2A26;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
@@ -18,11 +18,10 @@
   }
 }
 
-/* Custom Micro Animations */
-@keyframes slideUpFade {
+@keyframes warmFadeUp {
   from {
     opacity: 0;
-    transform: translateY(16px) scale(0.98);
+    transform: translateY(12px) scale(0.985);
   }
   to {
     opacity: 1;
@@ -30,23 +29,8 @@
   }
 }
 
-@keyframes pulseGlow {
-  0%, 100% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.04);
-  }
-}
-
-.animate-slide-up {
-  animation: slideUpFade 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-glow {
-  animation: pulseGlow 4s ease-in-out infinite;
+.animate-warm-up {
+  animation: warmFadeUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .no-scrollbar::-webkit-scrollbar {
