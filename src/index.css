@@ -2,19 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  background-color: #f8fafc;
-  color: #0f172a;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+html, body {
+  touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  background-color: #edf2f7;
+  color: #0f172a;
 }
 
-/* Hide scrollbar for category tabs */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hide scrollbars on carousels while maintaining smooth scroll */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
