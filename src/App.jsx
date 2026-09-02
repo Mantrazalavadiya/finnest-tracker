@@ -159,7 +159,7 @@ function AuthScreen({ onLogin }) {
                 required
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-[#F1F5F9]/50 border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold focus:outline-none focus:bg-white focus:border-indigo-600 transition"
               />
             </div>
@@ -378,6 +378,7 @@ export default function App() {
   const requiredPace = isCompleted ? 0 : Math.ceil(remainingNeeded / daysLeft);
   const baselineDailyPace = activeGoal ? Math.max(1, Math.round(activeGoal.targetAmount / totalDurationDays)) : 1;
 
+  // Strict ₹20 tolerance calculation
   const { trajectoryStatus, daysDifference, varianceAmount } = useMemo(() => {
     if (!activeGoal) return { trajectoryStatus: 'on-track', daysDifference: 0, varianceAmount: 0 };
     if (isCompleted) return { trajectoryStatus: 'completed', daysDifference: 0, varianceAmount: 0 };
@@ -385,14 +386,28 @@ export default function App() {
     const timeFraction = Math.min(1, Math.max(0, daysElapsed / totalDurationDays));
     const expectedSavedByNow = Math.round(activeGoal.targetAmount * timeFraction);
     const variance = totalSaved - expectedSavedByNow;
-    const diffDays = Math.round(Math.abs(variance) / baselineDailyPace);
+    const diffDays = Math.max(1, Math.round(Math.abs(variance) / baselineDailyPace));
 
-    if (variance > 1000) {
-      return { trajectoryStatus: 'advance', daysDifference: diffDays, varianceAmount: variance };
-    } else if (variance < -1000) {
-      return { trajectoryStatus: 'delay', daysDifference: diffDays, varianceAmount: Math.abs(variance) };
+    const TOLERANCE = 20;
+
+    if (variance < -TOLERANCE) {
+      return { 
+        trajectoryStatus: 'delay', 
+        daysDifference: diffDays, 
+        varianceAmount: Math.abs(variance) 
+      };
+    } else if (variance > TOLERANCE) {
+      return { 
+        trajectoryStatus: 'advance', 
+        daysDifference: diffDays, 
+        varianceAmount: variance 
+      };
     } else {
-      return { trajectoryStatus: 'on-track', daysDifference: 0, varianceAmount: 0 };
+      return { 
+        trajectoryStatus: 'on-track', 
+        daysDifference: 0, 
+        varianceAmount: 0 
+      };
     }
   }, [activeGoal, isCompleted, daysElapsed, totalDurationDays, totalSaved, baselineDailyPace]);
 
@@ -570,7 +585,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col md:flex-row pb-24 md:pb-0 font-sans">
       
-      {/* LAPTOP / DESKTOP SIDEBAR NAVIGATION */}
+      {/* LAPTOP SIDEBAR */}
       <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 p-5 shrink-0 justify-between sticky top-0 h-screen">
         <div className="space-y-6">
           <div className="flex items-center gap-3">
@@ -636,10 +651,10 @@ export default function App() {
         </div>
       </aside>
 
-      {/* RIGHT MAIN WORKSPACE */}
+      {/* MAIN CONTAINER */}
       <div className="flex-1 flex flex-col min-w-0">
         
-        {/* Mobile Top Header (Hidden on Laptop) */}
+        {/* Mobile Header */}
         <header className="md:hidden bg-white px-5 pt-4 pb-3 border-b border-slate-100 sticky top-0 z-20 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-full bg-[#EEF2FF] flex items-center justify-center text-indigo-600 font-black text-sm">
@@ -653,7 +668,7 @@ export default function App() {
           </button>
         </header>
 
-        {/* Laptop Top Subheader */}
+        {/* Laptop Subheader */}
         <div className="hidden md:flex items-center justify-between px-8 py-4 bg-white border-b border-slate-200">
           <div>
             <h1 className="text-lg font-black text-slate-900 capitalize">{activeTab}</h1>
@@ -679,7 +694,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* CONTENT CONTAINER */}
+        {/* WORKSPACE */}
         <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full flex-1">
 
           {/* TAB 1: HOME */}
@@ -694,7 +709,6 @@ export default function App() {
                 </p>
               </div>
 
-              {/* Total Vault Card */}
               <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-xs flex items-center justify-between">
                 <div>
                   <span className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold block">
@@ -709,7 +723,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Quick Actions */}
               <div className="space-y-3 pt-2">
                 <h2 className="text-lg font-black text-slate-900">Quick Actions</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -740,7 +753,7 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 2: HISTORY */}
+          {/* TAB 2: HISTORY (Withdrawals show in RED) */}
           {activeTab === 'history' && (
             <div className="space-y-4 max-w-3xl mx-auto">
               <div>
@@ -757,38 +770,48 @@ export default function App() {
                   {allTransactions.length === 0 ? (
                     <p className="text-xs text-slate-400 py-8 text-center">No transactions recorded yet.</p>
                   ) : (
-                    allTransactions.map((tx) => (
-                      <div key={tx.id} className="py-3.5 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-2xl bg-[#EEF2FF] text-indigo-600 flex items-center justify-center">
-                            {tx.type === 'online' ? <Smartphone className="w-5 h-5" /> : <Banknote className="w-5 h-5" />}
+                    allTransactions.map((tx) => {
+                      const isWithdraw = tx.action === 'withdraw';
+                      return (
+                        <div key={tx.id} className="py-3.5 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
+                              isWithdraw ? 'bg-rose-50 text-rose-600' : 'bg-[#EEF2FF] text-indigo-600'
+                            }`}>
+                              {tx.type === 'online' ? <Smartphone className="w-5 h-5" /> : <Banknote className="w-5 h-5" />}
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-slate-900 leading-snug">{tx.note || 'Savings Entry'}</p>
+                              <p className="text-[10px] text-slate-400 font-medium">
+                                {tx.goalName} • {tx.type} • {tx.date}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-xs font-bold text-slate-900 leading-snug">{tx.note || 'Savings Entry'}</p>
-                            <p className="text-[10px] text-slate-400 font-medium">
-                              {tx.goalName} • {tx.type} • {tx.date}
+                          <div className="text-right">
+                            <span className={`text-xs font-black px-2.5 py-1 rounded-xl font-mono inline-block border ${
+                              isWithdraw 
+                                ? 'bg-rose-50 text-rose-600 border-rose-100' 
+                                : 'bg-[#E6FBF5] text-[#00C482] border-[#B7F4E0]'
+                            }`}>
+                              {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
+                            </span>
+                            <p className="text-[9px] text-slate-400 font-medium mt-0.5">
+                              {isWithdraw ? 'Debited' : 'Completed'}
                             </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <span className="text-xs font-black px-2.5 py-1 rounded-xl bg-[#E6FBF5] text-[#00C482] font-mono inline-block">
-                            {tx.action === 'withdraw' ? '-' : '+'}₹{tx.amount.toLocaleString()}
-                          </span>
-                          <p className="text-[9px] text-slate-400 font-medium mt-0.5">Completed</p>
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </div>
             </div>
           )}
 
-          {/* TAB 3: GOALS (Responsive Grid for Laptop) */}
+          {/* TAB 3: GOALS */}
           {activeTab === 'goals' && (
             <div className="space-y-6">
               
-              {/* Top Horizontal Carousel of Active Goals */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between px-1">
                   <span className="text-[11px] font-mono uppercase tracking-wider text-slate-500 font-bold">
@@ -830,8 +853,10 @@ export default function App() {
                       const gElapsed = Math.max(0, Math.floor((today - gStart) / (1000 * 60 * 60 * 24)));
                       const gExpected = Math.round(g.targetAmount * Math.min(1, gElapsed / gTotalDays));
                       const gDailyPace = Math.max(1, Math.round(g.targetAmount / gTotalDays));
-                      const isDelayed = gSaved < gExpected - 1000 && gSaved < g.targetAmount;
-                      const sidebarDaysGap = Math.round(Math.abs(gSaved - gExpected) / gDailyPace);
+                      
+                      // Strict ₹20 rule for the card delay pill
+                      const isDelayed = gSaved < (gExpected - 20) && gSaved < g.targetAmount;
+                      const sidebarDaysGap = Math.max(1, Math.round(Math.abs(gSaved - gExpected) / gDailyPace));
 
                       return (
                         <div
@@ -878,14 +903,13 @@ export default function App() {
                 )}
               </div>
 
-              {/* ACTIVE GOAL VIEW GRID (Laptop 2-Column Split) */}
               {activeGoal && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
                   
-                  {/* Left Column (Main Vault details + Progress) */}
+                  {/* Left Column */}
                   <div className="lg:col-span-7 space-y-4">
                     
-                    {/* Goal Header Card */}
+                    {/* Goal Header */}
                     <div className="bg-white border border-slate-200/80 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
@@ -976,7 +1000,7 @@ export default function App() {
                       </p>
                     </div>
 
-                    {/* Total Saved Card & Progress */}
+                    {/* Total Saved Card */}
                     <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-xs space-y-4">
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between text-[11px] font-mono font-bold text-slate-400">
@@ -1037,7 +1061,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Right Column (Pace & Timeline Dashboard as in Screenshot 2026-09-02 092021) */}
+                  {/* Right Column */}
                   <div className="lg:col-span-5 space-y-4">
                     
                     {/* Pace & Timeline Card */}
@@ -1087,7 +1111,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Transaction Stream Card */}
+                    {/* Goal-Specific Transaction Stream (Withdrawals in RED) */}
                     <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-xs space-y-3">
                       <div className="flex items-center justify-between">
                         <h3 className="text-xs font-black text-slate-900 tracking-wide uppercase">Transaction Stream</h3>
@@ -1100,22 +1124,31 @@ export default function App() {
                         {currentTxs.length === 0 ? (
                           <p className="text-xs text-slate-400 py-4 text-center">No transactions logged yet.</p>
                         ) : (
-                          currentTxs.slice(0, 6).map((tx) => (
-                            <div key={tx.id} className="py-2.5 flex items-center justify-between">
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-8 h-8 rounded-xl bg-[#EEF2FF] text-indigo-600 flex items-center justify-center">
-                                  {tx.type === 'online' ? <Smartphone className="w-4 h-4" /> : <Banknote className="w-4 h-4" />}
+                          currentTxs.slice(0, 6).map((tx) => {
+                            const isWithdraw = tx.action === 'withdraw';
+                            return (
+                              <div key={tx.id} className="py-2.5 flex items-center justify-between">
+                                <div className="flex items-center gap-2.5">
+                                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+                                    isWithdraw ? 'bg-rose-50 text-rose-600' : 'bg-[#EEF2FF] text-indigo-600'
+                                  }`}>
+                                    {tx.type === 'online' ? <Smartphone className="w-4 h-4" /> : <Banknote className="w-4 h-4" />}
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-bold text-slate-900 leading-tight">{tx.note || 'Savings Entry'}</p>
+                                    <p className="text-[10px] text-slate-400 capitalize">{tx.type} • {tx.date}</p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <p className="text-xs font-bold text-slate-900 leading-tight">{tx.note || 'Savings Entry'}</p>
-                                  <p className="text-[10px] text-slate-400 capitalize">{tx.type} • {tx.date}</p>
-                                </div>
+                                <span className={`text-xs font-black px-2 py-0.5 rounded-lg font-mono border ${
+                                  isWithdraw 
+                                    ? 'bg-rose-50 text-rose-600 border-rose-100' 
+                                    : 'bg-[#E6FBF5] text-[#00C482] border-[#B7F4E0]'
+                                }`}>
+                                  {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
+                                </span>
                               </div>
-                              <span className="text-xs font-black px-2 py-0.5 rounded-lg bg-[#E6FBF5] text-[#00C482] font-mono">
-                                {tx.action === 'withdraw' ? '-' : '+'}₹{tx.amount.toLocaleString()}
-                              </span>
-                            </div>
-                          ))
+                            );
+                          })
                         )}
                       </div>
                     </div>
@@ -1149,7 +1182,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* MOBILE BOTTOM NAVIGATION BAR (Hidden on Laptop) */}
+      {/* MOBILE BOTTOM NAV */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-6 py-2 z-40">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <button
@@ -1194,7 +1227,7 @@ export default function App() {
         </div>
       </nav>
 
-      {/* 1. TRANSACTION KEYPAD MODAL (Centered on Laptop, Bottom Sheet on Mobile) */}
+      {/* 1. TRANSACTION MODAL */}
       {isTxModalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
@@ -1327,7 +1360,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 2. DEDICATED TRANSFER MODAL (Shift Funds) */}
+      {/* 2. DEDICATED TRANSFER MODAL */}
       {isTransferModalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
