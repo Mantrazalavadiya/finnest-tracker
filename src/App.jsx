@@ -37,131 +37,21 @@ import {
   Share2,
   PiggyBank,
   Edit3,
-  Globe,
-  Clock,
-  Compass,
-  Radio,
-  Search
+  SlidersHorizontal,
+  FolderDown,
+  CheckCircle2
 } from 'lucide-react';
 
-/* Cyber Global Grid Map Canvas */
-function GlobalOperationsGrid() {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let animationId;
-
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
-
-    const handleResize = () => {
-      if (!canvas) return;
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', handleResize);
-
-    // Flight corridor points
-    const nodes = [
-      { x: 0.22, y: 0.35, label: 'KSFO' },
-      { x: 0.26, y: 0.42, label: 'KLAX' },
-      { x: 0.48, y: 0.32, label: 'LEBL' },
-      { x: 0.76, y: 0.38, label: 'HND' },
-      { x: 0.85, y: 0.72, label: 'SYD' }
-    ];
-
-    let pulse = 0;
-
-    const render = () => {
-      ctx.clearRect(0, 0, width, height);
-      pulse += 0.03;
-
-      // Draw faint terminal grid lines
-      ctx.strokeStyle = 'rgba(30, 41, 59, 0.35)';
-      ctx.lineWidth = 1;
-      const gridSize = 45;
-
-      for (let x = 0; x < width; x += gridSize) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
-        ctx.stroke();
-      }
-
-      for (let y = 0; y < height; y += gridSize) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-        ctx.stroke();
-      }
-
-      // Draw flight paths between nodes
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      for (let i = 0; i < nodes.length - 1; i++) {
-        const startX = nodes[i].x * width;
-        const startY = nodes[i].y * height;
-        const endX = nodes[i + 1].x * width;
-        const endY = nodes[i + 1].y * height;
-
-        ctx.moveTo(startX, startY);
-        ctx.bezierCurveTo(
-          (startX + endX) / 2, 
-          startY - 40, 
-          (startX + endX) / 2, 
-          endY - 40, 
-          endX, 
-          endY
-        );
-      }
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Draw node beacons
-      nodes.forEach((node) => {
-        const nx = node.x * width;
-        const ny = node.y * height;
-        const beaconRadius = Math.sin(pulse) * 3 + 5;
-
-        ctx.beginPath();
-        ctx.arc(nx, ny, beaconRadius, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0, 229, 255, 0.4)';
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(nx, ny, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#38BDF8';
-        ctx.fill();
-      });
-
-      animationId = requestAnimationFrame(render);
-    };
-
-    render();
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationId);
-    };
-  }, []);
-
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0 opacity-45" />;
-}
-
 const CATEGORY_PRESETS = [
-  { id: 'tech', label: 'Tech & Fleet', icon: Laptop },
-  { id: 'savings', label: 'Vault Stash', icon: PiggyBank },
-  { id: 'travel', label: 'Air Routes', icon: Plane },
-  { id: 'vehicle', label: 'Transports', icon: Car },
-  { id: 'education', label: 'Academy', icon: GraduationCap },
-  { id: 'emergency', label: 'Contingency', icon: ShieldAlert },
-  { id: 'home', label: 'Hangar', icon: HomeIcon },
-  { id: 'health', label: 'Crew Vital', icon: HeartPulse },
-  { id: 'custom', label: 'Special Ops', icon: Sparkles },
+  { id: 'tech', label: 'Tech & Devices', icon: Laptop },
+  { id: 'savings', label: 'Savings Vault', icon: PiggyBank },
+  { id: 'travel', label: 'Travel', icon: Plane },
+  { id: 'vehicle', label: 'Auto & Transport', icon: Car },
+  { id: 'education', label: 'Education', icon: GraduationCap },
+  { id: 'emergency', label: 'Emergency Fund', icon: ShieldAlert },
+  { id: 'home', label: 'Home Living', icon: HomeIcon },
+  { id: 'health', label: 'Health & Wellness', icon: HeartPulse },
+  { id: 'custom', label: 'Personal Targets', icon: Sparkles },
 ];
 
 const ICON_MAP = {
@@ -186,18 +76,18 @@ const playSound = (type) => {
     gain.connect(ctx.destination);
 
     if (type === 'deposit' || type === 'transfer') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(440, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
-      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
       osc.start();
       osc.stop(ctx.currentTime + 0.2);
     } else {
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(280, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.12);
-      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      osc.frequency.setValueAtTime(300, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
       osc.start();
       osc.stop(ctx.currentTime + 0.18);
@@ -228,57 +118,56 @@ function AuthScreen({ onLogin }) {
         if (data?.user) onLogin(data.user);
       }
     } catch (err) {
-      setErrorMsg(err.message || 'Authentication error');
+      setErrorMsg(err.message || 'Authentication failed');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#070A12] text-slate-200 flex flex-col items-center justify-center p-4 relative font-mono">
-      <GlobalOperationsGrid />
-      <div className="w-full max-w-sm terminal-panel terminal-panel-glow rounded-2xl p-7 relative z-10">
+    <div className="min-h-screen bg-[#F6F4EE] text-[#1A1A18] flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-sm butter-card rounded-3xl p-7 shadow-xl">
         <div className="flex flex-col items-center text-center space-y-2 mb-6">
-          <div className="w-12 h-12 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-400 mb-1">
-            <Compass className="w-6 h-6 animate-pulse" />
+          <div className="w-12 h-12 rounded-2xl bg-[#1A1A18] text-[#FEF6D8] flex items-center justify-center mb-1 shadow-md">
+            <Layers className="w-6 h-6" />
           </div>
-          <h1 className="text-xl font-black text-white tracking-widest uppercase">AIRLINESIM // FINTRACK</h1>
-          <p className="text-[11px] text-slate-400">Terminal Access & Capital Simulation</p>
+          <h1 className="text-2xl font-black text-[#1A1A18] tracking-tight">FinNest</h1>
+          <p className="text-xs text-slate-500 font-medium">Warm Sanctuary Financial Studio</p>
         </div>
 
         {errorMsg && (
-          <div className="p-2.5 mb-4 text-xs bg-rose-950/60 border border-rose-500/50 text-rose-300 rounded-xl text-center">
+          <div className="p-3 mb-4 text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl text-center">
             {errorMsg}
           </div>
         )}
 
-        <form onSubmit={handleAuth} className="space-y-3.5">
+        <form onSubmit={handleAuth} className="space-y-3">
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">CALLSIGN / EMAIL</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 pl-1">Email</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+              <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
               <input
                 type="email"
                 required
-                placeholder="pilot@airlinesim.com"
+                placeholder="you@domain.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#0B0F19] border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-sky-300 focus:outline-none focus:border-sky-400"
+                className="w-full bg-[#FAF9F5] border border-[#E8E2D5] rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold text-[#1A1A18] focus:outline-none focus:bg-white focus:border-[#1A1A18] transition"
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">ENCRYPTED KEY</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 pl-1">Password</label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+              <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
               <input
                 type="password"
                 required
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#0B0F19] border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-sky-300 focus:outline-none focus:border-sky-400"
+                className="w-full bg-[#FAF9F5] border border-[#E8E2D5] rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold text-[#1A1A18] focus:outline-none focus:bg-white focus:border-[#1A1A18] transition"
               />
             </div>
           </div>
@@ -286,20 +175,20 @@ function AuthScreen({ onLogin }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 py-3 bg-sky-500 hover:bg-sky-400 active:scale-95 text-slate-950 font-black text-xs rounded-xl transition flex items-center justify-center gap-2 uppercase tracking-wider"
+            className="w-full mt-2 py-3.5 bg-[#1A1A18] hover:bg-black active:scale-95 text-white font-bold text-xs rounded-2xl transition shadow-md shadow-black/10 flex items-center justify-center gap-2"
           >
-            <span>{loading ? 'AUTHENTICATING...' : isSignUp ? 'ENROLL PILOT' : 'AUTHORIZE ACCESS'}</span>
+            <span>{loading ? 'Authenticating...' : isSignUp ? 'Create FinNest Vault' : 'Enter Vault'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
-        <div className="text-center mt-5 pt-4 border-t border-slate-800">
+        <div className="text-center mt-5 pt-4 border-t border-[#EAE4D6]">
           <button
             type="button"
             onClick={() => { setIsSignUp(!isSignUp); setErrorMsg(''); }}
-            className="text-xs font-bold text-slate-400 hover:text-sky-400 transition"
+            className="text-xs font-bold text-slate-600 hover:text-black transition"
           >
-            {isSignUp ? 'Existing Operator? Sign In' : 'New Callsign? Register Protocol'}
+            {isSignUp ? 'Existing account? Sign In' : 'New to FinNest? Register'}
           </button>
         </div>
       </div>
@@ -327,24 +216,24 @@ export default function App() {
   const [resetInput, setResetInput] = useState('');
   const [isResetting, setIsResetting] = useState(false);
 
-  // Standard Keypad Transaction states
+  // Keypad Transactions
   const [actionType, setActionType] = useState('deposit');
   const [walletType, setWalletType] = useState('online');
   const [amountStr, setAmountStr] = useState('');
   const [note, setNote] = useState('');
 
-  // Cash <-> Bank Transfer states
+  // Cash <-> Bank Transfer
   const [transferDirection, setTransferDirection] = useState('cash_to_bank');
   const [transferAmountStr, setTransferAmountStr] = useState('');
   const [transferNote, setTransferNote] = useState('');
 
-  // Cross-Goal Transfer states
+  // Goal-to-Goal Transfer
   const [targetGoalId, setTargetGoalId] = useState('');
   const [goalTransferWallet, setGoalTransferWallet] = useState('online');
   const [goalTransferAmountStr, setGoalTransferAmountStr] = useState('');
   const [goalTransferNote, setGoalTransferNote] = useState('');
 
-  // New Goal Creation
+  // Goal Creation
   const todayStr = new Date().toISOString().split('T')[0];
   const [newGoalName, setNewGoalName] = useState('');
   const [newGoalCategory, setNewGoalCategory] = useState('tech');
@@ -352,7 +241,7 @@ export default function App() {
   const [newGoalStartDate, setNewGoalStartDate] = useState(todayStr);
   const [newGoalDate, setNewGoalDate] = useState('');
 
-  // Edit Goal states
+  // Goal Editing
   const [editGoalName, setEditGoalName] = useState('');
   const [editGoalAmount, setEditGoalAmount] = useState('');
   const [editGoalDate, setEditGoalDate] = useState('');
@@ -494,7 +383,7 @@ export default function App() {
   const celebratedRef = useRef({});
   useEffect(() => {
     if (activeGoal && isCompleted && !celebratedRef.current[activeGoal.id]) {
-      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+      confetti({ particleCount: 110, spread: 75, origin: { y: 0.6 } });
       celebratedRef.current[activeGoal.id] = true;
     } else if (!isCompleted && activeGoal) {
       celebratedRef.current[activeGoal.id] = false;
@@ -558,7 +447,7 @@ export default function App() {
     if (actionType === 'withdraw') {
       const available = walletType === 'cash' ? totalCash : totalOnline;
       if (val > available) {
-        alert(`Insufficient funds in ${walletType === 'cash' ? 'Cash Reserve' : 'Online Balance'}! Available: ₹${available.toLocaleString()}`);
+        alert(`Insufficient funds in ${walletType === 'cash' ? 'Cash Wallet' : 'Online Wallet'}! Available: ₹${available.toLocaleString()}`);
         return;
       }
 
@@ -568,7 +457,7 @@ export default function App() {
         amount: val,
         action: 'withdraw',
         type: walletType,
-        note: note.trim() || 'Flight Fuel / Debit',
+        note: note.trim() || 'Withdrawal',
         date: todayStr
       }]);
       playSound('withdraw');
@@ -579,7 +468,7 @@ export default function App() {
         amount: val,
         action: 'deposit',
         type: walletType,
-        note: note.trim() || 'Fleet Inflow / Deposit',
+        note: note.trim() || 'Savings Inflow',
         date: todayStr
       }]);
       playSound('deposit');
@@ -598,7 +487,7 @@ export default function App() {
 
     if (transferDirection === 'cash_to_bank') {
       if (val > totalCash) {
-        alert(`Cannot transfer ₹${val.toLocaleString()}. Available Physical Stash: ₹${totalCash.toLocaleString()}`);
+        alert(`Cannot transfer ₹${val.toLocaleString()}. Available in Cash: ₹${totalCash.toLocaleString()}`);
         return;
       }
 
@@ -609,7 +498,7 @@ export default function App() {
           amount: val,
           action: 'withdraw',
           type: 'cash',
-          note: transferNote.trim() ? `Cash ➔ Bank (${transferNote.trim()})` : 'Transferred Cash to Bank UPI',
+          note: transferNote.trim() ? `Cash ➔ Bank (${transferNote.trim()})` : 'Transferred Cash to Bank / UPI',
           date: todayStr
         },
         {
@@ -618,13 +507,13 @@ export default function App() {
           amount: val,
           action: 'deposit',
           type: 'online',
-          note: transferNote.trim() ? `Bank Deposit (${transferNote.trim()})` : 'Bank deposit from Cash Reserve',
+          note: transferNote.trim() ? `Bank Deposit (${transferNote.trim()})` : 'Bank deposit from Cash Stash',
           date: todayStr
         }
       ]);
     } else {
       if (val > totalOnline) {
-        alert(`Cannot transfer ₹${val.toLocaleString()}. Available Bank Balance: ₹${totalOnline.toLocaleString()}`);
+        alert(`Cannot transfer ₹${val.toLocaleString()}. Available in Bank: ₹${totalOnline.toLocaleString()}`);
         return;
       }
 
@@ -635,7 +524,7 @@ export default function App() {
           amount: val,
           action: 'withdraw',
           type: 'online',
-          note: transferNote.trim() ? `Bank ➔ Cash (${transferNote.trim()})` : 'Withdrew from Bank to Physical Cash',
+          note: transferNote.trim() ? `Bank ➔ Cash (${transferNote.trim()})` : 'Withdrew from Bank to Cash',
           date: todayStr
         },
         {
@@ -644,7 +533,7 @@ export default function App() {
           amount: val,
           action: 'deposit',
           type: 'cash',
-          note: transferNote.trim() ? `Cash Inflow (${transferNote.trim()})` : 'Cash added from Bank / ATM',
+          note: transferNote.trim() ? `Cash Inflow (${transferNote.trim()})` : 'Cash added from Bank',
           date: todayStr
         }
       ]);
@@ -664,12 +553,12 @@ export default function App() {
 
     const available = goalTransferWallet === 'cash' ? totalCash : totalOnline;
     if (val > available) {
-      alert(`Cannot transfer ₹${val.toLocaleString()}. Available is ₹${available.toLocaleString()}`);
+      alert(`Cannot transfer ₹${val.toLocaleString()}. Available in ${goalTransferWallet === 'cash' ? 'Cash' : 'Online'} is ₹${available.toLocaleString()}`);
       return;
     }
 
     const destinationGoal = goals.find((g) => g.id === targetGoalId);
-    const destName = destinationGoal ? destinationGoal.name : 'Target Route';
+    const destName = destinationGoal ? destinationGoal.name : 'Target Goal';
 
     try {
       await supabase.from('transactions').insert([
@@ -698,9 +587,9 @@ export default function App() {
       setGoalTransferNote('');
       setIsGoalTransferModalOpen(false);
       fetchData();
-      alert(`Capital Reallocated: ₹${val.toLocaleString()} moved to ${destName}!`);
+      alert(`Shifted ₹${val.toLocaleString()} from ${activeGoal.name} to ${destName}!`);
     } catch (err) {
-      alert('Reallocation failed: ' + err.message);
+      alert('Goal transfer error: ' + err.message);
     }
   };
 
@@ -709,7 +598,7 @@ export default function App() {
     if (!newGoalName.trim() || !newGoalAmount || !newGoalDate || !newGoalStartDate || !user) return;
 
     if (new Date(newGoalDate) <= new Date(newGoalStartDate)) {
-      alert("Target End Date must be after Start Date.");
+      alert("Ending target date must be after start date.");
       return;
     }
 
@@ -750,7 +639,7 @@ export default function App() {
     if (!activeGoal || !editGoalName.trim() || !editGoalAmount || !editGoalDate) return;
 
     if (new Date(editGoalDate) <= new Date(activeGoal.startDate)) {
-      alert("Extended End Date must be after the starting date.");
+      alert("Extended end date must be after the starting date.");
       return;
     }
 
@@ -769,16 +658,16 @@ export default function App() {
 
       setIsEditGoalOpen(false);
       fetchData();
-      alert('Flight schedule and target capital successfully modified!');
+      alert('Timeline parameters updated successfully!');
     } catch (err) {
-      alert('Modification failed: ' + err.message);
+      alert('Failed to update: ' + err.message);
     } finally {
       setIsSavingEdit(false);
     }
   };
 
   const handleDeleteGoal = async (goalId) => {
-    if (confirm('Decommission this fleet goal and purge its flight logs?')) {
+    if (confirm('Delete this goal and its historical records?')) {
       await supabase.from('goals').delete().eq('id', goalId);
       fetchData();
     }
@@ -787,7 +676,7 @@ export default function App() {
   const handleResetAllData = async (e) => {
     e.preventDefault();
     if (resetInput.trim().toUpperCase() !== 'RESET') {
-      alert('Please type "RESET" exactly to execute master purge.');
+      alert('Please type "RESET" exactly to confirm.');
       return;
     }
 
@@ -807,7 +696,7 @@ export default function App() {
       setIsResetModalOpen(false);
       setResetInput('');
       setActiveTab('goals');
-      alert('Master Wipe Executed. All terminal records have been reset.');
+      alert('All FinNest records have been completely reset.');
     } catch (err) {
       alert('Reset failed: ' + err.message);
     } finally {
@@ -817,8 +706,8 @@ export default function App() {
 
   if (loadingSession) {
     return (
-      <div className="min-h-screen bg-[#070A12] flex items-center justify-center font-mono text-sky-400">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="min-h-screen bg-[#F6F4EE] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#1A1A18] animate-spin" />
       </div>
     );
   }
@@ -831,31 +720,26 @@ export default function App() {
   const eligibleTargetGoals = goals.filter((g) => g.id !== selectedGoalId);
 
   return (
-    <div className="min-h-screen bg-[#070A12] text-slate-200 flex flex-col md:flex-row pb-24 md:pb-0 font-sans relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#F6F4EE] text-[#1A1A18] flex flex-col md:flex-row pb-24 md:pb-0 font-sans">
       
-      {/* 3D Global Grid Animation Canvas */}
-      <GlobalOperationsGrid />
-
-      {/* SCI-FI TERMINAL SIDEBAR (LAPTOP / DESKTOP) */}
-      <aside className="hidden md:flex flex-col w-64 terminal-panel border-r border-slate-800 p-5 shrink-0 justify-between sticky top-0 h-screen z-20 font-mono">
+      {/* DESKTOP SIDEBAR */}
+      <aside className="hidden md:flex flex-col w-64 butter-card border-r border-[#E6DEC8] p-5 shrink-0 justify-between sticky top-0 h-screen z-20">
         <div className="space-y-6">
-          <div className="flex items-center gap-3 pb-3 border-b border-slate-800">
-            <div className="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-400/40 text-sky-400 flex items-center justify-center shadow-lg shadow-sky-500/20">
-              <Compass className="w-5 h-5" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#1A1A18] text-[#FEF6D8] flex items-center justify-center shadow-md">
+              <Layers className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-sm font-black text-white tracking-wider block">AIRLINESIM</span>
-              <span className="text-[10px] text-sky-400 font-bold uppercase tracking-widest flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE OPS
-              </span>
+              <span className="text-xl font-black text-[#1A1A18] block leading-tight">FinNest</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Vault Studio</span>
             </div>
           </div>
 
-          <nav className="space-y-1 text-xs">
+          <nav className="space-y-1.5 text-xs font-bold">
             <button
               onClick={() => setActiveTab('home')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition ${
-                activeTab === 'home' ? 'bg-sky-500 text-slate-950 font-black shadow-md shadow-sky-500/20' : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl transition ${
+                activeTab === 'home' ? 'bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA]' : 'text-slate-600 hover:bg-[#FAF9F5]'
               }`}
             >
               <HomeIcon className="w-4 h-4" /> Overview
@@ -863,83 +747,77 @@ export default function App() {
 
             <button
               onClick={() => setActiveTab('goals')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition ${
-                activeTab === 'goals' ? 'bg-sky-500 text-slate-950 font-black shadow-md shadow-sky-500/20' : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl transition ${
+                activeTab === 'goals' ? 'bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA]' : 'text-slate-600 hover:bg-[#FAF9F5]'
               }`}
             >
-              <Target className="w-4 h-4" /> Fleet & Goals
+              <Target className="w-4 h-4" /> Goals & Devices
             </button>
 
             <button
               onClick={() => setActiveTab('history')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition ${
-                activeTab === 'history' ? 'bg-sky-500 text-slate-950 font-black shadow-md shadow-sky-500/20' : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl transition ${
+                activeTab === 'history' ? 'bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA]' : 'text-slate-600 hover:bg-[#FAF9F5]'
               }`}
             >
-              <History className="w-4 h-4" /> Flight Ledger
+              <History className="w-4 h-4" /> Session History
             </button>
 
             <button
               onClick={() => setActiveTab('settings')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition ${
-                activeTab === 'settings' ? 'bg-sky-500 text-slate-950 font-black shadow-md shadow-sky-500/20' : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl transition ${
+                activeTab === 'settings' ? 'bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA]' : 'text-slate-600 hover:bg-[#FAF9F5]'
               }`}
             >
-              <Settings className="w-4 h-4" /> System Config
+              <Settings className="w-4 h-4" /> Settings
             </button>
           </nav>
-
-          {/* Quick World Clocks (As in image) */}
-          <div className="space-y-2 pt-3 border-t border-slate-800 text-[10px]">
-            <span className="font-bold text-slate-500 uppercase tracking-wider block">World Operations Clock</span>
-            <div className="grid grid-cols-2 gap-2 text-slate-300">
-              <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                <span className="text-slate-500 block">Cupertino</span>
-                <span className="font-black text-sky-400">05:25 AM</span>
-              </div>
-              <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                <span className="text-slate-500 block">Tokyo</span>
-                <span className="font-black text-emerald-400">21:25 PM</span>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <div className="space-y-3 pt-4 border-t border-slate-800">
-          <div className="bg-[#070A12] p-3 rounded-xl border border-slate-800">
-            <span className="text-[10px] font-mono text-slate-500 uppercase font-bold block">NET CAPITAL VAULT</span>
-            <p className="text-base font-black text-emerald-400 mt-0.5 tracking-wide">₹{portfolioTotal.toLocaleString()}</p>
+        <div className="space-y-3 pt-4 border-t border-[#EAE4D6]">
+          <div className="bg-[#FEF6D8] p-3.5 rounded-2xl border border-[#F6E6AA]">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">TOTAL VAULT BALANCE</span>
+            <p className="text-xl font-black text-[#1A1A18] mt-0.5">₹{portfolioTotal.toLocaleString()}</p>
           </div>
           <button
             onClick={() => supabase.auth.signOut()}
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-500 hover:text-rose-400 transition"
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-400 hover:text-rose-600 transition"
           >
-            <LogOut className="w-4 h-4" /> Abort Session
+            <LogOut className="w-4 h-4" /> Sign Out
           </button>
         </div>
       </aside>
 
-      {/* MAIN OPERATIONS WORKSPACE */}
-      <div className="flex-1 flex flex-col min-w-0 relative z-10 font-mono">
+      {/* MAIN CONTAINER */}
+      <div className="flex-1 flex flex-col min-w-0">
         
-        {/* Top Navbar */}
-        <header className="terminal-panel px-5 md:px-8 py-3.5 border-b border-slate-800 sticky top-0 z-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 md:hidden">
-              <Compass className="w-5 h-5 text-sky-400" />
-              <span className="text-base font-black text-white tracking-widest">AIRLINESIM</span>
+        {/* Mobile Header */}
+        <header className="md:hidden butter-card px-5 pt-4 pb-3 border-b border-[#E6DEC8] sticky top-0 z-20 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-[#1A1A18] text-[#FEF6D8] flex items-center justify-center font-black text-xs">
+              FN
             </div>
-            <div className="hidden md:flex items-center gap-2 bg-[#070A12] border border-slate-800 rounded-lg px-3 py-1 text-xs text-slate-400">
-              <Search className="w-3.5 h-3.5 text-slate-500" />
-              <span>Quick command or route lookup...</span>
-            </div>
+            <span className="text-xl font-black tracking-tight text-[#1A1A18]">FinNest</span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="hidden sm:inline-flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-[11px] font-bold px-3 py-1 rounded-full">
-              <Radio className="w-3 h-3 animate-pulse" /> 510 min AS
-            </span>
+          <div className="flex items-center gap-1">
+            <button className="p-2 text-slate-500 hover:text-black rounded-full transition">
+              <SlidersHorizontal className="w-4 h-4" />
+            </button>
+            <button className="p-2 text-slate-500 hover:text-black rounded-full transition">
+              <Bell className="w-4 h-4" />
+            </button>
+          </div>
+        </header>
 
+        {/* Laptop Subheader */}
+        <div className="hidden md:flex items-center justify-between px-8 py-4 butter-card border-b border-[#E6DEC8]">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-black text-[#1A1A18] capitalize">{activeTab}</h1>
+            <span className="text-xs font-semibold text-slate-400">Vault: {user.email}</span>
+          </div>
+
+          <div className="flex items-center gap-2.5">
             {goals.length > 1 && (
               <button
                 onClick={() => {
@@ -948,93 +826,143 @@ export default function App() {
                   setGoalTransferNote('');
                   setIsGoalTransferModalOpen(true);
                 }}
-                className="hidden md:flex bg-sky-500/15 hover:bg-sky-500/25 text-sky-400 border border-sky-400/30 text-xs font-bold px-3 py-1.5 rounded-lg items-center gap-1.5 transition active:scale-95"
+                className="bg-[#FAF9F5] border border-[#E0D8C3] hover:bg-white text-[#1A1A18] font-bold text-xs px-3.5 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95"
               >
-                <Share2 className="w-3.5 h-3.5" /> Reallocate
+                <Share2 className="w-3.5 h-3.5" /> Shift to Goal
               </button>
             )}
-
+            <button
+              onClick={() => {
+                setTransferAmountStr('');
+                setTransferNote('');
+                setIsTransferModalOpen(true);
+              }}
+              className="bg-[#FAF9F5] border border-[#E0D8C3] hover:bg-white text-[#1A1A18] font-bold text-xs px-4 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95"
+            >
+              <ArrowLeftRight className="w-3.5 h-3.5" /> Shift Funds
+            </button>
             <button
               onClick={() => setIsAddGoalOpen(true)}
-              className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition active:scale-95 shadow-md shadow-sky-500/20"
+              className="bg-[#1A1A18] hover:bg-black text-[#FEF6D8] font-bold text-xs px-4 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95 shadow-sm"
             >
-              <Plus className="w-3.5 h-3.5" /> New Fleet Goal
+              <Plus className="w-3.5 h-3.5" /> New Goal
             </button>
           </div>
-        </header>
+        </div>
 
-        {/* WORKSPACE CONTENT */}
-        <div className="p-4 sm:p-6 lg:p-7 max-w-6xl mx-auto w-full flex-1">
+        {/* WORKSPACE AREA */}
+        <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full flex-1">
 
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'home' && (
-            <div className="space-y-5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div className="space-y-6 max-w-2xl mx-auto">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-black text-[#1A1A18] tracking-tight">
+                  Good morning, {user.email?.split('@')[0] || 'Member'}
+                </h1>
+                <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-0.5">
+                  FinNest Sanctuary overview of your capital and devices.
+                </p>
+              </div>
+
+              {/* Total Vault Butter Card */}
+              <div className="butter-highlight-card rounded-3xl p-6 flex items-center justify-between">
                 <div>
-                  <h1 className="text-xl sm:text-2xl font-black text-white tracking-widest uppercase">
-                    Flight Operations & Capital Overview
-                  </h1>
-                  <p className="text-xs text-slate-400">Callsign: {user.email}</p>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-600 font-bold block">
+                    TOTAL VAULT CAPITAL
+                  </span>
+                  <p className="text-3xl sm:text-4xl font-black text-[#1A1A18] mt-1 tracking-tight">
+                    ₹{portfolioTotal.toLocaleString()}
+                  </p>
                 </div>
-                <div className="text-xs text-slate-400 bg-slate-900/90 border border-slate-800 px-3 py-1.5 rounded-lg">
-                  System Date: <span className="text-sky-400 font-bold">13 Oct 2034 // 05:25 AM</span>
-                </div>
-              </div>
-
-              {/* Top Stat Ribbon (As in Image) */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="terminal-panel p-4 rounded-xl border border-slate-800">
-                  <span className="text-[10px] text-slate-500 uppercase font-bold block">RESERVE CAPITAL</span>
-                  <p className="text-2xl font-black text-emerald-400 mt-1">₹{portfolioTotal.toLocaleString()}</p>
-                  <span className="text-[10px] text-emerald-500 block mt-0.5">● Fully Protected</span>
-                </div>
-
-                <div className="terminal-panel p-4 rounded-xl border border-slate-800">
-                  <span className="text-[10px] text-slate-500 uppercase font-bold block">ACTIVE CORRIDORS</span>
-                  <p className="text-2xl font-black text-sky-400 mt-1">{goals.length} Routes</p>
-                  <span className="text-[10px] text-slate-400 block mt-0.5">Monitoring timeline horizon</span>
-                </div>
-
-                <div className="terminal-panel p-4 rounded-xl border border-slate-800">
-                  <span className="text-[10px] text-slate-500 uppercase font-bold block">JET FUEL / PACE COMMITTED</span>
-                  <p className="text-2xl font-black text-amber-400 mt-1">₹{requiredPace}<span className="text-xs text-slate-400 font-normal">/day</span></p>
-                  <span className="text-[10px] text-amber-500 block mt-0.5">Required pace velocity</span>
+                <div className="w-14 h-14 rounded-2xl bg-[#1A1A18] text-[#FEF6D8] flex items-center justify-center shadow-md">
+                  <Landmark className="w-7 h-7" />
                 </div>
               </div>
 
-              {/* Recent Flights Table (LEBL -> KLAX style) */}
-              <div className="terminal-panel rounded-xl p-5 border border-slate-800 space-y-3">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-                  <h3 className="text-xs font-black text-white tracking-widest uppercase flex items-center gap-2">
-                    <Plane className="w-4 h-4 text-sky-400" /> Recent Flight Corridors & Ledger
-                  </h3>
-                  <span className="text-[10px] text-sky-400 font-bold">{allTransactions.length} Logged Entries</span>
+              {/* Quick Actions */}
+              <div className="space-y-3 pt-1">
+                <h2 className="text-base font-black text-[#1A1A18]">Quick Operations</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    onClick={() => {
+                      setTransferAmountStr('');
+                      setTransferNote('');
+                      setIsTransferModalOpen(true);
+                    }}
+                    className="butter-card hover:bg-white text-[#1A1A18] font-bold text-xs py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition"
+                  >
+                    <ArrowLeftRight className="w-4 h-4" /> Shift (Cash ➔ Bank)
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActionType('deposit');
+                      setAmountStr('');
+                      setNote('');
+                      setIsTxModalOpen(true);
+                    }}
+                    className="bg-[#1A1A18] hover:bg-black text-[#FEF6D8] font-bold text-xs py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow-sm"
+                  >
+                    <Plus className="w-4 h-4" /> Add / Withdraw
+                  </button>
                 </div>
 
-                <div className="divide-y divide-slate-800/80 max-h-80 overflow-y-auto">
+                {goals.length > 1 && (
+                  <button
+                    onClick={() => {
+                      setTargetGoalId(eligibleTargetGoals[0]?.id || '');
+                      setGoalTransferAmountStr('');
+                      setGoalTransferNote('');
+                      setIsGoalTransferModalOpen(true);
+                    }}
+                    className="w-full bg-[#FEF6D8] hover:bg-[#FDF0C2] border border-[#F6E6AA] text-[#1A1A18] font-bold text-xs py-3.5 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow-xs"
+                  >
+                    <Share2 className="w-4 h-4" /> Inter-Goal Surplus Transfer
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: SESSION HISTORY (Dark Session Panel from image) */}
+          {activeTab === 'history' && (
+            <div className="space-y-5 max-w-2xl mx-auto">
+              <div>
+                <h1 className="text-2xl font-black text-[#1A1A18] tracking-tight">Session History</h1>
+                <p className="text-xs font-semibold text-slate-500">Audit trail of transactions across all goals.</p>
+              </div>
+
+              <div className="dark-session-panel rounded-3xl p-6 shadow-xl space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-700/60 pb-3">
+                  <span className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold">
+                    RECORDED SESSIONS
+                  </span>
+                  <span className="text-xs font-mono font-bold text-[#FEF6D8]">
+                    {allTransactions.length} Items
+                  </span>
+                </div>
+
+                <div className="divide-y divide-slate-800 max-h-96 overflow-y-auto pr-1">
                   {allTransactions.length === 0 ? (
-                    <p className="text-xs text-slate-500 py-6 text-center">No flights or transactions logged in ledger.</p>
+                    <p className="text-xs text-slate-400 py-8 text-center">No transaction sessions recorded yet.</p>
                   ) : (
                     allTransactions.map((tx) => {
                       const isWithdraw = tx.action === 'withdraw';
                       return (
                         <div key={tx.id} className="py-3 flex items-center justify-between text-xs">
                           <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                              isWithdraw ? 'bg-rose-950/70 text-rose-400 border border-rose-800/50' : 'bg-sky-950/70 text-sky-400 border border-sky-800/50'
-                            }`}>
+                            <div className="w-8 h-8 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center shrink-0">
                               {tx.type === 'online' ? <Smartphone className="w-4 h-4" /> : <Banknote className="w-4 h-4" />}
                             </div>
                             <div>
-                              <p className="font-bold text-white">{tx.note || 'Flight Inflow'}</p>
-                              <p className="text-[10px] text-slate-500 font-mono">
-                                Corridor: {tx.goalName} • {tx.type.toUpperCase()} • {tx.date}
+                              <p className="font-bold text-white leading-tight">{tx.note || 'Savings Transaction'}</p>
+                              <p className="text-[10px] text-slate-400 mt-0.5">
+                                {tx.goalName} • {tx.type.toUpperCase()} • {tx.date}
                               </p>
                             </div>
                           </div>
-                          <span className={`font-mono font-black text-sm ${
-                            isWithdraw ? 'text-rose-400' : 'text-emerald-400'
-                          }`}>
+                          <span className={`font-mono font-bold text-sm ${isWithdraw ? 'text-rose-400' : 'text-[#FEF6D8]'}`}>
                             {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
                           </span>
                         </div>
@@ -1046,143 +974,115 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 2: FLIGHT LEDGER */}
-          {activeTab === 'history' && (
-            <div className="space-y-4 max-w-4xl mx-auto">
-              <div className="border-b border-slate-800 pb-3">
-                <h1 className="text-xl font-black text-white tracking-widest uppercase">Flight Operations Ledger</h1>
-                <p className="text-xs text-slate-400">Complete audit trail of all capital transactions.</p>
-              </div>
-
-              <div className="terminal-panel rounded-xl p-5 border border-slate-800 space-y-3">
-                <div className="divide-y divide-slate-800">
-                  {allTransactions.map((tx) => {
-                    const isWithdraw = tx.action === 'withdraw';
-                    return (
-                      <div key={tx.id} className="py-3 flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                            isWithdraw ? 'bg-rose-950/60 text-rose-400 border border-rose-800/40' : 'bg-sky-950/60 text-sky-400 border border-sky-800/40'
-                          }`}>
-                            <Plane className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <span className="font-bold text-white block">{tx.note || 'Capital Transaction'}</span>
-                            <span className="text-[10px] text-slate-500 font-mono">Route: {tx.goalName} • {tx.date}</span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <span className={`font-mono font-black text-sm ${
-                            isWithdraw ? 'text-rose-400' : 'text-emerald-400'
-                          }`}>
-                            {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
-                          </span>
-                          <span className="text-[10px] text-slate-500 block uppercase">
-                            {isWithdraw ? 'Debited' : 'Verified'}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: FLEET & GOALS */}
+          {/* TAB 3: GOALS (Exact style of devices & people in image) */}
           {activeTab === 'goals' && (
             <div className="space-y-6">
               
-              {/* Top Goal Selectors (Terminal Style) */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold uppercase tracking-widest text-slate-400">Active Aircraft & Fleet Goals ({goals.length})</span>
-                  <button onClick={() => setIsAddGoalOpen(true)} className="text-sky-400 font-bold hover:underline">
-                    + Deploy Fleet Target
-                  </button>
+              {/* Header section with pills */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h1 className="text-2xl font-black text-[#1A1A18] tracking-tight">Devices & Goals</h1>
+                  <p className="text-xs font-semibold text-slate-500">Active FinNest targets ({goals.length})</p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {goals.map((g) => {
-                    const isSelected = g.id === selectedGoalId;
-                    const gTxs = txStore[g.id] || [];
-                    let gSaved = 0;
-                    gTxs.forEach((t) => { gSaved += (t.action === 'withdraw' ? -t.amount : t.amount); });
-                    gSaved = Math.max(0, gSaved);
-                    const gPct = Math.min(100, Math.round((gSaved / g.targetAmount) * 100));
-
-                    const gStart = new Date(g.startDate || today);
-                    const gTarget = new Date(g.targetDate);
-                    const gTotalDays = Math.max(1, Math.floor((gTarget - gStart) / (1000 * 60 * 60 * 24)));
-                    const gElapsed = Math.max(0, Math.floor((today - gStart) / (1000 * 60 * 60 * 24)));
-                    const gExpected = Math.round(g.targetAmount * Math.min(1, gElapsed / gTotalDays));
-                    const gDailyPace = Math.max(1, Math.round(g.targetAmount / gTotalDays));
-                    
-                    const isDelayed = gSaved < (gExpected - 20) && gSaved < g.targetAmount;
-                    const sidebarDaysGap = Math.max(1, Math.round(Math.abs(gSaved - gExpected) / gDailyPace));
-                    const GoalIcon = ICON_MAP[g.category] || Plane;
-
-                    return (
-                      <div
-                        key={g.id}
-                        onClick={() => setSelectedGoalId(g.id)}
-                        className={`terminal-panel p-4 rounded-xl border cursor-pointer transition ${
-                          isSelected 
-                            ? 'border-sky-400 bg-sky-950/20 shadow-lg shadow-sky-500/10' 
-                            : 'border-slate-800 hover:border-slate-700'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-2">
-                            <GoalIcon className="w-4 h-4 text-sky-400" />
-                            <span className="text-[10px] uppercase font-bold text-sky-300 bg-sky-950 px-2 py-0.5 rounded border border-sky-800/60">
-                              {g.badge || 'Fleet'}
-                            </span>
-                          </div>
-                          <span className="font-mono font-black text-emerald-400">{gPct}%</span>
-                        </div>
-
-                        <h3 className="text-sm font-black text-white mt-2 tracking-wide">{g.name}</h3>
-
-                        <div className="flex items-center justify-between text-xs mt-1 font-mono">
-                          <span className="text-slate-300">₹{gSaved.toLocaleString()} <span className="text-slate-500">/ ₹{g.targetAmount.toLocaleString()}</span></span>
-                          {isDelayed && (
-                            <span className="text-[10px] font-bold text-rose-400 bg-rose-950/80 px-1.5 py-0.5 rounded border border-rose-800/60">
-                              -{sidebarDaysGap}d delay
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2.5">
-                          <div className="h-full bg-sky-400 rounded-full" style={{ width: `${gPct}%` }} />
-                        </div>
-                      </div>
-                    );
-                  })}
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-[#1A1A18] text-[#FEF6D8]">
+                    {goals.length} active
+                  </span>
+                  <button 
+                    onClick={() => setIsAddGoalOpen(true)}
+                    className="text-xs font-bold px-3.5 py-1.5 rounded-full butter-card hover:bg-white text-[#1A1A18] transition"
+                  >
+                    + New Target
+                  </button>
                 </div>
               </div>
 
-              {/* Active Fleet Goal Command Deck */}
+              {/* Goals Cards Horizontal / Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {goals.map((g) => {
+                  const isSelected = g.id === selectedGoalId;
+                  const gTxs = txStore[g.id] || [];
+                  let gSaved = 0;
+                  gTxs.forEach((t) => { gSaved += (t.action === 'withdraw' ? -t.amount : t.amount); });
+                  gSaved = Math.max(0, gSaved);
+                  const gPct = Math.min(100, Math.round((gSaved / g.targetAmount) * 100));
+
+                  const gStart = new Date(g.startDate || today);
+                  const gTarget = new Date(g.targetDate);
+                  const gTotalDays = Math.max(1, Math.floor((gTarget - gStart) / (1000 * 60 * 60 * 24)));
+                  const gElapsed = Math.max(0, Math.floor((today - gStart) / (1000 * 60 * 60 * 24)));
+                  const gExpected = Math.round(g.targetAmount * Math.min(1, gElapsed / gTotalDays));
+                  const gDailyPace = Math.max(1, Math.round(g.targetAmount / gTotalDays));
+                  
+                  const isDelayed = gSaved < (gExpected - 20) && gSaved < g.targetAmount;
+                  const sidebarDaysGap = Math.max(1, Math.round(Math.abs(gSaved - gExpected) / gDailyPace));
+                  const GoalIcon = ICON_MAP[g.category] || Target;
+
+                  return (
+                    <div
+                      key={g.id}
+                      onClick={() => setSelectedGoalId(g.id)}
+                      className={`p-4 rounded-3xl border transition-all cursor-pointer ${
+                        isSelected 
+                          ? 'butter-highlight-card shadow-md ring-2 ring-[#1A1A18]' 
+                          : 'butter-card hover:bg-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-xl bg-[#1A1A18] text-[#FEF6D8] flex items-center justify-center">
+                            <GoalIcon className="w-4 h-4" />
+                          </div>
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-600">
+                            {g.badge || 'Goal'}
+                          </span>
+                        </div>
+                        <span className="text-xs font-mono font-black text-[#1A1A18]">{gPct}%</span>
+                      </div>
+
+                      <h3 className="text-base font-black text-[#1A1A18] mt-2">{g.name}</h3>
+
+                      <div className="flex items-center justify-between text-xs mt-1">
+                        <span className="font-semibold text-slate-700">
+                          ₹{gSaved.toLocaleString()} <span className="text-slate-400 font-normal">/ ₹{g.targetAmount.toLocaleString()}</span>
+                        </span>
+                        {isDelayed && (
+                          <span className="text-[10px] font-mono font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full">
+                            -{sidebarDaysGap}d delay
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="w-full bg-[#EAE4D6] h-1.5 rounded-full overflow-hidden mt-3">
+                        <div className="h-full bg-[#1A1A18] rounded-full" style={{ width: `${gPct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Selected Goal Command Card (Yellow style from Katy Fuller card in image) */}
               {activeGoal && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
                   
-                  {/* Left Console */}
+                  {/* Left Column */}
                   <div className="lg:col-span-7 space-y-4">
-                    <div className="terminal-panel rounded-xl p-5 border border-slate-800 space-y-4">
+                    <div className="butter-highlight-card rounded-3xl p-5 sm:p-6 space-y-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-11 h-11 rounded-xl bg-sky-500/20 border border-sky-400/40 text-sky-400 flex items-center justify-center">
+                          <div className="w-12 h-12 rounded-2xl bg-[#1A1A18] text-[#FEF6D8] flex items-center justify-center shadow-md">
                             <ActiveIcon className="w-6 h-6" />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h2 className="text-lg font-black text-white tracking-wide">{activeGoal.name}</h2>
-                              <span className="text-[9px] uppercase font-bold text-sky-300 bg-sky-950 px-2 py-0.5 rounded border border-sky-800/60">
+                              <h2 className="text-xl sm:text-2xl font-black text-[#1A1A18] tracking-tight">{activeGoal.name}</h2>
+                              <span className="text-[9px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-[#1A1A18] text-[#FEF6D8]">
                                 {activeGoal.badge}
                               </span>
                             </div>
-                            <p className="text-xs text-slate-400 font-mono mt-0.5">
-                              Cap Ceiling: ₹{activeGoal.targetAmount.toLocaleString()}
+                            <p className="text-xs font-semibold text-slate-600 mt-0.5">
+                              Cap Target: ₹{activeGoal.targetAmount.toLocaleString()}
                             </p>
                           </div>
                         </div>
@@ -1190,14 +1090,14 @@ export default function App() {
                         <div className="flex items-center gap-1">
                           <button 
                             onClick={handleOpenEditGoal} 
-                            className="p-2 text-slate-400 hover:text-sky-400 hover:bg-slate-800 rounded-lg transition"
-                            title="Extend Timeline"
+                            className="p-2 text-slate-600 hover:text-black hover:bg-white/60 rounded-xl transition"
+                            title="Extend Timeline / Modify Goal"
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
                           <button 
                             onClick={() => handleDeleteGoal(activeGoal.id)} 
-                            className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition"
+                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-white/60 rounded-xl transition"
                             title="Delete"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1205,23 +1105,23 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* Flight Horizon Date Box */}
-                      <div className="bg-[#070A12] border border-slate-800 rounded-xl p-3 flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2 text-slate-300 font-mono text-[11px]">
-                          <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                      {/* Date Box */}
+                      <div className="bg-white/80 border border-[#EADBCC] rounded-2xl p-3 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2 text-slate-700 font-semibold text-[11px]">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
                           <span>{activeGoal.startDate}</span>
-                          <ArrowRight className="w-3 h-3 text-sky-400" />
+                          <ArrowRight className="w-3 h-3 text-slate-400" />
                           <span>{activeGoal.targetDate}</span>
                         </div>
                         <button
                           onClick={handleOpenEditGoal}
-                          className="text-[11px] font-bold text-sky-400 bg-sky-950/80 border border-sky-800/60 px-2.5 py-0.5 rounded transition hover:bg-sky-900/60"
+                          className="text-[11px] font-bold text-[#1A1A18] bg-[#FAF9F5] border border-[#EADBCC] hover:bg-white px-2.5 py-1 rounded-xl transition"
                         >
                           {daysLeft}d left (Extend ➔)
                         </button>
                       </div>
 
-                      {/* Control Buttons */}
+                      {/* Action Buttons */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <button
                           onClick={() => {
@@ -1229,9 +1129,9 @@ export default function App() {
                             setTransferNote('');
                             setIsTransferModalOpen(true);
                           }}
-                          className="bg-slate-900 hover:bg-slate-800 text-sky-400 border border-slate-700 font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95"
+                          className="bg-white border border-[#EADBCC] hover:bg-[#FAF9F5] text-[#1A1A18] font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 transition active:scale-98"
                         >
-                          <ArrowLeftRight className="w-3.5 h-3.5" /> Shift Funds
+                          <ArrowLeftRight className="w-3.5 h-3.5" /> Shift Cash
                         </button>
 
                         {eligibleTargetGoals.length > 0 && (
@@ -1242,9 +1142,9 @@ export default function App() {
                               setGoalTransferNote('');
                               setIsGoalTransferModalOpen(true);
                             }}
-                            className="bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-400 border border-emerald-800/60 font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95"
+                            className="bg-white border border-[#EADBCC] hover:bg-[#FAF9F5] text-[#1A1A18] font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 transition active:scale-98"
                           >
-                            <Share2 className="w-3.5 h-3.5" /> Reallocate
+                            <Share2 className="w-3.5 h-3.5" /> Shift to Goal
                           </button>
                         )}
 
@@ -1255,118 +1155,114 @@ export default function App() {
                             setNote('');
                             setIsTxModalOpen(true);
                           }}
-                          className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95 shadow-md shadow-sky-500/20"
+                          className={`bg-[#1A1A18] hover:bg-black text-[#FEF6D8] font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 transition active:scale-98 shadow-sm ${
+                            eligibleTargetGoals.length === 0 ? 'sm:col-span-2' : ''
+                          }`}
                         >
                           <Plus className="w-3.5 h-3.5" /> Add / Withdraw
                         </button>
                       </div>
                     </div>
 
-                    {/* Schedule Velocity Status */}
-                    <div className={`p-4 rounded-xl border flex flex-col gap-1.5 ${
+                    {/* Schedule Velocity Card */}
+                    <div className={`p-4 rounded-2xl border flex flex-col gap-1.5 ${
                       trajectoryStatus === 'delay' 
-                        ? 'bg-rose-950/40 border-rose-900/60 text-rose-300' 
-                        : 'bg-emerald-950/40 border-emerald-900/60 text-emerald-300'
+                        ? 'bg-rose-50 border-rose-200 text-rose-900' 
+                        : 'bg-[#FEF6D8] border-[#F6E6AA] text-[#1A1A18]'
                     }`}>
                       <div className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
-                          <AlertCircle className="w-4 h-4 text-sky-400" />
-                          <span className="font-black uppercase tracking-wider">CORRIDOR SCHEDULE VELOCITY</span>
+                          <AlertCircle className="w-4 h-4 text-slate-700" />
+                          <span className="font-black uppercase tracking-wider">Schedule Status</span>
                         </div>
-                        <span className={`text-[10px] font-black px-2 py-0.5 rounded ${
-                          trajectoryStatus === 'delay' ? 'bg-rose-900/90 text-rose-200' : 'bg-emerald-900/90 text-emerald-200'
+                        <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
+                          trajectoryStatus === 'delay' ? 'bg-rose-600 text-white' : 'bg-[#1A1A18] text-[#FEF6D8]'
                         }`}>
                           {trajectoryStatus === 'delay' ? `-${daysDifference}d Behind (-₹${varianceAmount.toLocaleString()})` : 'On Track'}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 font-mono">
-                        Deficit: {daysDifference} days. Target required rate: ₹{requiredPace}/day.
+                      <p className="text-xs font-semibold leading-snug">
+                        Schedule lag: {daysDifference} days. Suggested daily rate: ₹{requiredPace}/day.
                         {trajectoryStatus === 'delay' && (
-                          <span onClick={handleOpenEditGoal} className="ml-1 text-sky-400 underline font-bold cursor-pointer">
-                            Extend arrival date?
+                          <span onClick={handleOpenEditGoal} className="ml-1 underline font-bold cursor-pointer">
+                            Extend target date?
                           </span>
                         )}
                       </p>
                     </div>
 
-                    {/* Progress Bar & Sub-allocations */}
-                    <div className="terminal-panel rounded-xl p-5 border border-slate-800 space-y-3">
+                    {/* Total Saved & Sub-Accounts */}
+                    <div className="butter-card rounded-3xl p-5 space-y-3">
                       <div className="flex items-baseline justify-between">
                         <div>
-                          <span className="text-[10px] text-slate-500 uppercase font-bold block">SAVED FLEET CAPITAL</span>
-                          <span className="text-3xl font-black text-white font-mono">₹{totalSaved.toLocaleString()}</span>
+                          <span className="text-[10px] text-slate-400 uppercase font-bold block">SAVED CAPITAL</span>
+                          <span className="text-3xl font-black text-[#1A1A18]">₹{totalSaved.toLocaleString()}</span>
                         </div>
-                        <div className="text-right font-mono">
-                          <span className="text-xl font-black text-emerald-400">{percentage}%</span>
-                          <span className="text-[11px] text-slate-500 block">₹{remainingNeeded.toLocaleString()} remaining</span>
+                        <div className="text-right">
+                          <span className="text-2xl font-black text-[#1A1A18]">{percentage}%</span>
+                          <span className="text-[11px] text-slate-400 block font-medium">₹{remainingNeeded.toLocaleString()} remaining</span>
                         </div>
                       </div>
 
-                      <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-sky-400 rounded-full" style={{ width: `${percentage}%` }} />
+                      <div className="h-2 w-full bg-[#EAE4D6] rounded-full overflow-hidden">
+                        <div className="h-full bg-[#1A1A18] rounded-full" style={{ width: `${percentage}%` }} />
                       </div>
 
-                      <div className="flex items-center gap-2 pt-2 text-xs font-mono">
-                        <div className="bg-[#070A12] border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-emerald-400">
-                          <Banknote className="w-3.5 h-3.5" /> Physical Cash: ₹{totalCash.toLocaleString()}
+                      <div className="flex items-center gap-2 pt-2 text-xs">
+                        <div className="bg-[#FAF9F5] border border-[#E6DEC8] px-3 py-1.5 rounded-xl font-bold">
+                          Cash Stash: ₹{totalCash.toLocaleString()}
                         </div>
-                        <div className="bg-[#070A12] border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-sky-400">
-                          <Smartphone className="w-3.5 h-3.5" /> Online/Bank: ₹{totalOnline.toLocaleString()}
+                        <div className="bg-[#FAF9F5] border border-[#E6DEC8] px-3 py-1.5 rounded-xl font-bold">
+                          Bank Account: ₹{totalOnline.toLocaleString()}
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Right Console */}
+                  {/* Right Column: Pace & History */}
                   <div className="lg:col-span-5 space-y-4">
                     
-                    {/* Pace & Timeline Metric Tile */}
-                    <div className="terminal-panel rounded-xl p-5 border border-slate-800 space-y-4">
-                      <div className="flex items-center gap-2 text-xs font-bold text-sky-400 border-b border-slate-800 pb-2">
-                        <Activity className="w-4 h-4" /> PACE & HORIZON TELEMETRY
+                    {/* Security / Pace Status (Circular style from 3rd card in image) */}
+                    <div className="butter-card rounded-3xl p-5 space-y-4 text-center">
+                      <h3 className="text-sm font-black text-[#1A1A18]">Target Pace Horizon</h3>
+
+                      <div className="w-28 h-28 rounded-full border-8 border-[#FEF6D8] border-t-[#1A1A18] flex flex-col items-center justify-center mx-auto my-2">
+                        <span className="text-xl font-black text-[#1A1A18]">{percentage}%</span>
+                        <span className="text-[9px] text-slate-400 font-bold uppercase">Saved</span>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 font-mono">
-                        <div className="bg-[#070A12] border border-slate-800 p-3 rounded-xl space-y-1">
-                          <span className="text-[9px] text-slate-500 uppercase font-bold block">DAILY VELOCITY</span>
-                          <p className="text-lg font-black text-sky-400">₹{requiredPace}<span className="text-xs text-slate-500 font-normal">/d</span></p>
+                      <div className="grid grid-cols-2 gap-2 text-left pt-2 border-t border-[#EAE4D6]">
+                        <div className="bg-[#FAF9F5] p-2.5 rounded-xl border border-[#E6DEC8]">
+                          <span className="text-[9px] text-slate-400 font-bold uppercase block">DAILY PACE</span>
+                          <p className="text-base font-black text-[#1A1A18]">₹{requiredPace}/d</p>
                         </div>
-                        <div className="bg-[#070A12] border border-slate-800 p-3 rounded-xl space-y-1">
-                          <span className="text-[9px] text-slate-500 uppercase font-bold block">TIME REMAINING</span>
-                          <p className="text-lg font-black text-white">{daysLeft} <span className="text-xs text-slate-500 font-normal">days</span></p>
+                        <div className="bg-[#FAF9F5] p-2.5 rounded-xl border border-[#E6DEC8]">
+                          <span className="text-[9px] text-slate-400 font-bold uppercase block">REMAINING</span>
+                          <p className="text-base font-black text-[#1A1A18]">{daysLeft} days</p>
                         </div>
-                      </div>
-
-                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs">
-                        <span className="text-slate-400">Flight Telemetry Status:</span>
-                        <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                          trajectoryStatus === 'delay' ? 'bg-rose-950 text-rose-300' : 'bg-emerald-950 text-emerald-300'
-                        }`}>
-                          {trajectoryStatus === 'delay' ? 'NEEDS ATTENTION' : 'HEALTHY'}
-                        </span>
                       </div>
                     </div>
 
-                    {/* Goal-Specific Transaction Records */}
-                    <div className="terminal-panel rounded-xl p-5 border border-slate-800 space-y-3">
-                      <div className="flex items-center justify-between border-b border-slate-800 pb-2 text-xs">
-                        <span className="font-bold text-white uppercase tracking-wider">Recent Route Activity</span>
-                        <span className="text-[10px] text-sky-400">{currentTxs.length} records</span>
+                    {/* Transaction Stream Card */}
+                    <div className="butter-card rounded-3xl p-5 space-y-3">
+                      <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-2 text-xs">
+                        <span className="font-bold text-[#1A1A18] uppercase tracking-wider">Recent Activity</span>
+                        <span className="text-[10px] text-slate-400">{currentTxs.length} items</span>
                       </div>
 
-                      <div className="divide-y divide-slate-800 max-h-64 overflow-y-auto">
+                      <div className="divide-y divide-[#EAE4D6] max-h-56 overflow-y-auto">
                         {currentTxs.length === 0 ? (
-                          <p className="text-xs text-slate-500 py-4 text-center font-mono">No entries logged on this route.</p>
+                          <p className="text-xs text-slate-400 py-4 text-center">No transactions recorded for this goal.</p>
                         ) : (
                           currentTxs.slice(0, 5).map((tx) => {
                             const isWithdraw = tx.action === 'withdraw';
                             return (
-                              <div key={tx.id} className="py-2.5 flex items-center justify-between text-xs font-mono">
+                              <div key={tx.id} className="py-2.5 flex items-center justify-between text-xs">
                                 <div>
-                                  <p className="text-white font-bold">{tx.note || 'Flight Entry'}</p>
-                                  <p className="text-[10px] text-slate-500">{tx.type.toUpperCase()} • {tx.date}</p>
+                                  <p className="font-bold text-[#1A1A18]">{tx.note || 'Savings Entry'}</p>
+                                  <p className="text-[10px] text-slate-400">{tx.type} • {tx.date}</p>
                                 </div>
-                                <span className={`font-black ${isWithdraw ? 'text-rose-400' : 'text-emerald-400'}`}>
+                                <span className={`font-mono font-bold ${isWithdraw ? 'text-rose-600' : 'text-[#1A1A18]'}`}>
                                   {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
                                 </span>
                               </div>
@@ -1382,39 +1278,40 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 4: SYSTEM CONFIG */}
+          {/* TAB 4: SETTINGS */}
           {activeTab === 'settings' && (
-            <div className="space-y-5 max-w-lg mx-auto font-mono">
-              <div className="border-b border-slate-800 pb-3">
-                <h1 className="text-xl font-black text-white tracking-widest uppercase">System Operations Config</h1>
-                <p className="text-xs text-slate-400">Terminal callsign and master reset controls.</p>
+            <div className="space-y-5 max-w-lg mx-auto">
+              <div>
+                <h1 className="text-2xl font-black text-[#1A1A18] tracking-tight">Vault Settings</h1>
+                <p className="text-xs text-slate-500">Callsign and master reset controls.</p>
               </div>
 
-              <div className="terminal-panel rounded-xl p-5 border border-slate-800 space-y-3">
-                <span className="text-xs text-slate-500 uppercase font-bold block">ACTIVE CALLSIGN</span>
-                <p className="text-white font-bold text-sm">{user.email}</p>
+              <div className="butter-card rounded-3xl p-5 space-y-3">
+                <span className="text-xs font-bold uppercase text-slate-400 block">ACTIVE USER</span>
+                <p className="text-base font-black text-[#1A1A18]">{user.email}</p>
 
                 <button
                   onClick={() => supabase.auth.signOut()}
-                  className="w-full mt-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs py-2.5 rounded-xl transition"
+                  className="w-full mt-2 bg-[#FAF9F5] hover:bg-[#EAE4D6] text-slate-700 font-bold text-xs py-3 rounded-2xl transition border border-[#E0D8C3]"
                 >
-                  Terminate Callsign Session
+                  Sign Out of FinNest
                 </button>
               </div>
 
-              <div className="terminal-panel rounded-xl p-5 border border-rose-900/60 bg-rose-950/20 space-y-3">
-                <span className="text-xs text-rose-400 uppercase font-bold block flex items-center gap-1.5">
-                  <AlertCircle className="w-4 h-4 text-rose-500" /> MASTER PURGE PROTOCOL
-                </span>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Purging all telemetry will wipe all active aircraft goals, ledger logs, and reserve capital.
+              <div className="butter-card border-rose-200 rounded-3xl p-5 space-y-3">
+                <div className="flex items-center gap-2 text-rose-700">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span className="text-xs font-bold uppercase tracking-wider">Danger Zone</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Resetting all data will permanently delete all goals, device savings, and transaction history.
                 </p>
 
                 <button
                   onClick={() => { setResetInput(''); setIsResetModalOpen(true); }}
-                  className="w-full bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-700 font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-2"
+                  className="w-full bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs py-3 rounded-2xl transition flex items-center justify-center gap-2"
                 >
-                  <RotateCcw className="w-4 h-4" /> Execute Master Purge
+                  <RotateCcw className="w-4 h-4" /> Reset All Data
                 </button>
               </div>
             </div>
@@ -1423,74 +1320,82 @@ export default function App() {
         </div>
       </div>
 
-      {/* MOBILE BOTTOM NAVIGATION DOCK */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 terminal-panel border-t border-slate-800 px-6 py-2 z-40 font-mono">
-        <div className="max-w-md mx-auto flex items-center justify-between text-xs">
+      {/* MOBILE BOTTOM NAVIGATION */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 butter-card border-t border-[#E6DEC8] px-6 py-2 z-40">
+        <div className="max-w-md mx-auto flex items-center justify-between text-xs font-bold">
           <button
             onClick={() => setActiveTab('home')}
-            className={`flex flex-col items-center gap-1 ${activeTab === 'home' ? 'text-sky-400' : 'text-slate-500'}`}
+            className={`flex flex-col items-center gap-1 ${activeTab === 'home' ? 'text-[#1A1A18]' : 'text-slate-400'}`}
           >
-            <HomeIcon className="w-5 h-5" />
+            <div className={`p-1.5 rounded-full ${activeTab === 'home' ? 'bg-[#FEF6D8]' : ''}`}>
+              <HomeIcon className="w-5 h-5" />
+            </div>
             <span className="text-[10px]">Home</span>
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`flex flex-col items-center gap-1 ${activeTab === 'history' ? 'text-sky-400' : 'text-slate-500'}`}
+            className={`flex flex-col items-center gap-1 ${activeTab === 'history' ? 'text-[#1A1A18]' : 'text-slate-400'}`}
           >
-            <History className="w-5 h-5" />
-            <span className="text-[10px]">Ledger</span>
+            <div className={`p-1.5 rounded-full ${activeTab === 'history' ? 'bg-[#FEF6D8]' : ''}`}>
+              <History className="w-5 h-5" />
+            </div>
+            <span className="text-[10px]">History</span>
           </button>
           <button
             onClick={() => setActiveTab('goals')}
-            className={`flex flex-col items-center gap-1 ${activeTab === 'goals' ? 'text-sky-400' : 'text-slate-500'}`}
+            className={`flex flex-col items-center gap-1 ${activeTab === 'goals' ? 'text-[#1A1A18]' : 'text-slate-400'}`}
           >
-            <Target className="w-5 h-5" />
-            <span className="text-[10px]">Fleet</span>
+            <div className={`p-1.5 rounded-full ${activeTab === 'goals' ? 'bg-[#FEF6D8]' : ''}`}>
+              <Target className="w-5 h-5" />
+            </div>
+            <span className="text-[10px]">Goals</span>
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex flex-col items-center gap-1 ${activeTab === 'settings' ? 'text-sky-400' : 'text-slate-500'}`}
+            className={`flex flex-col items-center gap-1 ${activeTab === 'settings' ? 'text-[#1A1A18]' : 'text-slate-400'}`}
           >
-            <Settings className="w-5 h-5" />
-            <span className="text-[10px]">Config</span>
+            <div className={`p-1.5 rounded-full ${activeTab === 'settings' ? 'bg-[#FEF6D8]' : ''}`}>
+              <Settings className="w-5 h-5" />
+            </div>
+            <span className="text-[10px]">Settings</span>
           </button>
         </div>
       </nav>
 
       {/* 1. TRANSACTION KEYPAD MODAL */}
       {isTxModalOpen && activeGoal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 font-mono">
-          <div className="relative w-full max-w-sm terminal-panel terminal-panel-glow rounded-t-2xl sm:rounded-2xl p-5 animate-terminal-up max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-3">
-              <div className="flex-1 bg-[#070A12] p-1 rounded-lg flex border border-slate-800">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
+              <div className="flex-1 bg-[#FAF9F5] p-1 rounded-2xl flex border border-[#EADBCC]">
                 <button
                   type="button"
                   onClick={() => setActionType('deposit')}
-                  className={`flex-1 py-1.5 text-xs font-bold rounded transition ${
-                    actionType === 'deposit' ? 'bg-sky-500 text-slate-950' : 'text-slate-400'
+                  className={`flex-1 py-1.5 text-xs font-bold rounded-xl transition ${
+                    actionType === 'deposit' ? 'bg-[#1A1A18] text-[#FEF6D8]' : 'text-slate-600'
                   }`}
                 >
-                  DEPOSIT (+)
+                  Deposit (+)
                 </button>
                 <button
                   type="button"
                   onClick={() => setActionType('withdraw')}
-                  className={`flex-1 py-1.5 text-xs font-bold rounded transition ${
-                    actionType === 'withdraw' ? 'bg-rose-500 text-slate-950' : 'text-slate-400'
+                  className={`flex-1 py-1.5 text-xs font-bold rounded-xl transition ${
+                    actionType === 'withdraw' ? 'bg-rose-600 text-white' : 'text-slate-600'
                   }`}
                 >
-                  WITHDRAW (−)
+                  Withdraw (−)
                 </button>
               </div>
-              <button onClick={() => setIsTxModalOpen(false)} className="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center">
+              <button onClick={() => setIsTxModalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-slate-500 flex items-center justify-center ml-2">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="bg-[#070A12] border border-slate-800 rounded-xl p-3 text-center mt-3">
-              <span className="text-[10px] text-slate-500 uppercase font-bold block">{activeGoal.name}</span>
-              <div className="text-2xl font-black text-white mt-1">
-                <span className="text-sky-400 mr-1">₹</span>{amountStr ? Number(amountStr).toLocaleString() : '0'}
+            <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-4 text-center mt-3">
+              <span className="text-[10px] text-slate-400 uppercase font-bold block">{activeGoal.name}</span>
+              <div className="text-2xl font-black text-[#1A1A18] mt-1">
+                <span className="text-slate-400 mr-1">₹</span>{amountStr ? Number(amountStr).toLocaleString() : '0'}
               </div>
             </div>
 
@@ -1498,62 +1403,62 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setWalletType('online')}
-                className={`p-2.5 rounded-lg border text-left text-xs ${
-                  walletType === 'online' ? 'border-sky-400 bg-sky-950/40 text-sky-300' : 'border-slate-800 bg-[#070A12] text-slate-400'
+                className={`p-2.5 rounded-2xl border text-left text-xs ${
+                  walletType === 'online' ? 'border-[#1A1A18] bg-[#FEF6D8] font-bold' : 'border-[#EADBCC] bg-white text-slate-600'
                 }`}
               >
-                <span className="block font-bold">ONLINE</span>
-                <span className="text-[10px] text-slate-500">₹{totalOnline.toLocaleString()}</span>
+                <span className="block font-bold">Online</span>
+                <span className="text-[10px] text-slate-400">₹{totalOnline.toLocaleString()}</span>
               </button>
               <button
                 type="button"
                 onClick={() => setWalletType('cash')}
-                className={`p-2.5 rounded-lg border text-left text-xs ${
-                  walletType === 'cash' ? 'border-sky-400 bg-sky-950/40 text-sky-300' : 'border-slate-800 bg-[#070A12] text-slate-400'
+                className={`p-2.5 rounded-2xl border text-left text-xs ${
+                  walletType === 'cash' ? 'border-[#1A1A18] bg-[#FEF6D8] font-bold' : 'border-[#EADBCC] bg-white text-slate-600'
                 }`}
               >
-                <span className="block font-bold">CASH</span>
-                <span className="text-[10px] text-slate-500">₹{totalCash.toLocaleString()}</span>
+                <span className="block font-bold">Cash</span>
+                <span className="text-[10px] text-slate-400">₹{totalCash.toLocaleString()}</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 mt-3 text-sm font-black">
+            <div className="grid grid-cols-3 gap-2 mt-3 text-sm font-bold">
               {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
                 <button
                   key={digit}
                   type="button"
                   onClick={() => handleTxKeypad(digit)}
-                  className="h-11 bg-slate-900 border border-slate-800 rounded-lg hover:border-slate-700 text-white flex items-center justify-center active:scale-95"
+                  className="h-11 bg-white border border-[#EADBCC] rounded-2xl hover:bg-[#FAF9F5] text-[#1A1A18] flex items-center justify-center active:scale-95"
                 >
                   {digit}
                 </button>
               ))}
-              <button type="button" onClick={() => setAmountStr('')} className="h-11 bg-slate-900 border border-slate-800 rounded-lg text-slate-400 text-xs">
-                CLR
+              <button type="button" onClick={() => setAmountStr('')} className="h-11 bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl text-slate-500 text-xs">
+                Clear
               </button>
-              <button type="button" onClick={() => handleTxKeypad('0')} className="h-11 bg-slate-900 border border-slate-800 rounded-lg text-white">
+              <button type="button" onClick={() => handleTxKeypad('0')} className="h-11 bg-white border border-[#EADBCC] rounded-2xl text-[#1A1A18]">
                 0
               </button>
-              <button type="button" onClick={() => setAmountStr((prev) => prev.slice(0, -1))} className="h-11 bg-rose-950 border border-rose-900 rounded-lg text-rose-300 flex items-center justify-center">
+              <button type="button" onClick={() => setAmountStr((prev) => prev.slice(0, -1))} className="h-11 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 flex items-center justify-center">
                 <Delete className="w-4 h-4" />
               </button>
             </div>
 
             <input
               type="text"
-              placeholder="Flight memo (optional)"
+              placeholder="Memo note (optional)"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white mt-3 focus:outline-none focus:border-sky-400"
+              className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-4 py-2.5 text-xs text-[#1A1A18] mt-3 focus:outline-none focus:bg-white"
             />
 
             <button
               type="button"
               onClick={handleTransactionSubmit}
               disabled={!amountStr || Number(amountStr) <= 0}
-              className="w-full py-3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded-xl mt-3 transition disabled:opacity-40"
+              className="w-full py-3.5 bg-[#1A1A18] hover:bg-black text-[#FEF6D8] font-bold text-xs rounded-2xl mt-3 transition disabled:opacity-40"
             >
-              EXECUTE {actionType.toUpperCase()}
+              Confirm {actionType === 'deposit' ? 'Deposit' : 'Withdrawal'}
             </button>
           </div>
         </div>
@@ -1561,11 +1466,11 @@ export default function App() {
 
       {/* 2. CASH <-> BANK SHIFT MODAL */}
       {isTransferModalOpen && activeGoal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 font-mono">
-          <div className="relative w-full max-w-sm terminal-panel terminal-panel-glow rounded-t-2xl sm:rounded-2xl p-5 animate-terminal-up max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <span className="font-black text-sm text-white">SHIFT CAPITAL TYPE</span>
-              <button onClick={() => setIsTransferModalOpen(false)} className="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
+              <span className="font-black text-sm text-[#1A1A18]">Shift Vault Funds</span>
+              <button onClick={() => setIsTransferModalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-slate-500 flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -1574,51 +1479,51 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => { setTransferDirection('cash_to_bank'); setTransferAmountStr(''); }}
-                className={`p-2.5 rounded-lg border text-left text-xs ${
-                  transferDirection === 'cash_to_bank' ? 'border-sky-400 bg-sky-950/40 text-sky-300' : 'border-slate-800 bg-[#070A12] text-slate-400'
+                className={`p-2.5 rounded-2xl border text-left text-xs ${
+                  transferDirection === 'cash_to_bank' ? 'border-[#1A1A18] bg-[#FEF6D8]' : 'border-[#EADBCC] bg-white'
                 }`}
               >
-                <span className="block font-bold">CASH ➔ BANK</span>
-                <span className="text-[10px] text-slate-500">₹{totalCash.toLocaleString()}</span>
+                <span className="block font-bold">Cash ➔ Bank</span>
+                <span className="text-[10px] text-slate-400">Available: ₹{totalCash.toLocaleString()}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => { setTransferDirection('bank_to_cash'); setTransferAmountStr(''); }}
-                className={`p-2.5 rounded-lg border text-left text-xs ${
-                  transferDirection === 'bank_to_cash' ? 'border-sky-400 bg-sky-950/40 text-sky-300' : 'border-slate-800 bg-[#070A12] text-slate-400'
+                className={`p-2.5 rounded-2xl border text-left text-xs ${
+                  transferDirection === 'bank_to_cash' ? 'border-[#1A1A18] bg-[#FEF6D8]' : 'border-[#EADBCC] bg-white'
                 }`}
               >
-                <span className="block font-bold">BANK ➔ CASH</span>
-                <span className="text-[10px] text-slate-500">₹{totalOnline.toLocaleString()}</span>
+                <span className="block font-bold">Bank ➔ Cash</span>
+                <span className="text-[10px] text-slate-400">Available: ₹{totalOnline.toLocaleString()}</span>
               </button>
             </div>
 
-            <div className="bg-[#070A12] border border-slate-800 rounded-xl p-3 text-center mt-3">
-              <span className="text-[10px] text-slate-500 uppercase font-bold block">SUM TO CONVERT</span>
-              <div className="text-2xl font-black text-white mt-1">
-                <span className="text-sky-400 mr-1">₹</span>{transferAmountStr ? Number(transferAmountStr).toLocaleString() : '0'}
+            <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-3 text-center mt-3">
+              <span className="text-[10px] text-slate-400 uppercase font-bold block">SUM TO SHIFT</span>
+              <div className="text-2xl font-black text-[#1A1A18] mt-1">
+                <span className="text-slate-400 mr-1">₹</span>{transferAmountStr ? Number(transferAmountStr).toLocaleString() : '0'}
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 mt-3 text-sm font-black">
+            <div className="grid grid-cols-3 gap-2 mt-3 text-sm font-bold">
               {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
                 <button
                   key={digit}
                   type="button"
                   onClick={() => handleTransferKeypad(digit)}
-                  className="h-11 bg-slate-900 border border-slate-800 rounded-lg text-white flex items-center justify-center"
+                  className="h-11 bg-white border border-[#EADBCC] rounded-2xl text-[#1A1A18] flex items-center justify-center"
                 >
                   {digit}
                 </button>
               ))}
-              <button type="button" onClick={() => setTransferAmountStr('')} className="h-11 bg-slate-900 border border-slate-800 rounded-lg text-slate-400 text-xs">
-                CLR
+              <button type="button" onClick={() => setTransferAmountStr('')} className="h-11 bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl text-slate-500 text-xs">
+                Clear
               </button>
-              <button type="button" onClick={() => handleTransferKeypad('0')} className="h-11 bg-slate-900 border border-slate-800 rounded-lg text-white">
+              <button type="button" onClick={() => handleTransferKeypad('0')} className="h-11 bg-white border border-[#EADBCC] rounded-2xl text-[#1A1A18]">
                 0
               </button>
-              <button type="button" onClick={() => setTransferAmountStr((prev) => prev.slice(0, -1))} className="h-11 bg-rose-950 border border-rose-900 rounded-lg text-rose-300 flex items-center justify-center">
+              <button type="button" onClick={() => setTransferAmountStr((prev) => prev.slice(0, -1))} className="h-11 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 flex items-center justify-center">
                 <Delete className="w-4 h-4" />
               </button>
             </div>
@@ -1627,32 +1532,32 @@ export default function App() {
               type="button"
               onClick={handleTransferSubmit}
               disabled={!transferAmountStr || Number(transferAmountStr) <= 0}
-              className="w-full py-3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded-xl mt-3 transition disabled:opacity-40"
+              className="w-full py-3.5 bg-[#1A1A18] hover:bg-black text-[#FEF6D8] font-bold text-xs rounded-2xl mt-3 transition disabled:opacity-40"
             >
-              CONFIRM CAPITAL CONVERSION
+              Confirm Shift (₹{transferAmountStr ? Number(transferAmountStr).toLocaleString() : '0'})
             </button>
           </div>
         </div>
       )}
 
-      {/* 3. CROSS-GOAL REALLOCATION MODAL */}
+      {/* 3. CROSS-GOAL TRANSFER MODAL */}
       {isGoalTransferModalOpen && activeGoal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 font-mono">
-          <div className="relative w-full max-w-sm terminal-panel terminal-panel-glow rounded-t-2xl sm:rounded-2xl p-5 animate-terminal-up max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <span className="font-black text-sm text-white">INTER-FLEET REALLOCATION</span>
-              <button onClick={() => setIsGoalTransferModalOpen(false)} className="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
+              <span className="font-black text-sm text-[#1A1A18]">Shift to Other Goal</span>
+              <button onClick={() => setIsGoalTransferModalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-slate-500 flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleCrossGoalTransferSubmit} className="space-y-3 mt-3">
               <div>
-                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET CORRIDOR</label>
+                <label className="text-[10px] text-slate-500 uppercase font-bold block mb-1">DESTINATION GOAL</label>
                 <select
                   value={targetGoalId}
                   onChange={(e) => setTargetGoalId(e.target.value)}
-                  className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18] font-bold"
                   required
                 >
                   {eligibleTargetGoals.map((g) => (
@@ -1661,31 +1566,31 @@ export default function App() {
                 </select>
               </div>
 
-              <div className="bg-[#070A12] border border-slate-800 rounded-xl p-3 text-center">
-                <span className="text-[10px] text-slate-500 uppercase font-bold block">REALLOCATION SUM</span>
-                <div className="text-2xl font-black text-white mt-1">
-                  <span className="text-sky-400 mr-1">₹</span>{goalTransferAmountStr ? Number(goalTransferAmountStr).toLocaleString() : '0'}
+              <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-3 text-center">
+                <span className="text-[10px] text-slate-400 uppercase font-bold block">AMOUNT TO TRANSFER</span>
+                <div className="text-2xl font-black text-[#1A1A18] mt-1">
+                  <span className="text-slate-400 mr-1">₹</span>{goalTransferAmountStr ? Number(goalTransferAmountStr).toLocaleString() : '0'}
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 text-sm font-black">
+              <div className="grid grid-cols-3 gap-2 text-sm font-bold">
                 {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
                   <button
                     key={digit}
                     type="button"
                     onClick={() => handleGoalTransferKeypad(digit)}
-                    className="h-11 bg-slate-900 border border-slate-800 rounded-lg text-white flex items-center justify-center"
+                    className="h-11 bg-white border border-[#EADBCC] rounded-2xl text-[#1A1A18] flex items-center justify-center"
                   >
                     {digit}
                   </button>
                 ))}
-                <button type="button" onClick={() => setGoalTransferAmountStr('')} className="h-11 bg-slate-900 border border-slate-800 rounded-lg text-slate-400 text-xs">
-                  CLR
+                <button type="button" onClick={() => setGoalTransferAmountStr('')} className="h-11 bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl text-slate-500 text-xs">
+                  Clear
                 </button>
-                <button type="button" onClick={() => handleGoalTransferKeypad('0')} className="h-11 bg-slate-900 border border-slate-800 rounded-lg text-white">
+                <button type="button" onClick={() => handleGoalTransferKeypad('0')} className="h-11 bg-white border border-[#EADBCC] rounded-2xl text-[#1A1A18]">
                   0
                 </button>
-                <button type="button" onClick={() => setGoalTransferAmountStr((prev) => prev.slice(0, -1))} className="h-11 bg-rose-950 border border-rose-900 rounded-lg text-rose-300 flex items-center justify-center">
+                <button type="button" onClick={() => setGoalTransferAmountStr((prev) => prev.slice(0, -1))} className="h-11 bg-rose-50 border border-rose-200 rounded-2xl text-rose-600 flex items-center justify-center">
                   <Delete className="w-4 h-4" />
                 </button>
               </div>
@@ -1693,9 +1598,9 @@ export default function App() {
               <button
                 type="submit"
                 disabled={!goalTransferAmountStr || Number(goalTransferAmountStr) <= 0 || !targetGoalId}
-                className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl mt-3 transition disabled:opacity-40"
+                className="w-full py-3.5 bg-[#1A1A18] hover:bg-black text-[#FEF6D8] font-bold text-xs rounded-2xl mt-3 transition disabled:opacity-40"
               >
-                EXECUTE REALLOCATION
+                Execute Goal Transfer
               </button>
             </form>
           </div>
@@ -1704,36 +1609,59 @@ export default function App() {
 
       {/* 4. NEW GOAL CREATION MODAL */}
       {isAddGoalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 font-mono">
-          <div className="relative w-full max-w-sm terminal-panel terminal-panel-glow rounded-t-2xl sm:rounded-2xl p-5 animate-terminal-up max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <span className="font-black text-sm text-white">DEPLOY NEW FLEET TARGET</span>
-              <button onClick={() => setIsAddGoalOpen(false)} className="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
+              <span className="font-black text-sm text-[#1A1A18]">Create New Target</span>
+              <button onClick={() => setIsAddGoalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-slate-500 flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleCreateGoal} className="space-y-3 mt-3">
               <div>
-                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">CALLSIGN / TITLE</label>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">CATEGORY</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {CATEGORY_PRESETS.map((cat) => {
+                    const CatIcon = cat.icon;
+                    const isSelected = newGoalCategory === cat.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setNewGoalCategory(cat.id)}
+                        className={`p-2.5 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1 ${
+                          isSelected ? 'bg-[#1A1A18] text-[#FEF6D8] border-[#1A1A18]' : 'bg-[#FAF9F5] text-slate-600 border-[#EADBCC]'
+                        }`}
+                      >
+                        <CatIcon className="w-4 h-4" />
+                        <span className="text-[10px] font-bold">{cat.label.split(' ')[0]}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET TITLE</label>
                 <input
                   type="text"
-                  placeholder="e.g. Boeing 787 Fleet, New Route"
+                  placeholder="e.g. MacBook Air M2, Bali Trip"
                   value={newGoalName}
                   onChange={(e) => setNewGoalName(e.target.value)}
-                  className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18]"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">CAPITAL TARGET (₹)</label>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET CAPITAL (₹)</label>
                 <input
                   type="number"
-                  placeholder="e.g. 1500000"
+                  placeholder="e.g. 120000"
                   value={newGoalAmount}
                   onChange={(e) => setNewGoalAmount(e.target.value)}
-                  className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18]"
                   required
                 />
               </div>
@@ -1745,17 +1673,17 @@ export default function App() {
                     type="date"
                     value={newGoalStartDate}
                     onChange={(e) => setNewGoalStartDate(e.target.value)}
-                    className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-white"
+                    className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-2 py-2 text-xs text-[#1A1A18]"
                     required
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">ARRIVAL DATE</label>
+                  <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET END DATE</label>
                   <input
                     type="date"
                     value={newGoalDate}
                     onChange={(e) => setNewGoalDate(e.target.value)}
-                    className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-white"
+                    className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-2 py-2 text-xs text-[#1A1A18]"
                     required
                   />
                 </div>
@@ -1763,9 +1691,9 @@ export default function App() {
 
               <button
                 type="submit"
-                className="w-full py-3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded-xl mt-2 transition"
+                className="w-full py-3.5 bg-[#1A1A18] hover:bg-black text-[#FEF6D8] font-bold text-xs rounded-2xl mt-2 transition"
               >
-                INITIALIZE FLEET CORRIDOR
+                Initiate Goal
               </button>
             </form>
           </div>
@@ -1774,34 +1702,34 @@ export default function App() {
 
       {/* 5. EXTEND TIMELINE / EDIT MODAL */}
       {isEditGoalOpen && activeGoal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 font-mono">
-          <div className="relative w-full max-w-sm terminal-panel terminal-panel-glow rounded-t-2xl sm:rounded-2xl p-5 animate-terminal-up max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <span className="font-black text-sm text-white">MODIFY CORRIDOR TELEMETRY</span>
-              <button onClick={() => setIsEditGoalOpen(false)} className="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
+              <span className="font-black text-sm text-[#1A1A18]">Extend Timeline / Modify Goal</span>
+              <button onClick={() => setIsEditGoalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-slate-500 flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleSaveGoalChanges} className="space-y-3 mt-3">
               <div>
-                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">GOAL NAME</label>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TITLE</label>
                 <input
                   type="text"
                   value={editGoalName}
                   onChange={(e) => setEditGoalName(e.target.value)}
-                  className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18]"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET CAPITAL (₹)</label>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET AMOUNT (₹)</label>
                 <input
                   type="number"
                   value={editGoalAmount}
                   onChange={(e) => setEditGoalAmount(e.target.value)}
-                  className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18]"
                   required
                 />
               </div>
@@ -1812,7 +1740,7 @@ export default function App() {
                   type="date"
                   value={editGoalDate}
                   onChange={(e) => setEditGoalDate(e.target.value)}
-                  className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18]"
                   required
                 />
               </div>
@@ -1820,57 +1748,57 @@ export default function App() {
               <button
                 type="submit"
                 disabled={isSavingEdit}
-                className="w-full py-3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded-xl mt-2 transition"
+                className="w-full py-3.5 bg-[#1A1A18] hover:bg-black text-[#FEF6D8] font-bold text-xs rounded-2xl mt-2 transition"
               >
-                {isSavingEdit ? 'COMMITTING...' : 'SAVE MODIFIED TELEMETRY'}
+                {isSavingEdit ? 'Saving...' : 'Save Extended Timeline'}
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* 6. RESET ALL DATA CONFIRMATION MODAL */}
+      {/* 6. RESET ALL DATA MODAL */}
       {isResetModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 font-mono">
-          <div className="relative w-full max-w-sm terminal-panel border border-rose-600 rounded-t-2xl sm:rounded-2xl p-6 animate-terminal-up">
-            <div className="flex items-center justify-between border-b border-rose-900/60 pb-3 text-rose-400">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-butter-up">
+            <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3 text-rose-700">
               <span className="font-black text-sm uppercase flex items-center gap-1.5">
-                <AlertCircle className="w-4 h-4" /> MASTER PURGE PROTOCOL
+                <AlertCircle className="w-4 h-4" /> Reset All Data
               </span>
-              <button onClick={() => setIsResetModalOpen(false)} className="w-8 h-8 rounded-lg bg-rose-950 text-rose-300 flex items-center justify-center">
+              <button onClick={() => setIsResetModalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-slate-500 flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleResetAllData} className="mt-4 space-y-4 text-xs">
-              <p className="text-slate-300 leading-relaxed">
-                Confirming this action will <span className="text-rose-400 font-bold">permanently erase</span> all flight paths, targets, and ledger records.
+              <p className="text-slate-600 leading-relaxed font-medium">
+                This action is <span className="text-rose-700 font-bold">permanent</span>. All your goals, transaction sessions, and allocations will be wiped from FinNest.
               </p>
 
               <div>
-                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
-                  Type <span className="text-rose-400 font-bold">RESET</span> to confirm
+                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                  Type <span className="text-rose-700 font-black">RESET</span> to confirm
                 </label>
                 <input
                   type="text"
                   placeholder="RESET"
                   value={resetInput}
                   onChange={(e) => setResetInput(e.target.value)}
-                  className="w-full bg-[#070A12] border border-rose-900/80 rounded-xl px-3 py-2 text-white font-mono uppercase"
+                  className="w-full bg-[#FAF9F5] border border-rose-300 rounded-2xl px-4 py-2.5 text-[#1A1A18] font-bold uppercase focus:outline-none"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <button type="button" onClick={() => setIsResetModalOpen(false)} className="py-2.5 bg-slate-900 text-slate-400 font-bold rounded-xl">
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button type="button" onClick={() => setIsResetModalOpen(false)} className="py-2.5 bg-[#FAF9F5] text-slate-600 font-bold rounded-2xl">
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={resetInput.trim().toUpperCase() !== 'RESET' || isResetting}
-                  className="py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-black rounded-xl disabled:opacity-40"
+                  className="py-2.5 bg-rose-600 text-white font-bold rounded-2xl disabled:opacity-40"
                 >
-                  {isResetting ? 'Purging...' : 'Execute Wipe'}
+                  {isResetting ? 'Wiping...' : 'Confirm Reset'}
                 </button>
               </div>
             </form>
