@@ -40,7 +40,10 @@ import {
   SlidersHorizontal,
   Clock,
   CheckCircle2,
-  Archive
+  Archive,
+  Sun,
+  Sunrise,
+  Sunset
 } from 'lucide-react';
 
 function AnimatedNumber({ value, duration = 650, decimals = 0, prefix = '', suffix = '' }) {
@@ -360,6 +363,14 @@ export default function App() {
   }, [user]);
 
   const today = useMemo(() => new Date(), []);
+
+  // Real-time time of day greeting computation
+  const { greeting, TimeIcon } = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return { greeting: 'Good morning', TimeIcon: Sunrise };
+    if (hour < 17) return { greeting: 'Good afternoon', TimeIcon: Sun };
+    return { greeting: 'Good evening', TimeIcon: Sunset };
+  }, []);
 
   // Split active goals vs advance archived goals
   const { activeGoals, archivedGoals } = useMemo(() => {
@@ -786,7 +797,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#F6F4EE] text-[#1A1A18] flex flex-col md:flex-row pb-24 md:pb-0 font-sans">
       
-      {/* DESKTOP SIDEBAR */}
+      {/* DESKTOP SIDEBAR WITH ARCHIVE TAB */}
       <aside className="hidden md:flex flex-col w-64 butter-card border-r border-[#EADBCC] p-5 shrink-0 justify-between sticky top-0 h-screen z-20">
         <div className="space-y-6">
           <div className="flex items-center gap-3">
@@ -816,6 +827,15 @@ export default function App() {
               }`}
             >
               <Target className="w-4 h-4" /> Goals & Devices
+            </button>
+
+            <button
+              onClick={() => setActiveTab('archive')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl transition ${
+                activeTab === 'archive' ? 'bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA]' : 'text-[#706B5E] hover:bg-[#FAF9F5]'
+              }`}
+            >
+              <Archive className="w-4 h-4" /> Archive / Pre-Launch
             </button>
 
             <button
@@ -922,13 +942,18 @@ export default function App() {
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'home' && (
             <div className="space-y-6 max-w-2xl mx-auto">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-black text-[#1A1A18] tracking-tight">
-                  Good morning, {user.email?.split('@')[0] || 'Member'}
-                </h1>
-                <p className="text-xs sm:text-sm font-semibold text-[#706B5E] mt-0.5">
-                  FinNest Sanctuary overview of your capital and devices.
-                </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#FEF6D8] border border-[#F6E6AA] text-[#1A1A18] flex items-center justify-center shadow-xs">
+                  <TimeIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-black text-[#1A1A18] tracking-tight">
+                    {greeting}, {user.email?.split('@')[0] || 'Member'}
+                  </h1>
+                  <p className="text-xs sm:text-sm font-semibold text-[#706B5E] mt-0.5">
+                    FinNest Sanctuary overview of your capital and devices.
+                  </p>
+                </div>
               </div>
 
               {/* Total Vault Hero Bento Card */}
@@ -1064,7 +1089,72 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 3: GOALS (Bento Cards Grid) */}
+          {/* TAB 3: ARCHIVE / PRE-LAUNCH VAULT */}
+          {activeTab === 'archive' && (
+            <div className="space-y-5 max-w-3xl mx-auto">
+              <div>
+                <h1 className="text-2xl font-black text-[#1A1A18] tracking-tight">Archive & Pre-Launch Vault</h1>
+                <p className="text-xs font-semibold text-[#706B5E] mt-0.5">
+                  Goals created in advance that are waiting for their 5-day pre-launch activation window.
+                </p>
+              </div>
+
+              {archivedGoals.length === 0 ? (
+                <div className="butter-card rounded-3xl p-10 text-center space-y-2">
+                  <Archive className="w-8 h-8 text-[#706B5E] mx-auto opacity-60" />
+                  <p className="text-sm font-bold text-[#1A1A18]">No archived advance goals found.</p>
+                  <p className="text-xs text-[#706B5E]">
+                    Goals set with a start date more than 5 days in the future will automatically queue here.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {archivedGoals.map((g) => {
+                    const CatIcon = ICON_MAP[g.category] || Target;
+                    const startDateObj = new Date(g.startDate);
+                    const dashboardRevealDateObj = new Date(startDateObj);
+                    dashboardRevealDateObj.setDate(dashboardRevealDateObj.getDate() - 5);
+                    const revealDateStr = dashboardRevealDateObj.toISOString().split('T')[0];
+                    const daysUntilReveal = Math.max(1, g.daysUntilStart - 5);
+
+                    return (
+                      <div key={g.id} className="butter-card rounded-3xl p-5 flex flex-col justify-between gap-4 shadow-sm">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-[#FAF9F5] border border-[#EADBCC] flex items-center justify-center text-[#706B5E] shrink-0">
+                              <CatIcon className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-black text-[#1A1A18] leading-snug">{g.name}</p>
+                              <p className="text-[11px] text-[#706B5E] mt-0.5">
+                                Start: <strong className="text-[#1A1A18]">{g.startDate}</strong> • Cap: ₹{g.targetAmount.toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+
+                          <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA] shrink-0">
+                            In {g.daysUntilStart}d
+                          </span>
+                        </div>
+
+                        <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-4 py-2.5 flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2 text-[#706B5E]">
+                            <Clock className="w-4 h-4 text-[#1A1A18]" />
+                            <span>Dashboard unlock: <strong className="text-[#1A1A18]">{revealDateStr}</strong></span>
+                          </div>
+                          <span className="font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-lg text-[10px]">
+                            Live in {daysUntilReveal}d
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 4: GOALS */}
           {activeTab === 'goals' && (
             <div className="space-y-6">
               
@@ -1082,6 +1172,12 @@ export default function App() {
                     {activeGoals.length} active
                   </span>
                   <button 
+                    onClick={() => setActiveTab('archive')}
+                    className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-[#FAF9F5] border border-[#EADBCC] hover:bg-white text-[#706B5E] transition flex items-center gap-1.5"
+                  >
+                    <Archive className="w-3.5 h-3.5" /> Archive ({archivedGoals.length})
+                  </button>
+                  <button 
                     onClick={() => setIsAddGoalOpen(true)}
                     className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-[#FEF6D8] border border-[#F6E6AA] hover:bg-[#FDF0C2] text-[#1A1A18] transition"
                   >
@@ -1095,7 +1191,7 @@ export default function App() {
                 <div className="butter-card rounded-3xl p-8 text-center space-y-2">
                   <p className="text-sm font-bold text-[#1A1A18]">No goals currently in the active window.</p>
                   <p className="text-xs text-[#706B5E]">
-                    Advance goals set further than 5 days in the future are archived in the Pre-Launch Vault below.
+                    Advance goals set further than 5 days in the future are archived in the Pre-Launch Vault.
                   </p>
                 </div>
               ) : (
@@ -1139,7 +1235,6 @@ export default function App() {
                             </span>
                           </div>
                           
-                          {/* Indicator if entering via 5-day advance window */}
                           {g.daysUntilStart > 0 && g.daysUntilStart <= 5 ? (
                             <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-amber-900">
                               Starts in {g.daysUntilStart}d
@@ -1423,82 +1518,10 @@ export default function App() {
                 </div>
               )}
 
-              {/* ARCHIVE / PRE-LAUNCH QUEUE CARD (Advance goals > 5 days away) */}
-              {archivedGoals.length > 0 && (
-                <div className="butter-card rounded-3xl p-5 sm:p-6 space-y-3 mt-6 border-dashed border-[#D9CBB7]">
-                  <div className="flex items-center justify-between border-b border-[#EADBCC] pb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-xl bg-[#FAF9F5] border border-[#EADBCC] flex items-center justify-center text-[#706B5E]">
-                        <Archive className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-black text-[#1A1A18]">Advance Goals Vault (Archived)</h3>
-                        <p className="text-[11px] text-[#706B5E]">
-                          Queued targets that automatically reveal on the dashboard 5 days before starting
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#FEF6D8] border border-[#F6E6AA] text-[#1A1A18]">
-                      {archivedGoals.length} queued
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    {archivedGoals.map((g) => {
-                      const CatIcon = ICON_MAP[g.category] || Target;
-
-                      // Exact date when the card will unlock on the dashboard (5 days prior to start)
-                      const startDateObj = new Date(g.startDate);
-                      const dashboardRevealDateObj = new Date(startDateObj);
-                      dashboardRevealDateObj.setDate(dashboardRevealDateObj.getDate() - 5);
-                      const revealDateStr = dashboardRevealDateObj.toISOString().split('T')[0];
-
-                      // Days remaining until the dashboard reveal happens
-                      const daysUntilReveal = Math.max(1, g.daysUntilStart - 5);
-
-                      return (
-                        <div key={g.id} className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-4 flex flex-col justify-between gap-3 shadow-2xs">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-xl bg-white border border-[#EADBCC] flex items-center justify-center text-[#706B5E] shrink-0">
-                                <CatIcon className="w-4 h-4" />
-                              </div>
-                              <div>
-                                <p className="text-xs font-black text-[#1A1A18] leading-snug">{g.name}</p>
-                                <p className="text-[10px] text-[#706B5E] mt-0.5">
-                                  Start Date: <span className="font-bold text-[#1A1A18]">{g.startDate}</span> • Cap: ₹{g.targetAmount.toLocaleString()}
-                                </p>
-                              </div>
-                            </div>
-
-                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA] shrink-0">
-                              Starts in {g.daysUntilStart}d
-                            </span>
-                          </div>
-
-                          {/* Dashboard Launch Horizon Pill */}
-                          <div className="bg-white border border-[#EADBCC] rounded-xl px-3 py-2 flex items-center justify-between text-[11px]">
-                            <div className="flex items-center gap-1.5 text-[#706B5E]">
-                              <Clock className="w-3.5 h-3.5 text-[#1A1A18]" />
-                              <span>
-                                Dashboard launch: <strong className="text-[#1A1A18]">{revealDateStr}</strong>
-                              </span>
-                            </div>
-                            <span className="font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md text-[10px]">
-                              Live in {daysUntilReveal}d
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
             </div>
           )}
 
-          {/* TAB 4: SETTINGS */}
+          {/* TAB 5: SETTINGS */}
           {activeTab === 'settings' && (
             <div className="space-y-5 max-w-lg mx-auto">
               <div>
@@ -1512,7 +1535,7 @@ export default function App() {
 
                 <button
                   onClick={() => supabase.auth.signOut()}
-                  className="w-full mt-2 bg-[#FAF9F5] hover:bg-[#EAE4D6] text-slate-700 font-bold text-xs py-3 rounded-2xl transition border border-[#EADBCC]"
+                  className="w-full mt-2 bg-[#FAF9F5] hover:bg-[#EAE4D6] text-slate-700 font-bold text-xs py-3 rounded-2xl transition border border-[#E0D8C3]"
                 >
                   Sign Out of FinNest
                 </button>
@@ -1553,15 +1576,6 @@ export default function App() {
             <span className="text-[10px]">Home</span>
           </button>
           <button
-            onClick={() => setActiveTab('history')}
-            className={`flex flex-col items-center gap-1 ${activeTab === 'history' ? 'text-[#1A1A18]' : 'text-slate-400'}`}
-          >
-            <div className={`p-1.5 rounded-full ${activeTab === 'history' ? 'bg-[#FEF6D8]' : ''}`}>
-              <History className="w-5 h-5" />
-            </div>
-            <span className="text-[10px]">History</span>
-          </button>
-          <button
             onClick={() => setActiveTab('goals')}
             className={`flex flex-col items-center gap-1 ${activeTab === 'goals' ? 'text-[#1A1A18]' : 'text-slate-400'}`}
           >
@@ -1569,6 +1583,24 @@ export default function App() {
               <Target className="w-5 h-5" />
             </div>
             <span className="text-[10px]">Goals</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('archive')}
+            className={`flex flex-col items-center gap-1 ${activeTab === 'archive' ? 'text-[#1A1A18]' : 'text-slate-400'}`}
+          >
+            <div className={`p-1.5 rounded-full ${activeTab === 'archive' ? 'bg-[#FEF6D8]' : ''}`}>
+              <Archive className="w-5 h-5" />
+            </div>
+            <span className="text-[10px]">Archive</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`flex flex-col items-center gap-1 ${activeTab === 'history' ? 'text-[#1A1A18]' : 'text-slate-400'}`}
+          >
+            <div className={`p-1.5 rounded-full ${activeTab === 'history' ? 'bg-[#FEF6D8]' : ''}`}>
+              <History className="w-5 h-5" />
+            </div>
+            <span className="text-[10px]">History</span>
           </button>
           <button
             onClick={() => setActiveTab('settings')}
