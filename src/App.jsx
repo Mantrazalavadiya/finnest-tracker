@@ -8,36 +8,39 @@ import {
   Smartphone, 
   Banknote, 
   X, 
-  Delete,
-  Calendar,
-  Layers,
-  Laptop,
-  Plane,
-  ShieldAlert,
-  GraduationCap,
-  Home as HomeIcon,
-  Car,
-  HeartPulse,
-  Sparkles,
-  ArrowRight,
-  AlertCircle,
-  Zap,
-  ArrowLeftRight,
-  LogOut,
-  Loader2,
-  Mail,
-  Lock,
-  Bell,
-  History,
-  Settings,
-  Landmark,
-  TrendingUp,
-  Activity,
-  RotateCcw,
-  Share2
+  Delete, 
+  Calendar, 
+  Layers, 
+  Laptop, 
+  Plane, 
+  ShieldAlert, 
+  GraduationCap, 
+  Home as HomeIcon, 
+  Car, 
+  HeartPulse, 
+  Sparkles, 
+  ArrowRight, 
+  AlertCircle, 
+  Zap, 
+  ArrowLeftRight, 
+  LogOut, 
+  Loader2, 
+  Mail, 
+  Lock, 
+  Bell, 
+  History, 
+  Settings, 
+  Landmark, 
+  TrendingUp, 
+  Activity, 
+  RotateCcw, 
+  Share2,
+  PiggyBank,
+  Edit3
 } from 'lucide-react';
 
 const CATEGORY_PRESETS = [
+  { id: 'savings', label: 'Savings', icon: PiggyBank },
   { id: 'tech', label: 'Gadgets', icon: Laptop },
   { id: 'travel', label: 'Travel', icon: Plane },
   { id: 'vehicle', label: 'Vehicle', icon: Car },
@@ -49,6 +52,7 @@ const CATEGORY_PRESETS = [
 ];
 
 const ICON_MAP = {
+  savings: PiggyBank,
   tech: Laptop,
   travel: Plane,
   vehicle: Car,
@@ -206,6 +210,7 @@ export default function App() {
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isGoalTransferModalOpen, setIsGoalTransferModalOpen] = useState(false);
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
+  const [isEditGoalOpen, setIsEditGoalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [resetInput, setResetInput] = useState('');
   const [isResetting, setIsResetting] = useState(false);
@@ -227,12 +232,19 @@ export default function App() {
   const [goalTransferAmountStr, setGoalTransferAmountStr] = useState('');
   const [goalTransferNote, setGoalTransferNote] = useState('');
 
+  // New Goal Creation
   const todayStr = new Date().toISOString().split('T')[0];
   const [newGoalName, setNewGoalName] = useState('');
-  const [newGoalCategory, setNewGoalCategory] = useState('tech');
+  const [newGoalCategory, setNewGoalCategory] = useState('savings');
   const [newGoalAmount, setNewGoalAmount] = useState('');
   const [newGoalStartDate, setNewGoalStartDate] = useState(todayStr);
   const [newGoalDate, setNewGoalDate] = useState('');
+
+  // Edit Goal / Extend Timeline states
+  const [editGoalName, setEditGoalName] = useState('');
+  const [editGoalAmount, setEditGoalAmount] = useState('');
+  const [editGoalDate, setEditGoalDate] = useState('');
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -390,6 +402,7 @@ export default function App() {
   const requiredPace = isCompleted ? 0 : Math.ceil(remainingNeeded / daysLeft);
   const baselineDailyPace = activeGoal ? Math.max(1, Math.round(activeGoal.targetAmount / totalDurationDays)) : 1;
 
+  // Strict ₹20 tolerance calculation
   const { trajectoryStatus, daysDifference, varianceAmount } = useMemo(() => {
     if (!activeGoal) return { trajectoryStatus: 'on-track', daysDifference: 0, varianceAmount: 0 };
     if (isCompleted) return { trajectoryStatus: 'completed', daysDifference: 0, varianceAmount: 0 };
@@ -544,7 +557,6 @@ export default function App() {
     fetchData();
   };
 
-  // CROSS-GOAL TRANSFER SUBMISSION
   const handleCrossGoalTransferSubmit = async (e) => {
     e.preventDefault();
     const val = Number(goalTransferAmountStr);
@@ -616,12 +628,54 @@ export default function App() {
     if (!error && data && data.length > 0) {
       setSelectedGoalId(data[0].id);
       setNewGoalName('');
-      setNewGoalCategory('tech');
+      setNewGoalCategory('savings');
       setNewGoalAmount('');
       setNewGoalStartDate(todayStr);
       setNewGoalDate('');
       setIsAddGoalOpen(false);
       fetchData();
+    }
+  };
+
+  // OPEN EDIT / EXTEND TIMELINE MODAL
+  const handleOpenEditGoal = () => {
+    if (!activeGoal) return;
+    setEditGoalName(activeGoal.name);
+    setEditGoalAmount(String(activeGoal.targetAmount));
+    setEditGoalDate(activeGoal.targetDate);
+    setIsEditGoalOpen(true);
+  };
+
+  // SAVE EDITED GOAL (EXTEND TIMELINE / ADJUST TARGET)
+  const handleSaveGoalChanges = async (e) => {
+    e.preventDefault();
+    if (!activeGoal || !editGoalName.trim() || !editGoalAmount || !editGoalDate) return;
+
+    if (new Date(editGoalDate) <= new Date(activeGoal.startDate)) {
+      alert("Extended End Date must be after the starting date.");
+      return;
+    }
+
+    setIsSavingEdit(true);
+    try {
+      const { error } = await supabase
+        .from('goals')
+        .update({
+          name: editGoalName.trim(),
+          target_amount: Number(editGoalAmount),
+          target_date: editGoalDate
+        })
+        .eq('id', activeGoal.id);
+
+      if (error) throw error;
+
+      setIsEditGoalOpen(false);
+      fetchData();
+      alert('Timeline and goal parameters successfully updated!');
+    } catch (err) {
+      alert('Failed to update goal: ' + err.message);
+    } finally {
+      setIsSavingEdit(false);
     }
   };
 
@@ -980,6 +1034,7 @@ export default function App() {
                       
                       const isDelayed = gSaved < (gExpected - 20) && gSaved < g.targetAmount;
                       const sidebarDaysGap = Math.max(1, Math.round(Math.abs(gSaved - gExpected) / gDailyPace));
+                      const GoalIcon = ICON_MAP[g.category] || Target;
 
                       return (
                         <div
@@ -994,7 +1049,7 @@ export default function App() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <div className="w-8 h-8 rounded-xl bg-[#EEF2FF] text-indigo-600 flex items-center justify-center">
-                                <Laptop className="w-4 h-4" />
+                                <GoalIcon className="w-4 h-4" />
                               </div>
                               <span className="text-[9px] font-mono uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full font-bold">
                                 {g.badge || 'Goal'}
@@ -1052,15 +1107,27 @@ export default function App() {
                           </div>
                         </div>
 
-                        <button 
-                          onClick={() => handleDeleteGoal(activeGoal.id)}
-                          className="p-2 text-slate-300 hover:text-rose-600 transition"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          {/* EDIT / EXTEND TIMELINE BUTTON */}
+                          <button 
+                            onClick={handleOpenEditGoal}
+                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition"
+                            title="Extend Timeline / Edit Goal"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+
+                          <button 
+                            onClick={() => handleDeleteGoal(activeGoal.id)}
+                            className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition"
+                            title="Delete Goal"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
 
-                      {/* Date Box */}
+                      {/* Date Box with Extend Indicator */}
                       <div className="bg-[#FAFBFD] border border-slate-100 rounded-2xl p-3 flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2 text-slate-600 font-semibold text-[11px]">
                           <Calendar className="w-3.5 h-3.5 text-slate-400" />
@@ -1068,9 +1135,12 @@ export default function App() {
                           <ArrowRight className="w-3 h-3 text-slate-400" />
                           <span>{activeGoal.targetDate}</span>
                         </div>
-                        <span className="text-[11px] font-bold text-indigo-700 bg-[#EEF2FF] px-2.5 py-1 rounded-xl">
-                          {daysLeft}d left
-                        </span>
+                        <button
+                          onClick={handleOpenEditGoal}
+                          className="text-[11px] font-bold text-indigo-700 bg-[#EEF2FF] hover:bg-indigo-100 px-2.5 py-1 rounded-xl transition"
+                        >
+                          {daysLeft}d left (Extend ➔)
+                        </button>
                       </div>
 
                       {/* Action Buttons: Shift, Cross-Goal, Add/Withdraw */}
@@ -1137,6 +1207,14 @@ export default function App() {
                       </div>
                       <p className="text-xs font-semibold opacity-90 leading-snug">
                         Schedule gap: {daysDifference} days. Suggested rate: ₹{requiredPace}/day.
+                        {trajectoryStatus === 'delay' && (
+                          <span 
+                            onClick={handleOpenEditGoal}
+                            className="ml-1 text-indigo-700 underline font-bold cursor-pointer"
+                          >
+                            Extend end date?
+                          </span>
+                        )}
                       </p>
                     </div>
 
@@ -1681,7 +1759,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 3. DEDICATED CROSS-GOAL TRANSFER MODAL (Move Money to Another Goal) */}
+      {/* 3. DEDICATED CROSS-GOAL TRANSFER MODAL */}
       {isGoalTransferModalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border border-emerald-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
@@ -1705,8 +1783,6 @@ export default function App() {
             </div>
 
             <form onSubmit={handleCrossGoalTransferSubmit} className="space-y-3 mt-3">
-              
-              {/* Destination Goal Selector */}
               <div>
                 <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-1">
                   Destination Goal
@@ -1725,7 +1801,6 @@ export default function App() {
                 </select>
               </div>
 
-              {/* Source Wallet Type */}
               <div>
                 <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-1">
                   Take From Balance
@@ -1767,7 +1842,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Quick Fill Max */}
               <div className="flex items-center justify-between px-1 text-xs">
                 <span className="text-slate-500 font-medium">Available to shift:</span>
                 <button
@@ -1779,7 +1853,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Amount Display */}
               <div className="bg-[#FAFBFD] border border-slate-200 rounded-2xl p-3 text-center">
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
                   AMOUNT TO TRANSFER
@@ -1790,7 +1863,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Number Pad */}
               <div className="grid grid-cols-3 gap-2">
                 {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
                   <button
@@ -1827,7 +1899,7 @@ export default function App() {
 
               <input
                 type="text"
-                placeholder="Reason (e.g. iPhone surplus funds transferred)"
+                placeholder="Reason (e.g. Surplus funds transferred)"
                 value={goalTransferNote}
                 onChange={(e) => setGoalTransferNote(e.target.value)}
                 className="w-full bg-[#FAFBFD] border border-slate-200 rounded-2xl px-4 py-2.5 text-xs text-slate-900 font-medium focus:outline-none focus:bg-white"
@@ -1845,7 +1917,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 4. NEW FINANCIAL GOAL MODAL */}
+      {/* 4. NEW FINANCIAL GOAL MODAL (Includes SAVINGS Category) */}
       {isAddGoalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
@@ -1870,7 +1942,7 @@ export default function App() {
                 <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">
                   CATEGORY
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   {CATEGORY_PRESETS.map((cat) => {
                     const CatIcon = cat.icon;
                     const isSelected = newGoalCategory === cat.id;
@@ -1879,14 +1951,14 @@ export default function App() {
                         key={cat.id}
                         type="button"
                         onClick={() => setNewGoalCategory(cat.id)}
-                        className={`p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1.5 ${
+                        className={`p-2.5 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1 ${
                           isSelected 
                             ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' 
                             : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                         }`}
                       >
-                        <CatIcon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#00C482]'}`} />
-                        <span className="text-xs font-bold">{cat.label}</span>
+                        <CatIcon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-[#00C482]'}`} />
+                        <span className="text-[11px] font-bold">{cat.label}</span>
                       </button>
                     );
                   })}
@@ -1899,7 +1971,7 @@ export default function App() {
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. MacBook Pro, Bali Trip, Emergency"
+                  placeholder="e.g. 5-Year Savings, MacBook, Bali Trip"
                   value={newGoalName}
                   onChange={(e) => setNewGoalName(e.target.value)}
                   className="w-full mt-1 bg-white border border-slate-200 rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-indigo-600"
@@ -1913,7 +1985,7 @@ export default function App() {
                 </label>
                 <input
                   type="number"
-                  placeholder="e.g. 100000"
+                  placeholder="e.g. 1000000"
                   value={newGoalAmount}
                   onChange={(e) => setNewGoalAmount(e.target.value)}
                   className="w-full mt-1 bg-white border border-slate-200 rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-indigo-600"
@@ -1960,7 +2032,98 @@ export default function App() {
         </div>
       )}
 
-      {/* 5. RESET ALL DATA CONFIRMATION MODAL */}
+      {/* 5. EXTEND TIMELINE / EDIT GOAL PARAMETERS MODAL */}
+      {isEditGoalOpen && activeGoal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
+            
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <Edit3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-slate-900 text-base">Extend Timeline / Modify</h3>
+                  <p className="text-[10px] text-slate-400">Adjust date or target after unexpected withdrawals</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsEditGoalOpen(false)} 
+                className="w-8 h-8 rounded-full bg-[#EEF2FF] text-slate-500 flex items-center justify-center"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveGoalChanges} className="mt-4 space-y-3.5">
+              <div>
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                  Goal Title
+                </label>
+                <input
+                  type="text"
+                  value={editGoalName}
+                  onChange={(e) => setEditGoalName(e.target.value)}
+                  className="w-full mt-1 bg-[#FAFBFD] border border-slate-200 rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-indigo-600"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                  Target Amount (₹)
+                </label>
+                <input
+                  type="number"
+                  value={editGoalAmount}
+                  onChange={(e) => setEditGoalAmount(e.target.value)}
+                  className="w-full mt-1 bg-[#FAFBFD] border border-slate-200 rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-indigo-600"
+                  required
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                    Extended Completion Date
+                  </label>
+                  <span className="text-[10px] text-indigo-600 font-bold">Postpone deadline</span>
+                </div>
+                <input
+                  type="date"
+                  value={editGoalDate}
+                  onChange={(e) => setEditGoalDate(e.target.value)}
+                  className="w-full mt-1 bg-[#FAFBFD] border border-slate-200 rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-indigo-600"
+                  required
+                />
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Extending the deadline will recalculate and lower your daily required pace.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsEditGoalOpen(false)}
+                  className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-2xl transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingEdit}
+                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-bold text-xs rounded-2xl transition shadow-md shadow-indigo-600/20 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                >
+                  {isSavingEdit ? <Loader2 className="w-4 h-4 animate-spin" /> : <Edit3 className="w-4 h-4" />}
+                  <span>Save Updates</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 6. RESET ALL DATA CONFIRMATION MODAL */}
       {isResetModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border border-rose-100 flex flex-col animate-sheet-up">
