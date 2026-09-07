@@ -36,18 +36,23 @@ import {
   RotateCcw, 
   Share2,
   PiggyBank,
-  Edit3
+  Edit3,
+  Globe,
+  Clock,
+  Compass,
+  Radio,
+  Search
 } from 'lucide-react';
 
-/* Warm Organic Ambient 3D Canvas */
-function AmbientCeramicCanvas() {
+/* Cyber Global Grid Map Canvas */
+function GlobalOperationsGrid() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    let animationFrameId;
+    let animationId;
 
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
@@ -59,114 +64,109 @@ function AmbientCeramicCanvas() {
     };
     window.addEventListener('resize', handleResize);
 
-    const particleCount = width < 768 ? 20 : 38;
-    const particles = Array.from({ length: particleCount }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      z: Math.random() * 0.75 + 0.25,
-      vx: (Math.random() - 0.5) * 0.35,
-      vy: (Math.random() - 0.5) * 0.35,
-      radius: Math.random() * 2.8 + 1.2,
-      isTerracotta: Math.random() > 0.5
-    }));
+    // Flight corridor points
+    const nodes = [
+      { x: 0.22, y: 0.35, label: 'KSFO' },
+      { x: 0.26, y: 0.42, label: 'KLAX' },
+      { x: 0.48, y: 0.32, label: 'LEBL' },
+      { x: 0.76, y: 0.38, label: 'HND' },
+      { x: 0.85, y: 0.72, label: 'SYD' }
+    ];
 
-    let mouseX = width / 2;
-    let mouseY = height / 2;
-
-    const handleMouseMove = (e) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-    };
-    window.addEventListener('mousemove', handleMouseMove);
+    let pulse = 0;
 
     const render = () => {
       ctx.clearRect(0, 0, width, height);
+      pulse += 0.03;
 
-      const time = Date.now() * 0.0006;
-      const orb1X = width * 0.25 + Math.sin(time) * 35;
-      const orb1Y = height * 0.3 + Math.cos(time) * 35;
-      const orb1 = ctx.createRadialGradient(orb1X, orb1Y, 10, orb1X, orb1Y, width * 0.45);
-      orb1.addColorStop(0, 'rgba(224, 122, 95, 0.08)');
-      orb1.addColorStop(1, 'transparent');
-      ctx.fillStyle = orb1;
-      ctx.fillRect(0, 0, width, height);
+      // Draw faint terminal grid lines
+      ctx.strokeStyle = 'rgba(30, 41, 59, 0.35)';
+      ctx.lineWidth = 1;
+      const gridSize = 45;
 
-      const orb2X = width * 0.8 + Math.cos(time * 0.9) * 40;
-      const orb2Y = height * 0.7 + Math.sin(time * 0.9) * 35;
-      const orb2 = ctx.createRadialGradient(orb2X, orb2Y, 10, orb2X, orb2Y, width * 0.45);
-      orb2.addColorStop(0, 'rgba(42, 157, 143, 0.07)');
-      orb2.addColorStop(1, 'transparent');
-      ctx.fillStyle = orb2;
-      ctx.fillRect(0, 0, width, height);
-
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < 115) {
-            const alpha = (1 - dist / 115) * 0.12 * Math.min(particles[i].z, particles[j].z);
-            ctx.strokeStyle = `rgba(224, 122, 95, ${alpha})`;
-            ctx.lineWidth = 0.8;
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.stroke();
-          }
-        }
+      for (let x = 0; x < width; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
       }
 
-      particles.forEach((p) => {
-        const offsetX = (mouseX - width / 2) * 0.012 * p.z;
-        const offsetY = (mouseY - height / 2) * 0.012 * p.z;
+      for (let y = 0; y < height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
 
-        p.x += p.vx * p.z;
-        p.y += p.vy * p.z;
+      // Draw flight paths between nodes
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      for (let i = 0; i < nodes.length - 1; i++) {
+        const startX = nodes[i].x * width;
+        const startY = nodes[i].y * height;
+        const endX = nodes[i + 1].x * width;
+        const endY = nodes[i + 1].y * height;
 
-        if (p.x < 0) p.x = width;
-        if (p.x > width) p.x = 0;
-        if (p.y < 0) p.y = height;
-        if (p.y > height) p.y = 0;
+        ctx.moveTo(startX, startY);
+        ctx.bezierCurveTo(
+          (startX + endX) / 2, 
+          startY - 40, 
+          (startX + endX) / 2, 
+          endY - 40, 
+          endX, 
+          endY
+        );
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Draw node beacons
+      nodes.forEach((node) => {
+        const nx = node.x * width;
+        const ny = node.y * height;
+        const beaconRadius = Math.sin(pulse) * 3 + 5;
 
         ctx.beginPath();
-        ctx.arc(p.x + offsetX, p.y + offsetY, p.radius * p.z, 0, Math.PI * 2);
-        ctx.fillStyle = p.isTerracotta 
-          ? `rgba(224, 122, 95, ${0.28 * p.z})` 
-          : `rgba(42, 157, 143, ${0.32 * p.z})`;
+        ctx.arc(nx, ny, beaconRadius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0, 229, 255, 0.4)';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(nx, ny, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#38BDF8';
         ctx.fill();
       });
 
-      animationFrameId = requestAnimationFrame(render);
+      animationId = requestAnimationFrame(render);
     };
 
     render();
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('mousemove', handleMouseMove);
-      cancelAnimationFrame(animationFrameId);
+      cancelAnimationFrame(animationId);
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0 opacity-70" />;
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0 opacity-45" />;
 }
 
 const CATEGORY_PRESETS = [
-  { id: 'savings', label: 'Savings', icon: PiggyBank },
-  { id: 'tech', label: 'Gadgets', icon: Laptop },
-  { id: 'travel', label: 'Travel', icon: Plane },
-  { id: 'vehicle', label: 'Vehicle', icon: Car },
-  { id: 'education', label: 'Education', icon: GraduationCap },
-  { id: 'emergency', label: 'Emergency', icon: ShieldAlert },
-  { id: 'home', label: 'Home', icon: HomeIcon },
-  { id: 'health', label: 'Health', icon: HeartPulse },
-  { id: 'custom', label: 'Personal', icon: Sparkles },
+  { id: 'tech', label: 'Tech & Fleet', icon: Laptop },
+  { id: 'savings', label: 'Vault Stash', icon: PiggyBank },
+  { id: 'travel', label: 'Air Routes', icon: Plane },
+  { id: 'vehicle', label: 'Transports', icon: Car },
+  { id: 'education', label: 'Academy', icon: GraduationCap },
+  { id: 'emergency', label: 'Contingency', icon: ShieldAlert },
+  { id: 'home', label: 'Hangar', icon: HomeIcon },
+  { id: 'health', label: 'Crew Vital', icon: HeartPulse },
+  { id: 'custom', label: 'Special Ops', icon: Sparkles },
 ];
 
 const ICON_MAP = {
-  savings: PiggyBank,
   tech: Laptop,
+  savings: PiggyBank,
   travel: Plane,
   vehicle: Car,
   education: GraduationCap,
@@ -186,18 +186,18 @@ const playSound = (type) => {
     gain.connect(ctx.destination);
 
     if (type === 'deposit' || type === 'transfer') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
       osc.start();
       osc.stop(ctx.currentTime + 0.2);
     } else {
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(300, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.12);
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      osc.frequency.setValueAtTime(280, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
       osc.start();
       osc.stop(ctx.currentTime + 0.18);
@@ -228,59 +228,57 @@ function AuthScreen({ onLogin }) {
         if (data?.user) onLogin(data.user);
       }
     } catch (err) {
-      setErrorMsg(err.message || 'Authentication failed');
+      setErrorMsg(err.message || 'Authentication error');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-[#2D2A26] flex flex-col items-center justify-center p-4 relative">
-      <AmbientCeramicCanvas />
-      <div className="w-full max-w-sm ceramic-panel rounded-3xl p-6 sm:p-8 relative z-10">
+    <div className="min-h-screen bg-[#070A12] text-slate-200 flex flex-col items-center justify-center p-4 relative font-mono">
+      <GlobalOperationsGrid />
+      <div className="w-full max-w-sm terminal-panel terminal-panel-glow rounded-2xl p-7 relative z-10">
         <div className="flex flex-col items-center text-center space-y-2 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-[#E07A5F] flex items-center justify-center text-white shadow-md shadow-[#E07A5F]/25 mb-1">
-            <Layers className="w-6 h-6" />
+          <div className="w-12 h-12 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-400 mb-1">
+            <Compass className="w-6 h-6 animate-pulse" />
           </div>
-          <h1 className="text-2xl font-black text-[#2D2A26] tracking-tight">FinTrack</h1>
-          <p className="text-xs text-[#7D756D] font-medium">
-            {isSignUp ? 'Create your calm savings sanctuary' : 'Sign in to access your ledger'}
-          </p>
+          <h1 className="text-xl font-black text-white tracking-widest uppercase">AIRLINESIM // FINTRACK</h1>
+          <p className="text-[11px] text-slate-400">Terminal Access & Capital Simulation</p>
         </div>
 
         {errorMsg && (
-          <div className="p-3 mb-4 text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl text-center">
+          <div className="p-2.5 mb-4 text-xs bg-rose-950/60 border border-rose-500/50 text-rose-300 rounded-xl text-center">
             {errorMsg}
           </div>
         )}
 
-        <form onSubmit={handleAuth} className="space-y-3">
+        <form onSubmit={handleAuth} className="space-y-3.5">
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#9C948B] pl-1">Email</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">CALLSIGN / EMAIL</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-[#9C948B] absolute left-3.5 top-3.5" />
+              <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
               <input
                 type="email"
                 required
-                placeholder="name@domain.com"
+                placeholder="pilot@airlinesim.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold focus:outline-none focus:bg-white focus:border-[#E07A5F] transition"
+                className="w-full bg-[#0B0F19] border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-sky-300 focus:outline-none focus:border-sky-400"
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#9C948B] pl-1">Password</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">ENCRYPTED KEY</label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-[#9C948B] absolute left-3.5 top-3.5" />
+              <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
               <input
                 type="password"
                 required
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold focus:outline-none focus:bg-white focus:border-[#E07A5F] transition"
+                className="w-full bg-[#0B0F19] border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-xs text-sky-300 focus:outline-none focus:border-sky-400"
               />
             </div>
           </div>
@@ -288,20 +286,20 @@ function AuthScreen({ onLogin }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 py-3.5 bg-[#E07A5F] hover:bg-[#D46B50] active:scale-95 text-white font-bold text-xs rounded-2xl transition shadow-md shadow-[#E07A5F]/20 flex items-center justify-center gap-2"
+            className="w-full mt-2 py-3 bg-sky-500 hover:bg-sky-400 active:scale-95 text-slate-950 font-black text-xs rounded-xl transition flex items-center justify-center gap-2 uppercase tracking-wider"
           >
-            <span>{loading ? 'Opening vault...' : isSignUp ? 'Create Sanctuary' : 'Enter Sanctuary'}</span>
+            <span>{loading ? 'AUTHENTICATING...' : isSignUp ? 'ENROLL PILOT' : 'AUTHORIZE ACCESS'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
-        <div className="text-center mt-5 pt-4 border-t border-[#F1E8DF]">
+        <div className="text-center mt-5 pt-4 border-t border-slate-800">
           <button
             type="button"
             onClick={() => { setIsSignUp(!isSignUp); setErrorMsg(''); }}
-            className="text-xs font-bold text-[#7D756D] hover:text-[#E07A5F] transition"
+            className="text-xs font-bold text-slate-400 hover:text-sky-400 transition"
           >
-            {isSignUp ? 'Already registered? Sign In' : 'Need an account? Sign up'}
+            {isSignUp ? 'Existing Operator? Sign In' : 'New Callsign? Register Protocol'}
           </button>
         </div>
       </div>
@@ -349,7 +347,7 @@ export default function App() {
   // New Goal Creation
   const todayStr = new Date().toISOString().split('T')[0];
   const [newGoalName, setNewGoalName] = useState('');
-  const [newGoalCategory, setNewGoalCategory] = useState('savings');
+  const [newGoalCategory, setNewGoalCategory] = useState('tech');
   const [newGoalAmount, setNewGoalAmount] = useState('');
   const [newGoalStartDate, setNewGoalStartDate] = useState(todayStr);
   const [newGoalDate, setNewGoalDate] = useState('');
@@ -496,7 +494,7 @@ export default function App() {
   const celebratedRef = useRef({});
   useEffect(() => {
     if (activeGoal && isCompleted && !celebratedRef.current[activeGoal.id]) {
-      confetti({ particleCount: 110, spread: 75, origin: { y: 0.6 } });
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
       celebratedRef.current[activeGoal.id] = true;
     } else if (!isCompleted && activeGoal) {
       celebratedRef.current[activeGoal.id] = false;
@@ -516,6 +514,7 @@ export default function App() {
   const requiredPace = isCompleted ? 0 : Math.ceil(remainingNeeded / daysLeft);
   const baselineDailyPace = activeGoal ? Math.max(1, Math.round(activeGoal.targetAmount / totalDurationDays)) : 1;
 
+  // Strict ₹20 tolerance calculation
   const { trajectoryStatus, daysDifference, varianceAmount } = useMemo(() => {
     if (!activeGoal) return { trajectoryStatus: 'on-track', daysDifference: 0, varianceAmount: 0 };
     if (isCompleted) return { trajectoryStatus: 'completed', daysDifference: 0, varianceAmount: 0 };
@@ -528,23 +527,11 @@ export default function App() {
     const TOLERANCE = 20;
 
     if (variance < -TOLERANCE) {
-      return { 
-        trajectoryStatus: 'delay', 
-        daysDifference: diffDays, 
-        varianceAmount: Math.abs(variance) 
-      };
+      return { trajectoryStatus: 'delay', daysDifference: diffDays, varianceAmount: Math.abs(variance) };
     } else if (variance > TOLERANCE) {
-      return { 
-        trajectoryStatus: 'advance', 
-        daysDifference: diffDays, 
-        varianceAmount: variance 
-      };
+      return { trajectoryStatus: 'advance', daysDifference: diffDays, varianceAmount: variance };
     } else {
-      return { 
-        trajectoryStatus: 'on-track', 
-        daysDifference: 0, 
-        varianceAmount: 0 
-      };
+      return { trajectoryStatus: 'on-track', daysDifference: 0, varianceAmount: 0 };
     }
   }, [activeGoal, isCompleted, daysElapsed, totalDurationDays, totalSaved, baselineDailyPace]);
 
@@ -571,7 +558,7 @@ export default function App() {
     if (actionType === 'withdraw') {
       const available = walletType === 'cash' ? totalCash : totalOnline;
       if (val > available) {
-        alert(`Insufficient funds in ${walletType === 'cash' ? 'Cash Stash' : 'Online Wallet'}! Available: ₹${available.toLocaleString()}`);
+        alert(`Insufficient funds in ${walletType === 'cash' ? 'Cash Reserve' : 'Online Balance'}! Available: ₹${available.toLocaleString()}`);
         return;
       }
 
@@ -581,7 +568,7 @@ export default function App() {
         amount: val,
         action: 'withdraw',
         type: walletType,
-        note: note.trim() || 'Withdrawal',
+        note: note.trim() || 'Flight Fuel / Debit',
         date: todayStr
       }]);
       playSound('withdraw');
@@ -592,7 +579,7 @@ export default function App() {
         amount: val,
         action: 'deposit',
         type: walletType,
-        note: note.trim() || 'Added savings',
+        note: note.trim() || 'Fleet Inflow / Deposit',
         date: todayStr
       }]);
       playSound('deposit');
@@ -611,7 +598,7 @@ export default function App() {
 
     if (transferDirection === 'cash_to_bank') {
       if (val > totalCash) {
-        alert(`Cannot transfer ₹${val.toLocaleString()}. Available Cash Stash: ₹${totalCash.toLocaleString()}`);
+        alert(`Cannot transfer ₹${val.toLocaleString()}. Available Physical Stash: ₹${totalCash.toLocaleString()}`);
         return;
       }
 
@@ -622,7 +609,7 @@ export default function App() {
           amount: val,
           action: 'withdraw',
           type: 'cash',
-          note: transferNote.trim() ? `Cash ➔ Bank (${transferNote.trim()})` : 'Transferred Cash to Bank / UPI',
+          note: transferNote.trim() ? `Cash ➔ Bank (${transferNote.trim()})` : 'Transferred Cash to Bank UPI',
           date: todayStr
         },
         {
@@ -631,13 +618,13 @@ export default function App() {
           amount: val,
           action: 'deposit',
           type: 'online',
-          note: transferNote.trim() ? `Bank Deposit (${transferNote.trim()})` : 'Bank deposit from Cash',
+          note: transferNote.trim() ? `Bank Deposit (${transferNote.trim()})` : 'Bank deposit from Cash Reserve',
           date: todayStr
         }
       ]);
     } else {
       if (val > totalOnline) {
-        alert(`Cannot transfer ₹${val.toLocaleString()}. Available Bank / UPI: ₹${totalOnline.toLocaleString()}`);
+        alert(`Cannot transfer ₹${val.toLocaleString()}. Available Bank Balance: ₹${totalOnline.toLocaleString()}`);
         return;
       }
 
@@ -648,7 +635,7 @@ export default function App() {
           amount: val,
           action: 'withdraw',
           type: 'online',
-          note: transferNote.trim() ? `Bank ➔ Cash (${transferNote.trim()})` : 'Withdrew from Bank to Cash',
+          note: transferNote.trim() ? `Bank ➔ Cash (${transferNote.trim()})` : 'Withdrew from Bank to Physical Cash',
           date: todayStr
         },
         {
@@ -677,12 +664,12 @@ export default function App() {
 
     const available = goalTransferWallet === 'cash' ? totalCash : totalOnline;
     if (val > available) {
-      alert(`Cannot transfer ₹${val.toLocaleString()}. Available in ${goalTransferWallet === 'cash' ? 'Cash' : 'Online'} is ₹${available.toLocaleString()}`);
+      alert(`Cannot transfer ₹${val.toLocaleString()}. Available is ₹${available.toLocaleString()}`);
       return;
     }
 
     const destinationGoal = goals.find((g) => g.id === targetGoalId);
-    const destName = destinationGoal ? destinationGoal.name : 'Target Goal';
+    const destName = destinationGoal ? destinationGoal.name : 'Target Route';
 
     try {
       await supabase.from('transactions').insert([
@@ -711,9 +698,9 @@ export default function App() {
       setGoalTransferNote('');
       setIsGoalTransferModalOpen(false);
       fetchData();
-      alert(`Successfully shifted ₹${val.toLocaleString()} from ${activeGoal.name} to ${destName}!`);
+      alert(`Capital Reallocated: ₹${val.toLocaleString()} moved to ${destName}!`);
     } catch (err) {
-      alert('Cross-goal transfer failed: ' + err.message);
+      alert('Reallocation failed: ' + err.message);
     }
   };
 
@@ -741,7 +728,7 @@ export default function App() {
     if (!error && data && data.length > 0) {
       setSelectedGoalId(data[0].id);
       setNewGoalName('');
-      setNewGoalCategory('savings');
+      setNewGoalCategory('tech');
       setNewGoalAmount('');
       setNewGoalStartDate(todayStr);
       setNewGoalDate('');
@@ -782,16 +769,16 @@ export default function App() {
 
       setIsEditGoalOpen(false);
       fetchData();
-      alert('Timeline and goal parameters successfully updated!');
+      alert('Flight schedule and target capital successfully modified!');
     } catch (err) {
-      alert('Failed to update goal: ' + err.message);
+      alert('Modification failed: ' + err.message);
     } finally {
       setIsSavingEdit(false);
     }
   };
 
   const handleDeleteGoal = async (goalId) => {
-    if (confirm('Delete this goal and its cloud records?')) {
+    if (confirm('Decommission this fleet goal and purge its flight logs?')) {
       await supabase.from('goals').delete().eq('id', goalId);
       fetchData();
     }
@@ -800,7 +787,7 @@ export default function App() {
   const handleResetAllData = async (e) => {
     e.preventDefault();
     if (resetInput.trim().toUpperCase() !== 'RESET') {
-      alert('Please type "RESET" exactly to confirm.');
+      alert('Please type "RESET" exactly to execute master purge.');
       return;
     }
 
@@ -820,10 +807,9 @@ export default function App() {
       setIsResetModalOpen(false);
       setResetInput('');
       setActiveTab('goals');
-      alert('All goals and transaction records have been completely reset.');
+      alert('Master Wipe Executed. All terminal records have been reset.');
     } catch (err) {
-      console.error('Reset error:', err.message);
-      alert('Failed to reset: ' + err.message);
+      alert('Reset failed: ' + err.message);
     } finally {
       setIsResetting(false);
     }
@@ -831,8 +817,8 @@ export default function App() {
 
   if (loadingSession) {
     return (
-      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#E07A5F] animate-spin" />
+      <div className="min-h-screen bg-[#070A12] flex items-center justify-center font-mono text-sky-400">
+        <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
   }
@@ -845,101 +831,115 @@ export default function App() {
   const eligibleTargetGoals = goals.filter((g) => g.id !== selectedGoalId);
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-[#2D2A26] flex flex-col md:flex-row pb-24 md:pb-0 font-sans relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#070A12] text-slate-200 flex flex-col md:flex-row pb-24 md:pb-0 font-sans relative overflow-x-hidden">
       
-      {/* 3D Ambient Canvas */}
-      <AmbientCeramicCanvas />
+      {/* 3D Global Grid Animation Canvas */}
+      <GlobalOperationsGrid />
 
-      {/* LAPTOP SIDEBAR */}
-      <aside className="hidden md:flex flex-col w-64 ceramic-panel border-r border-[#F1E8DF] p-5 shrink-0 justify-between sticky top-0 h-screen z-20">
+      {/* SCI-FI TERMINAL SIDEBAR (LAPTOP / DESKTOP) */}
+      <aside className="hidden md:flex flex-col w-64 terminal-panel border-r border-slate-800 p-5 shrink-0 justify-between sticky top-0 h-screen z-20 font-mono">
         <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#E07A5F] text-white flex items-center justify-center shadow-md shadow-[#E07A5F]/20">
-              <Layers className="w-5 h-5" />
+          <div className="flex items-center gap-3 pb-3 border-b border-slate-800">
+            <div className="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-400/40 text-sky-400 flex items-center justify-center shadow-lg shadow-sky-500/20">
+              <Compass className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-xl font-black text-[#E07A5F] block leading-tight">FinTrack</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#9C948B]">Warm Ceramic</span>
+              <span className="text-sm font-black text-white tracking-wider block">AIRLINESIM</span>
+              <span className="text-[10px] text-sky-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE OPS
+              </span>
             </div>
           </div>
 
-          <nav className="space-y-1.5">
+          <nav className="space-y-1 text-xs">
             <button
               onClick={() => setActiveTab('home')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'home' ? 'bg-[#2A9D8F]/15 text-[#2A9D8F]' : 'text-[#7D756D] hover:bg-[#FAF7F2]'
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition ${
+                activeTab === 'home' ? 'bg-sky-500 text-slate-950 font-black shadow-md shadow-sky-500/20' : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
               }`}
             >
-              <HomeIcon className="w-4 h-4" /> Home
+              <HomeIcon className="w-4 h-4" /> Overview
             </button>
 
             <button
               onClick={() => setActiveTab('goals')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'goals' ? 'bg-[#E07A5F]/15 text-[#E07A5F]' : 'text-[#7D756D] hover:bg-[#FAF7F2]'
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition ${
+                activeTab === 'goals' ? 'bg-sky-500 text-slate-950 font-black shadow-md shadow-sky-500/20' : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
               }`}
             >
-              <Target className="w-4 h-4" /> Goals & Tracker
+              <Target className="w-4 h-4" /> Fleet & Goals
             </button>
 
             <button
               onClick={() => setActiveTab('history')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'history' ? 'bg-[#2A9D8F]/15 text-[#2A9D8F]' : 'text-[#7D756D] hover:bg-[#FAF7F2]'
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition ${
+                activeTab === 'history' ? 'bg-sky-500 text-slate-950 font-black shadow-md shadow-sky-500/20' : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
               }`}
             >
-              <History className="w-4 h-4" /> Transactions
+              <History className="w-4 h-4" /> Flight Ledger
             </button>
 
             <button
               onClick={() => setActiveTab('settings')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'settings' ? 'bg-[#E07A5F]/15 text-[#E07A5F]' : 'text-[#7D756D] hover:bg-[#FAF7F2]'
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition ${
+                activeTab === 'settings' ? 'bg-sky-500 text-slate-950 font-black shadow-md shadow-sky-500/20' : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
               }`}
             >
-              <Settings className="w-4 h-4" /> Settings
+              <Settings className="w-4 h-4" /> System Config
             </button>
           </nav>
+
+          {/* Quick World Clocks (As in image) */}
+          <div className="space-y-2 pt-3 border-t border-slate-800 text-[10px]">
+            <span className="font-bold text-slate-500 uppercase tracking-wider block">World Operations Clock</span>
+            <div className="grid grid-cols-2 gap-2 text-slate-300">
+              <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                <span className="text-slate-500 block">Cupertino</span>
+                <span className="font-black text-sky-400">05:25 AM</span>
+              </div>
+              <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                <span className="text-slate-500 block">Tokyo</span>
+                <span className="font-black text-emerald-400">21:25 PM</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-3 pt-4 border-t border-[#F1E8DF]">
-          <div className="bg-[#FAF7F2] p-3 rounded-2xl border border-[#EADBCC] shadow-2xs">
-            <span className="text-[10px] font-mono text-[#9C948B] uppercase font-bold block">PORTFOLIO VAULT</span>
-            <p className="text-lg font-black text-[#2D2A26] mt-0.5">₹{portfolioTotal.toLocaleString()}</p>
+        <div className="space-y-3 pt-4 border-t border-slate-800">
+          <div className="bg-[#070A12] p-3 rounded-xl border border-slate-800">
+            <span className="text-[10px] font-mono text-slate-500 uppercase font-bold block">NET CAPITAL VAULT</span>
+            <p className="text-base font-black text-emerald-400 mt-0.5 tracking-wide">₹{portfolioTotal.toLocaleString()}</p>
           </div>
           <button
             onClick={() => supabase.auth.signOut()}
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-[#9C948B] hover:text-[#E76F51] transition"
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-500 hover:text-rose-400 transition"
           >
-            <LogOut className="w-4 h-4" /> Sign Out
+            <LogOut className="w-4 h-4" /> Abort Session
           </button>
         </div>
       </aside>
 
-      {/* MAIN CONTAINER */}
-      <div className="flex-1 flex flex-col min-w-0 relative z-10">
+      {/* MAIN OPERATIONS WORKSPACE */}
+      <div className="flex-1 flex flex-col min-w-0 relative z-10 font-mono">
         
-        {/* Mobile Header */}
-        <header className="md:hidden ceramic-panel px-5 pt-4 pb-3 border-b border-[#F1E8DF] sticky top-0 z-20 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-[#FAF7F2] border border-[#EADBCC] flex items-center justify-center text-[#E07A5F] font-black text-sm">
-              {user.email ? user.email.charAt(0).toUpperCase() : 'A'}
+        {/* Top Navbar */}
+        <header className="terminal-panel px-5 md:px-8 py-3.5 border-b border-slate-800 sticky top-0 z-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:hidden">
+              <Compass className="w-5 h-5 text-sky-400" />
+              <span className="text-base font-black text-white tracking-widest">AIRLINESIM</span>
             </div>
-            <span className="text-xl font-black tracking-tight text-[#E07A5F]">FinTrack</span>
+            <div className="hidden md:flex items-center gap-2 bg-[#070A12] border border-slate-800 rounded-lg px-3 py-1 text-xs text-slate-400">
+              <Search className="w-3.5 h-3.5 text-slate-500" />
+              <span>Quick command or route lookup...</span>
+            </div>
           </div>
 
-          <button className="p-2 text-[#E07A5F] hover:bg-[#FAF7F2] rounded-full transition">
-            <Bell className="w-5 h-5" />
-          </button>
-        </header>
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline-flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-[11px] font-bold px-3 py-1 rounded-full">
+              <Radio className="w-3 h-3 animate-pulse" /> 510 min AS
+            </span>
 
-        {/* Laptop Subheader */}
-        <div className="hidden md:flex items-center justify-between px-8 py-4 ceramic-panel border-b border-[#F1E8DF]">
-          <div>
-            <h1 className="text-lg font-black text-[#2D2A26] capitalize">{activeTab}</h1>
-            <p className="text-xs text-[#9C948B] font-medium">Logged in as {user.email}</p>
-          </div>
-          <div className="flex items-center gap-2.5">
             {goals.length > 1 && (
               <button
                 onClick={() => {
@@ -948,149 +948,95 @@ export default function App() {
                   setGoalTransferNote('');
                   setIsGoalTransferModalOpen(true);
                 }}
-                className="bg-[#2A9D8F]/10 hover:bg-[#2A9D8F]/20 text-[#2A9D8F] font-bold text-xs px-3.5 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95 border border-[#2A9D8F]/30"
+                className="hidden md:flex bg-sky-500/15 hover:bg-sky-500/25 text-sky-400 border border-sky-400/30 text-xs font-bold px-3 py-1.5 rounded-lg items-center gap-1.5 transition active:scale-95"
               >
-                <Share2 className="w-3.5 h-3.5" /> Goal ➔ Goal
+                <Share2 className="w-3.5 h-3.5" /> Reallocate
               </button>
             )}
-            <button
-              onClick={() => {
-                setTransferAmountStr('');
-                setTransferNote('');
-                setIsTransferModalOpen(true);
-              }}
-              className="bg-white border border-[#EADBCC] hover:bg-[#FAF7F2] text-[#E07A5F] font-bold text-xs px-4 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95 shadow-xs"
-            >
-              <ArrowLeftRight className="w-3.5 h-3.5" /> Shift Funds
-            </button>
+
             <button
               onClick={() => setIsAddGoalOpen(true)}
-              className="bg-[#E07A5F] hover:bg-[#D46B50] text-white font-bold text-xs px-4 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95 shadow-md shadow-[#E07A5F]/20"
+              className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition active:scale-95 shadow-md shadow-sky-500/20"
             >
-              <Plus className="w-3.5 h-3.5" /> New Goal
+              <Plus className="w-3.5 h-3.5" /> New Fleet Goal
             </button>
           </div>
-        </div>
+        </header>
 
-        {/* CONTENT WORKSPACE */}
-        <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full flex-1">
+        {/* WORKSPACE CONTENT */}
+        <div className="p-4 sm:p-6 lg:p-7 max-w-6xl mx-auto w-full flex-1">
 
-          {/* TAB 1: HOME */}
+          {/* TAB 1: OVERVIEW */}
           {activeTab === 'home' && (
-            <div className="space-y-6 max-w-2xl mx-auto">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-black text-[#2D2A26] tracking-tight">
-                  Good morning, {user.email?.split('@')[0] || 'Member'}
-                </h1>
-                <p className="text-xs sm:text-sm font-semibold text-[#9C948B] mt-0.5">
-                  Here's a quick look at your sanctuary today.
-                </p>
-              </div>
-
-              <div className="ceramic-panel rounded-3xl p-6 flex items-center justify-between">
+            <div className="space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
                 <div>
-                  <span className="text-xs font-mono uppercase tracking-wider text-[#9C948B] font-bold block">
-                    Total Vault
-                  </span>
-                  <p className="text-3xl sm:text-4xl font-black text-[#2D2A26] mt-1 tracking-tight">
-                    ₹{portfolioTotal.toLocaleString()}
-                  </p>
+                  <h1 className="text-xl sm:text-2xl font-black text-white tracking-widest uppercase">
+                    Flight Operations & Capital Overview
+                  </h1>
+                  <p className="text-xs text-slate-400">Callsign: {user.email}</p>
                 </div>
-                <div className="w-14 h-14 rounded-full bg-[#2A9D8F]/15 text-[#2A9D8F] flex items-center justify-center">
-                  <Landmark className="w-7 h-7 text-[#2A9D8F]" />
+                <div className="text-xs text-slate-400 bg-slate-900/90 border border-slate-800 px-3 py-1.5 rounded-lg">
+                  System Date: <span className="text-sky-400 font-bold">13 Oct 2034 // 05:25 AM</span>
                 </div>
               </div>
 
-              <div className="space-y-3 pt-2">
-                <h2 className="text-lg font-black text-[#2D2A26]">Quick Actions</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button
-                    onClick={() => {
-                      setTransferAmountStr('');
-                      setTransferNote('');
-                      setIsTransferModalOpen(true);
-                    }}
-                    className="ceramic-panel hover:bg-white text-[#E07A5F] font-bold text-xs py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow-xs"
-                  >
-                    <ArrowLeftRight className="w-4 h-4" /> Shift Funds (Cash/Bank)
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setActionType('deposit');
-                      setAmountStr('');
-                      setNote('');
-                      setIsTxModalOpen(true);
-                    }}
-                    className="bg-[#E07A5F] hover:bg-[#D46B50] text-white font-bold text-xs py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-98 shadow-md shadow-[#E07A5F]/20 transition"
-                  >
-                    <Plus className="w-4 h-4" /> Add / Withdraw
-                  </button>
+              {/* Top Stat Ribbon (As in Image) */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="terminal-panel p-4 rounded-xl border border-slate-800">
+                  <span className="text-[10px] text-slate-500 uppercase font-bold block">RESERVE CAPITAL</span>
+                  <p className="text-2xl font-black text-emerald-400 mt-1">₹{portfolioTotal.toLocaleString()}</p>
+                  <span className="text-[10px] text-emerald-500 block mt-0.5">● Fully Protected</span>
                 </div>
 
-                {goals.length > 1 && (
-                  <button
-                    onClick={() => {
-                      setTargetGoalId(eligibleTargetGoals[0]?.id || '');
-                      setGoalTransferAmountStr('');
-                      setGoalTransferNote('');
-                      setIsGoalTransferModalOpen(true);
-                    }}
-                    className="w-full bg-[#2A9D8F]/10 hover:bg-[#2A9D8F]/20 text-[#2A9D8F] border border-[#2A9D8F]/30 font-bold text-xs py-3.5 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow-xs backdrop-blur-md"
-                  >
-                    <Share2 className="w-4 h-4 text-[#2A9D8F]" /> Transfer Money to Another Goal
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
+                <div className="terminal-panel p-4 rounded-xl border border-slate-800">
+                  <span className="text-[10px] text-slate-500 uppercase font-bold block">ACTIVE CORRIDORS</span>
+                  <p className="text-2xl font-black text-sky-400 mt-1">{goals.length} Routes</p>
+                  <span className="text-[10px] text-slate-400 block mt-0.5">Monitoring timeline horizon</span>
+                </div>
 
-          {/* TAB 2: HISTORY */}
-          {activeTab === 'history' && (
-            <div className="space-y-4 max-w-3xl mx-auto">
-              <div>
-                <h1 className="text-2xl font-black text-[#2D2A26] tracking-tight">Transaction Stream</h1>
-                <p className="text-xs font-semibold text-[#9C948B]">Recent savings and deposit records.</p>
+                <div className="terminal-panel p-4 rounded-xl border border-slate-800">
+                  <span className="text-[10px] text-slate-500 uppercase font-bold block">JET FUEL / PACE COMMITTED</span>
+                  <p className="text-2xl font-black text-amber-400 mt-1">₹{requiredPace}<span className="text-xs text-slate-400 font-normal">/day</span></p>
+                  <span className="text-[10px] text-amber-500 block mt-0.5">Required pace velocity</span>
+                </div>
               </div>
 
-              <div className="ceramic-panel rounded-3xl p-5 space-y-4">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-[#9C948B] font-bold block border-b border-[#F1E8DF] pb-2">
-                  All Records
-                </span>
+              {/* Recent Flights Table (LEBL -> KLAX style) */}
+              <div className="terminal-panel rounded-xl p-5 border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                  <h3 className="text-xs font-black text-white tracking-widest uppercase flex items-center gap-2">
+                    <Plane className="w-4 h-4 text-sky-400" /> Recent Flight Corridors & Ledger
+                  </h3>
+                  <span className="text-[10px] text-sky-400 font-bold">{allTransactions.length} Logged Entries</span>
+                </div>
 
-                <div className="divide-y divide-[#F1E8DF]">
+                <div className="divide-y divide-slate-800/80 max-h-80 overflow-y-auto">
                   {allTransactions.length === 0 ? (
-                    <p className="text-xs text-[#9C948B] py-8 text-center">No transactions recorded yet.</p>
+                    <p className="text-xs text-slate-500 py-6 text-center">No flights or transactions logged in ledger.</p>
                   ) : (
                     allTransactions.map((tx) => {
                       const isWithdraw = tx.action === 'withdraw';
                       return (
-                        <div key={tx.id} className="py-3.5 flex items-center justify-between">
+                        <div key={tx.id} className="py-3 flex items-center justify-between text-xs">
                           <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
-                              isWithdraw ? 'bg-[#E76F51]/15 text-[#E76F51]' : 'bg-[#2A9D8F]/15 text-[#2A9D8F]'
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                              isWithdraw ? 'bg-rose-950/70 text-rose-400 border border-rose-800/50' : 'bg-sky-950/70 text-sky-400 border border-sky-800/50'
                             }`}>
-                              {tx.type === 'online' ? <Smartphone className="w-5 h-5" /> : <Banknote className="w-5 h-5" />}
+                              {tx.type === 'online' ? <Smartphone className="w-4 h-4" /> : <Banknote className="w-4 h-4" />}
                             </div>
                             <div>
-                              <p className="text-xs font-bold text-[#2D2A26] leading-snug">{tx.note || 'Savings Entry'}</p>
-                              <p className="text-[10px] text-[#9C948B] font-medium">
-                                {tx.goalName} • {tx.type} • {tx.date}
+                              <p className="font-bold text-white">{tx.note || 'Flight Inflow'}</p>
+                              <p className="text-[10px] text-slate-500 font-mono">
+                                Corridor: {tx.goalName} • {tx.type.toUpperCase()} • {tx.date}
                               </p>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <span className={`text-xs font-black px-2.5 py-1 rounded-xl font-mono inline-block border ${
-                              isWithdraw 
-                                ? 'bg-[#E76F51]/10 text-[#E76F51] border-[#E76F51]/25' 
-                                : 'bg-[#2A9D8F]/10 text-[#2A9D8F] border-[#2A9D8F]/25'
-                            }`}>
-                              {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
-                            </span>
-                            <p className="text-[9px] text-[#9C948B] font-medium mt-0.5">
-                              {isWithdraw ? 'Debited' : 'Completed'}
-                            </p>
-                          </div>
+                          <span className={`font-mono font-black text-sm ${
+                            isWithdraw ? 'text-rose-400' : 'text-emerald-400'
+                          }`}>
+                            {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
+                          </span>
                         </div>
                       );
                     })
@@ -1100,163 +1046,182 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 3: GOALS */}
+          {/* TAB 2: FLIGHT LEDGER */}
+          {activeTab === 'history' && (
+            <div className="space-y-4 max-w-4xl mx-auto">
+              <div className="border-b border-slate-800 pb-3">
+                <h1 className="text-xl font-black text-white tracking-widest uppercase">Flight Operations Ledger</h1>
+                <p className="text-xs text-slate-400">Complete audit trail of all capital transactions.</p>
+              </div>
+
+              <div className="terminal-panel rounded-xl p-5 border border-slate-800 space-y-3">
+                <div className="divide-y divide-slate-800">
+                  {allTransactions.map((tx) => {
+                    const isWithdraw = tx.action === 'withdraw';
+                    return (
+                      <div key={tx.id} className="py-3 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                            isWithdraw ? 'bg-rose-950/60 text-rose-400 border border-rose-800/40' : 'bg-sky-950/60 text-sky-400 border border-sky-800/40'
+                          }`}>
+                            <Plane className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span className="font-bold text-white block">{tx.note || 'Capital Transaction'}</span>
+                            <span className="text-[10px] text-slate-500 font-mono">Route: {tx.goalName} • {tx.date}</span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className={`font-mono font-black text-sm ${
+                            isWithdraw ? 'text-rose-400' : 'text-emerald-400'
+                          }`}>
+                            {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
+                          </span>
+                          <span className="text-[10px] text-slate-500 block uppercase">
+                            {isWithdraw ? 'Debited' : 'Verified'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: FLEET & GOALS */}
           {activeTab === 'goals' && (
             <div className="space-y-6">
               
+              {/* Top Goal Selectors (Terminal Style) */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between px-1">
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-[#9C948B] font-bold">
-                    Active Goals ({goals.length})
-                  </span>
-                  <button 
-                    onClick={() => setIsAddGoalOpen(true)}
-                    className="text-xs font-bold text-[#E07A5F] hover:text-[#D46B50]"
-                  >
-                    + Create Goal
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold uppercase tracking-widest text-slate-400">Active Aircraft & Fleet Goals ({goals.length})</span>
+                  <button onClick={() => setIsAddGoalOpen(true)} className="text-sky-400 font-bold hover:underline">
+                    + Deploy Fleet Target
                   </button>
                 </div>
 
-                {goals.length === 0 ? (
-                  <div className="ceramic-panel border-2 border-dashed border-[#EADBCC] rounded-3xl p-8 text-center">
-                    <button
-                      onClick={() => setIsAddGoalOpen(true)}
-                      className="w-10 h-10 rounded-full border border-[#EADBCC] text-[#9C948B] mx-auto flex items-center justify-center"
-                    >
-                      <Plus className="w-5 h-5" />
-                    </button>
-                    <p className="text-xs font-bold text-[#7D756D] mt-2">No goals created yet</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {goals.map((g) => {
-                      const isSelected = g.id === selectedGoalId;
-                      const gTxs = txStore[g.id] || [];
-                      let gSaved = 0;
-                      gTxs.forEach((t) => {
-                        gSaved += (t.action === 'withdraw' ? -t.amount : t.amount);
-                      });
-                      gSaved = Math.max(0, gSaved);
-                      const gPct = Math.min(100, Math.round((gSaved / g.targetAmount) * 100));
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {goals.map((g) => {
+                    const isSelected = g.id === selectedGoalId;
+                    const gTxs = txStore[g.id] || [];
+                    let gSaved = 0;
+                    gTxs.forEach((t) => { gSaved += (t.action === 'withdraw' ? -t.amount : t.amount); });
+                    gSaved = Math.max(0, gSaved);
+                    const gPct = Math.min(100, Math.round((gSaved / g.targetAmount) * 100));
 
-                      const gStart = new Date(g.startDate || today);
-                      const gTarget = new Date(g.targetDate);
-                      const gTotalDays = Math.max(1, Math.floor((gTarget - gStart) / (1000 * 60 * 60 * 24)));
-                      const gElapsed = Math.max(0, Math.floor((today - gStart) / (1000 * 60 * 60 * 24)));
-                      const gExpected = Math.round(g.targetAmount * Math.min(1, gElapsed / gTotalDays));
-                      const gDailyPace = Math.max(1, Math.round(g.targetAmount / gTotalDays));
-                      
-                      const isDelayed = gSaved < (gExpected - 20) && gSaved < g.targetAmount;
-                      const sidebarDaysGap = Math.max(1, Math.round(Math.abs(gSaved - gExpected) / gDailyPace));
-                      const GoalIcon = ICON_MAP[g.category] || Target;
+                    const gStart = new Date(g.startDate || today);
+                    const gTarget = new Date(g.targetDate);
+                    const gTotalDays = Math.max(1, Math.floor((gTarget - gStart) / (1000 * 60 * 60 * 24)));
+                    const gElapsed = Math.max(0, Math.floor((today - gStart) / (1000 * 60 * 60 * 24)));
+                    const gExpected = Math.round(g.targetAmount * Math.min(1, gElapsed / gTotalDays));
+                    const gDailyPace = Math.max(1, Math.round(g.targetAmount / gTotalDays));
+                    
+                    const isDelayed = gSaved < (gExpected - 20) && gSaved < g.targetAmount;
+                    const sidebarDaysGap = Math.max(1, Math.round(Math.abs(gSaved - gExpected) / gDailyPace));
+                    const GoalIcon = ICON_MAP[g.category] || Plane;
 
-                      return (
-                        <div
-                          key={g.id}
-                          onClick={() => setSelectedGoalId(g.id)}
-                          className={`ceramic-panel p-4 sm:p-5 rounded-3xl border transition-all cursor-pointer ${
-                            isSelected 
-                              ? 'border-[#E07A5F] ring-2 ring-[#E07A5F]/15 shadow-md' 
-                              : 'hover:border-[#EADBCC]'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-xl bg-[#FAF7F2] border border-[#EADBCC] text-[#E07A5F] flex items-center justify-center">
-                                <GoalIcon className="w-4 h-4" />
-                              </div>
-                              <span className="text-[9px] font-mono uppercase tracking-wider bg-[#2D2A26] text-white px-2 py-0.5 rounded-full font-bold">
-                                {g.badge || 'Goal'}
-                              </span>
-                            </div>
-                            <span className="text-xs font-mono font-black text-[#2A9D8F]">{gPct}%</span>
-                          </div>
-
-                          <h3 className="text-base font-black text-[#2D2A26] mt-2">{g.name}</h3>
-                          
-                          <div className="flex items-center justify-between text-xs mt-1">
-                            <span className="font-semibold text-[#2D2A26]">
-                              ₹{gSaved.toLocaleString()} <span className="text-[#9C948B] font-normal">/ ₹{g.targetAmount.toLocaleString()}</span>
+                    return (
+                      <div
+                        key={g.id}
+                        onClick={() => setSelectedGoalId(g.id)}
+                        className={`terminal-panel p-4 rounded-xl border cursor-pointer transition ${
+                          isSelected 
+                            ? 'border-sky-400 bg-sky-950/20 shadow-lg shadow-sky-500/10' 
+                            : 'border-slate-800 hover:border-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2">
+                            <GoalIcon className="w-4 h-4 text-sky-400" />
+                            <span className="text-[10px] uppercase font-bold text-sky-300 bg-sky-950 px-2 py-0.5 rounded border border-sky-800/60">
+                              {g.badge || 'Fleet'}
                             </span>
-                            {isDelayed && (
-                              <span className="text-[10px] font-mono font-bold text-[#E76F51] bg-[#E76F51]/10 px-2 py-0.5 rounded-full">
-                                -{sidebarDaysGap}d delay
-                              </span>
-                            )}
                           </div>
-
-                          <div className="w-full bg-[#FAF7F2] h-1.5 rounded-full overflow-hidden mt-3 border border-[#EADBCC]/60">
-                            <div className="h-full bg-[#2A9D8F] rounded-full" style={{ width: `${gPct}%` }} />
-                          </div>
+                          <span className="font-mono font-black text-emerald-400">{gPct}%</span>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+
+                        <h3 className="text-sm font-black text-white mt-2 tracking-wide">{g.name}</h3>
+
+                        <div className="flex items-center justify-between text-xs mt-1 font-mono">
+                          <span className="text-slate-300">₹{gSaved.toLocaleString()} <span className="text-slate-500">/ ₹{g.targetAmount.toLocaleString()}</span></span>
+                          {isDelayed && (
+                            <span className="text-[10px] font-bold text-rose-400 bg-rose-950/80 px-1.5 py-0.5 rounded border border-rose-800/60">
+                              -{sidebarDaysGap}d delay
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2.5">
+                          <div className="h-full bg-sky-400 rounded-full" style={{ width: `${gPct}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
+              {/* Active Fleet Goal Command Deck */}
               {activeGoal && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
                   
-                  {/* Left Column */}
+                  {/* Left Console */}
                   <div className="lg:col-span-7 space-y-4">
-                    
-                    {/* Goal Header */}
-                    <div className="ceramic-panel rounded-3xl p-5 sm:p-6 space-y-4">
+                    <div className="terminal-panel rounded-xl p-5 border border-slate-800 space-y-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-2xl bg-[#FAF7F2] border border-[#EADBCC] text-[#E07A5F] flex items-center justify-center shadow-xs">
+                          <div className="w-11 h-11 rounded-xl bg-sky-500/20 border border-sky-400/40 text-sky-400 flex items-center justify-center">
                             <ActiveIcon className="w-6 h-6" />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h2 className="text-xl sm:text-2xl font-black text-[#2D2A26] tracking-tight">{activeGoal.name}</h2>
-                              <span className="text-[9px] font-mono uppercase tracking-wider bg-[#2D2A26] text-white px-2 py-0.5 rounded-full font-bold">
+                              <h2 className="text-lg font-black text-white tracking-wide">{activeGoal.name}</h2>
+                              <span className="text-[9px] uppercase font-bold text-sky-300 bg-sky-950 px-2 py-0.5 rounded border border-sky-800/60">
                                 {activeGoal.badge}
                               </span>
                             </div>
-                            <p className="text-xs font-medium text-[#9C948B] mt-0.5">
-                              Target Ceiling: ₹{activeGoal.targetAmount.toLocaleString()}
+                            <p className="text-xs text-slate-400 font-mono mt-0.5">
+                              Cap Ceiling: ₹{activeGoal.targetAmount.toLocaleString()}
                             </p>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-1">
                           <button 
-                            onClick={handleOpenEditGoal}
-                            className="p-2 text-[#9C948B] hover:text-[#E07A5F] hover:bg-[#FAF7F2] rounded-xl transition"
-                            title="Extend Timeline / Edit Goal"
+                            onClick={handleOpenEditGoal} 
+                            className="p-2 text-slate-400 hover:text-sky-400 hover:bg-slate-800 rounded-lg transition"
+                            title="Extend Timeline"
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
-
                           <button 
-                            onClick={() => handleDeleteGoal(activeGoal.id)}
-                            className="p-2 text-[#9C948B] hover:text-[#E76F51] hover:bg-rose-50 rounded-xl transition"
-                            title="Delete Goal"
+                            onClick={() => handleDeleteGoal(activeGoal.id)} 
+                            className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition"
+                            title="Delete"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
 
-                      {/* Date Box */}
-                      <div className="bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl p-3 flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2 text-[#7D756D] font-semibold text-[11px]">
-                          <Calendar className="w-3.5 h-3.5 text-[#9C948B]" />
+                      {/* Flight Horizon Date Box */}
+                      <div className="bg-[#070A12] border border-slate-800 rounded-xl p-3 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2 text-slate-300 font-mono text-[11px]">
+                          <Calendar className="w-3.5 h-3.5 text-slate-500" />
                           <span>{activeGoal.startDate}</span>
-                          <ArrowRight className="w-3 h-3 text-[#9C948B]" />
+                          <ArrowRight className="w-3 h-3 text-sky-400" />
                           <span>{activeGoal.targetDate}</span>
                         </div>
                         <button
                           onClick={handleOpenEditGoal}
-                          className="text-[11px] font-bold text-[#E07A5F] bg-white border border-[#EADBCC] hover:bg-[#FAF7F2] px-2.5 py-1 rounded-xl transition"
+                          className="text-[11px] font-bold text-sky-400 bg-sky-950/80 border border-sky-800/60 px-2.5 py-0.5 rounded transition hover:bg-sky-900/60"
                         >
                           {daysLeft}d left (Extend ➔)
                         </button>
                       </div>
 
-                      {/* Action Buttons */}
+                      {/* Control Buttons */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <button
                           onClick={() => {
@@ -1264,7 +1229,7 @@ export default function App() {
                             setTransferNote('');
                             setIsTransferModalOpen(true);
                           }}
-                          className="bg-white border border-[#EADBCC] hover:bg-[#FAF7F2] text-[#E07A5F] font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 active:scale-98 shadow-xs transition"
+                          className="bg-slate-900 hover:bg-slate-800 text-sky-400 border border-slate-700 font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95"
                         >
                           <ArrowLeftRight className="w-3.5 h-3.5" /> Shift Funds
                         </button>
@@ -1277,9 +1242,9 @@ export default function App() {
                               setGoalTransferNote('');
                               setIsGoalTransferModalOpen(true);
                             }}
-                            className="bg-[#2A9D8F]/10 hover:bg-[#2A9D8F]/20 text-[#2A9D8F] border border-[#2A9D8F]/30 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 active:scale-98 transition shadow-xs"
+                            className="bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-400 border border-emerald-800/60 font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95"
                           >
-                            <Share2 className="w-3.5 h-3.5 text-[#2A9D8F]" /> Transfer to Goal
+                            <Share2 className="w-3.5 h-3.5" /> Reallocate
                           </button>
                         )}
 
@@ -1290,191 +1255,118 @@ export default function App() {
                             setNote('');
                             setIsTxModalOpen(true);
                           }}
-                          className={`bg-[#E07A5F] hover:bg-[#D46B50] text-white font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 active:scale-98 shadow-md shadow-[#E07A5F]/20 transition ${
-                            eligibleTargetGoals.length === 0 ? 'sm:col-span-2' : ''
-                          }`}
+                          className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition active:scale-95 shadow-md shadow-sky-500/20"
                         >
                           <Plus className="w-3.5 h-3.5" /> Add / Withdraw
                         </button>
                       </div>
                     </div>
 
-                    {/* Schedule Status Card */}
-                    <div className={`p-4 rounded-3xl border flex flex-col gap-2 ${
+                    {/* Schedule Velocity Status */}
+                    <div className={`p-4 rounded-xl border flex flex-col gap-1.5 ${
                       trajectoryStatus === 'delay' 
-                        ? 'bg-[#E76F51]/10 border-[#E76F51]/25 text-[#A83D24] backdrop-blur-md' 
-                        : 'bg-[#2A9D8F]/10 border-[#2A9D8F]/25 text-[#1D6C63] backdrop-blur-md'
+                        ? 'bg-rose-950/40 border-rose-900/60 text-rose-300' 
+                        : 'bg-emerald-950/40 border-emerald-900/60 text-emerald-300'
                     }`}>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
-                          <AlertCircle className={`w-4 h-4 ${trajectoryStatus === 'delay' ? 'text-[#E76F51]' : 'text-[#2A9D8F]'}`} />
-                          <span className="text-[11px] font-black uppercase tracking-wider font-mono">
-                            Schedule Status:
-                          </span>
+                          <AlertCircle className="w-4 h-4 text-sky-400" />
+                          <span className="font-black uppercase tracking-wider">CORRIDOR SCHEDULE VELOCITY</span>
                         </div>
-                        <span className={`text-[10px] font-mono font-black px-2.5 py-0.5 rounded-full text-white ${
-                          trajectoryStatus === 'delay' ? 'bg-[#E76F51]' : 'bg-[#2A9D8F]'
+                        <span className={`text-[10px] font-black px-2 py-0.5 rounded ${
+                          trajectoryStatus === 'delay' ? 'bg-rose-900/90 text-rose-200' : 'bg-emerald-900/90 text-emerald-200'
                         }`}>
                           {trajectoryStatus === 'delay' ? `-${daysDifference}d Behind (-₹${varianceAmount.toLocaleString()})` : 'On Track'}
                         </span>
                       </div>
-                      <p className="text-xs font-semibold opacity-90 leading-snug">
-                        Schedule gap: {daysDifference} days. Suggested rate: ₹{requiredPace}/day.
+                      <p className="text-xs text-slate-400 font-mono">
+                        Deficit: {daysDifference} days. Target required rate: ₹{requiredPace}/day.
                         {trajectoryStatus === 'delay' && (
-                          <span 
-                            onClick={handleOpenEditGoal}
-                            className="ml-1 text-[#E07A5F] underline font-bold cursor-pointer"
-                          >
-                            Extend end date?
+                          <span onClick={handleOpenEditGoal} className="ml-1 text-sky-400 underline font-bold cursor-pointer">
+                            Extend arrival date?
                           </span>
                         )}
                       </p>
                     </div>
 
-                    {/* Total Saved Card */}
-                    <div className="ceramic-panel rounded-3xl p-5 space-y-4">
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-[11px] font-mono font-bold text-[#9C948B]">
-                          <span>TIMELINE WINDOW</span>
-                          <span>{daysElapsed} OF {totalDurationDays} DAYS ({timeProgressPct}%)</span>
-                        </div>
-                        <div className="h-2 w-full bg-[#FAF7F2] rounded-full overflow-hidden border border-[#EADBCC]/60">
-                          <div className="h-full bg-[#2D2A26] rounded-full" style={{ width: `${timeProgressPct}%` }} />
-                        </div>
-                      </div>
-
-                      <div className="pt-1 flex items-baseline justify-between">
+                    {/* Progress Bar & Sub-allocations */}
+                    <div className="terminal-panel rounded-xl p-5 border border-slate-800 space-y-3">
+                      <div className="flex items-baseline justify-between">
                         <div>
-                          <span className="text-[10px] font-mono uppercase tracking-wider text-[#9C948B] font-bold block">
-                            TOTAL VAULT SAVED
-                          </span>
-                          <span className="text-3xl font-black text-[#2D2A26] tracking-tight">
-                            ₹{totalSaved.toLocaleString()}
-                          </span>
+                          <span className="text-[10px] text-slate-500 uppercase font-bold block">SAVED FLEET CAPITAL</span>
+                          <span className="text-3xl font-black text-white font-mono">₹{totalSaved.toLocaleString()}</span>
                         </div>
-                        <div className="text-right">
-                          <span className="text-2xl font-black text-[#2A9D8F] font-mono">{percentage}%</span>
-                          <span className="text-[11px] text-[#9C948B] block font-medium">₹{remainingNeeded.toLocaleString()} remaining</span>
+                        <div className="text-right font-mono">
+                          <span className="text-xl font-black text-emerald-400">{percentage}%</span>
+                          <span className="text-[11px] text-slate-500 block">₹{remainingNeeded.toLocaleString()} remaining</span>
                         </div>
                       </div>
 
-                      <div className="h-2 w-full bg-[#FAF7F2] rounded-full overflow-hidden border border-[#EADBCC]/60">
-                        <div className="h-full bg-[#2A9D8F] rounded-full" style={{ width: `${percentage}%` }} />
+                      <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-sky-400 rounded-full" style={{ width: `${percentage}%` }} />
                       </div>
 
-                      <div className="flex items-center gap-2 pt-1 overflow-x-auto no-scrollbar">
-                        <div className="bg-[#2A9D8F]/10 border border-[#2A9D8F]/25 px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shrink-0">
-                          <Banknote className="w-3.5 h-3.5 text-[#2A9D8F]" />
-                          <span className="text-xs font-mono font-black text-[#1D6C63]">
-                            Cash: ₹{totalCash.toLocaleString()}
-                          </span>
+                      <div className="flex items-center gap-2 pt-2 text-xs font-mono">
+                        <div className="bg-[#070A12] border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-emerald-400">
+                          <Banknote className="w-3.5 h-3.5" /> Physical Cash: ₹{totalCash.toLocaleString()}
                         </div>
-
-                        <div className="bg-[#2A9D8F]/10 border border-[#2A9D8F]/25 px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shrink-0">
-                          <Smartphone className="w-3.5 h-3.5 text-[#2A9D8F]" />
-                          <span className="text-xs font-mono font-black text-[#1D6C63]">
-                            Bank: ₹{totalOnline.toLocaleString()}
-                          </span>
+                        <div className="bg-[#070A12] border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-sky-400">
+                          <Smartphone className="w-3.5 h-3.5" /> Online/Bank: ₹{totalOnline.toLocaleString()}
                         </div>
-
-                        <button
-                          onClick={() => {
-                            setTransferDirection('bank_to_cash');
-                            setTransferAmountStr('');
-                            setTransferNote('');
-                            setIsTransferModalOpen(true);
-                          }}
-                          className="bg-white border border-[#EADBCC] text-[#7D756D] text-xs font-bold px-3 py-1.5 rounded-2xl shrink-0 active:bg-[#FAF7F2]"
-                        >
-                          Withdraw to Cash ➔
-                        </button>
                       </div>
                     </div>
                   </div>
 
-                  {/* Right Column */}
+                  {/* Right Console */}
                   <div className="lg:col-span-5 space-y-4">
                     
-                    {/* Pace & Timeline Card */}
-                    <div className="ceramic-panel rounded-3xl p-5 space-y-4">
-                      <div className="flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-[#E07A5F]" />
-                        <h3 className="text-base font-black text-[#2D2A26] tracking-tight">Pace & Timeline</h3>
+                    {/* Pace & Timeline Metric Tile */}
+                    <div className="terminal-panel rounded-xl p-5 border border-slate-800 space-y-4">
+                      <div className="flex items-center gap-2 text-xs font-bold text-sky-400 border-b border-slate-800 pb-2">
+                        <Activity className="w-4 h-4" /> PACE & HORIZON TELEMETRY
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl p-4 space-y-1">
-                          <span className="text-[9px] font-mono uppercase font-bold text-[#9C948B] block flex items-center gap-1">
-                            <TrendingUp className="w-3 h-3 text-[#2A9D8F]" /> REQUIRED PACE
-                          </span>
-                          <span className="text-[10px] text-[#9C948B] font-medium block">Daily target</span>
-                          <p className="text-xl font-black text-[#E07A5F] font-mono">
-                            ₹{requiredPace}<span className="text-xs text-[#9C948B] font-normal">/d</span>
-                          </p>
-                          <div className="h-1.5 w-full bg-white rounded-full overflow-hidden mt-2 border border-[#EADBCC]">
-                            <div className="h-full bg-[#2A9D8F] rounded-full" style={{ width: '45%' }} />
-                          </div>
+                      <div className="grid grid-cols-2 gap-3 font-mono">
+                        <div className="bg-[#070A12] border border-slate-800 p-3 rounded-xl space-y-1">
+                          <span className="text-[9px] text-slate-500 uppercase font-bold block">DAILY VELOCITY</span>
+                          <p className="text-lg font-black text-sky-400">₹{requiredPace}<span className="text-xs text-slate-500 font-normal">/d</span></p>
                         </div>
-
-                        <div className="bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl p-4 space-y-1">
-                          <span className="text-[9px] font-mono uppercase font-bold text-[#9C948B] block flex items-center gap-1">
-                            <Calendar className="w-3 h-3 text-[#E07A5F]" /> HORIZON
-                          </span>
-                          <span className="text-[10px] text-[#9C948B] font-medium block">Time remaining</span>
-                          <p className="text-xl font-black text-[#2D2A26] font-mono">
-                            {daysLeft} <span className="text-xs font-normal text-[#9C948B]">days</span>
-                          </p>
-                          <div className="h-1.5 w-full bg-white rounded-full overflow-hidden mt-2 border border-[#EADBCC]">
-                            <div className="h-full bg-[#E07A5F] rounded-full" style={{ width: `${timeProgressPct}%` }} />
-                          </div>
+                        <div className="bg-[#070A12] border border-slate-800 p-3 rounded-xl space-y-1">
+                          <span className="text-[9px] text-slate-500 uppercase font-bold block">TIME REMAINING</span>
+                          <p className="text-lg font-black text-white">{daysLeft} <span className="text-xs text-slate-500 font-normal">days</span></p>
                         </div>
                       </div>
 
-                      <div className="pt-2 border-t border-[#F1E8DF] flex items-center justify-between text-xs font-semibold">
-                        <span className="text-[#7D756D]">
-                          {trajectoryStatus === 'delay' ? 'Pace adjustment recommended' : 'On track to meet goals.'}
-                        </span>
-                        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                          trajectoryStatus === 'delay' ? 'bg-[#E76F51]/15 text-[#E76F51]' : 'bg-[#2A9D8F]/15 text-[#2A9D8F]'
+                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs">
+                        <span className="text-slate-400">Flight Telemetry Status:</span>
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                          trajectoryStatus === 'delay' ? 'bg-rose-950 text-rose-300' : 'bg-emerald-950 text-emerald-300'
                         }`}>
-                          {trajectoryStatus === 'delay' ? 'Needs Focus' : 'Healthy'}
+                          {trajectoryStatus === 'delay' ? 'NEEDS ATTENTION' : 'HEALTHY'}
                         </span>
                       </div>
                     </div>
 
-                    {/* Goal Transaction Stream */}
-                    <div className="ceramic-panel rounded-3xl p-5 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-xs font-black text-[#2D2A26] tracking-wide uppercase">Transaction Stream</h3>
-                        <span className="text-[10px] font-mono font-bold bg-[#FAF7F2] text-[#E07A5F] border border-[#EADBCC] px-2.5 py-0.5 rounded-full">
-                          {currentTxs.length} records
-                        </span>
+                    {/* Goal-Specific Transaction Records */}
+                    <div className="terminal-panel rounded-xl p-5 border border-slate-800 space-y-3">
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-2 text-xs">
+                        <span className="font-bold text-white uppercase tracking-wider">Recent Route Activity</span>
+                        <span className="text-[10px] text-sky-400">{currentTxs.length} records</span>
                       </div>
 
-                      <div className="divide-y divide-[#F1E8DF] max-h-60 overflow-y-auto">
+                      <div className="divide-y divide-slate-800 max-h-64 overflow-y-auto">
                         {currentTxs.length === 0 ? (
-                          <p className="text-xs text-[#9C948B] py-4 text-center">No transactions logged yet.</p>
+                          <p className="text-xs text-slate-500 py-4 text-center font-mono">No entries logged on this route.</p>
                         ) : (
-                          currentTxs.slice(0, 6).map((tx) => {
+                          currentTxs.slice(0, 5).map((tx) => {
                             const isWithdraw = tx.action === 'withdraw';
                             return (
-                              <div key={tx.id} className="py-2.5 flex items-center justify-between">
-                                <div className="flex items-center gap-2.5">
-                                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
-                                    isWithdraw ? 'bg-[#E76F51]/15 text-[#E76F51]' : 'bg-[#2A9D8F]/15 text-[#2A9D8F]'
-                                  }`}>
-                                    {tx.type === 'online' ? <Smartphone className="w-4 h-4" /> : <Banknote className="w-4 h-4" />}
-                                  </div>
-                                  <div>
-                                    <p className="text-xs font-bold text-[#2D2A26] leading-tight">{tx.note || 'Savings Entry'}</p>
-                                    <p className="text-[10px] text-[#9C948B] capitalize">{tx.type} • {tx.date}</p>
-                                  </div>
+                              <div key={tx.id} className="py-2.5 flex items-center justify-between text-xs font-mono">
+                                <div>
+                                  <p className="text-white font-bold">{tx.note || 'Flight Entry'}</p>
+                                  <p className="text-[10px] text-slate-500">{tx.type.toUpperCase()} • {tx.date}</p>
                                 </div>
-                                <span className={`text-xs font-black px-2 py-0.5 rounded-lg font-mono border ${
-                                  isWithdraw 
-                                    ? 'bg-[#E76F51]/10 text-[#E76F51] border-[#E76F51]/25' 
-                                    : 'bg-[#2A9D8F]/10 text-[#2A9D8F] border-[#2A9D8F]/25'
-                                }`}>
+                                <span className={`font-black ${isWithdraw ? 'text-rose-400' : 'text-emerald-400'}`}>
                                   {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
                                 </span>
                               </div>
@@ -1490,48 +1382,39 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 4: SETTINGS */}
+          {/* TAB 4: SYSTEM CONFIG */}
           {activeTab === 'settings' && (
-            <div className="space-y-6 max-w-lg mx-auto">
-              <div>
-                <h1 className="text-2xl font-black text-[#2D2A26] tracking-tight">Vault Settings</h1>
-                <p className="text-xs text-[#9C948B] font-medium">Manage preferences, records, and access.</p>
+            <div className="space-y-5 max-w-lg mx-auto font-mono">
+              <div className="border-b border-slate-800 pb-3">
+                <h1 className="text-xl font-black text-white tracking-widest uppercase">System Operations Config</h1>
+                <p className="text-xs text-slate-400">Terminal callsign and master reset controls.</p>
               </div>
-              
-              <div className="ceramic-panel rounded-3xl p-5 space-y-4">
-                <h3 className="text-xs font-mono font-bold uppercase text-[#9C948B] tracking-wider">Account Details</h3>
-                <div className="flex items-center justify-between text-xs font-semibold">
-                  <span className="text-[#7D756D]">Signed in user</span>
-                  <span className="text-[#2D2A26] font-bold">{user.email}</span>
-                </div>
+
+              <div className="terminal-panel rounded-xl p-5 border border-slate-800 space-y-3">
+                <span className="text-xs text-slate-500 uppercase font-bold block">ACTIVE CALLSIGN</span>
+                <p className="text-white font-bold text-sm">{user.email}</p>
 
                 <button
                   onClick={() => supabase.auth.signOut()}
-                  className="w-full bg-[#FAF7F2] hover:bg-white text-[#7D756D] font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 border border-[#EADBCC] transition"
+                  className="w-full mt-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs py-2.5 rounded-xl transition"
                 >
-                  <LogOut className="w-4 h-4 text-[#9C948B]" /> Sign Out
+                  Terminate Callsign Session
                 </button>
               </div>
 
-              <div className="ceramic-panel border border-[#E76F51]/30 rounded-3xl p-5 space-y-3">
-                <div className="flex items-center gap-2 text-[#E76F51]">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <h3 className="text-xs font-mono font-bold uppercase tracking-wider">Danger Zone</h3>
-                </div>
-
-                <p className="text-xs text-[#7D756D] leading-relaxed">
-                  Resetting all data will permanently wipe every goal, historical ledger record, and cash/bank balance for this account.
+              <div className="terminal-panel rounded-xl p-5 border border-rose-900/60 bg-rose-950/20 space-y-3">
+                <span className="text-xs text-rose-400 uppercase font-bold block flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 text-rose-500" /> MASTER PURGE PROTOCOL
+                </span>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Purging all telemetry will wipe all active aircraft goals, ledger logs, and reserve capital.
                 </p>
 
                 <button
-                  onClick={() => {
-                    setResetInput('');
-                    setIsResetModalOpen(true);
-                  }}
-                  className="w-full bg-[#E76F51]/10 hover:bg-[#E76F51]/20 text-[#E76F51] border border-[#E76F51]/30 font-bold text-xs py-3.5 rounded-2xl flex items-center justify-center gap-2 transition active:scale-98 shadow-xs"
+                  onClick={() => { setResetInput(''); setIsResetModalOpen(true); }}
+                  className="w-full bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-700 font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-2"
                 >
-                  <RotateCcw className="w-4 h-4 text-[#E76F51]" />
-                  <span>Reset All Data</span>
+                  <RotateCcw className="w-4 h-4" /> Execute Master Purge
                 </button>
               </div>
             </div>
@@ -1540,207 +1423,149 @@ export default function App() {
         </div>
       </div>
 
-      {/* MOBILE BOTTOM NAV */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 ceramic-panel border-t border-[#F1E8DF] px-6 py-2 z-40">
-        <div className="max-w-md mx-auto flex items-center justify-between">
+      {/* MOBILE BOTTOM NAVIGATION DOCK */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 terminal-panel border-t border-slate-800 px-6 py-2 z-40 font-mono">
+        <div className="max-w-md mx-auto flex items-center justify-between text-xs">
           <button
             onClick={() => setActiveTab('home')}
-            className={`flex flex-col items-center gap-1 transition ${activeTab === 'home' ? 'text-[#2A9D8F]' : 'text-[#9C948B]'}`}
+            className={`flex flex-col items-center gap-1 ${activeTab === 'home' ? 'text-sky-400' : 'text-slate-500'}`}
           >
-            <div className={`p-1.5 rounded-full ${activeTab === 'home' ? 'bg-[#2A9D8F] text-white px-4' : ''}`}>
-              <HomeIcon className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-mono font-bold">Home</span>
+            <HomeIcon className="w-5 h-5" />
+            <span className="text-[10px]">Home</span>
           </button>
-
           <button
             onClick={() => setActiveTab('history')}
-            className={`flex flex-col items-center gap-1 transition ${activeTab === 'history' ? 'text-[#2A9D8F]' : 'text-[#9C948B]'}`}
+            className={`flex flex-col items-center gap-1 ${activeTab === 'history' ? 'text-sky-400' : 'text-slate-500'}`}
           >
-            <div className={`p-1.5 rounded-full ${activeTab === 'history' ? 'bg-[#2A9D8F] text-white px-4' : ''}`}>
-              <History className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-mono font-bold">History</span>
+            <History className="w-5 h-5" />
+            <span className="text-[10px]">Ledger</span>
           </button>
-
           <button
             onClick={() => setActiveTab('goals')}
-            className={`flex flex-col items-center gap-1 transition ${activeTab === 'goals' ? 'text-[#E07A5F]' : 'text-[#9C948B]'}`}
+            className={`flex flex-col items-center gap-1 ${activeTab === 'goals' ? 'text-sky-400' : 'text-slate-500'}`}
           >
-            <div className={`p-1.5 rounded-full ${activeTab === 'goals' ? 'bg-[#E07A5F] text-white px-4' : ''}`}>
-              <Target className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-mono font-bold">Goals</span>
+            <Target className="w-5 h-5" />
+            <span className="text-[10px]">Fleet</span>
           </button>
-
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex flex-col items-center gap-1 transition ${activeTab === 'settings' ? 'text-[#E07A5F]' : 'text-[#9C948B]'}`}
+            className={`flex flex-col items-center gap-1 ${activeTab === 'settings' ? 'text-sky-400' : 'text-slate-500'}`}
           >
-            <div className={`p-1.5 rounded-full ${activeTab === 'settings' ? 'bg-[#E07A5F] text-white px-4' : ''}`}>
-              <Settings className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-mono font-bold">Profile</span>
+            <Settings className="w-5 h-5" />
+            <span className="text-[10px]">Config</span>
           </button>
         </div>
       </nav>
 
-      {/* 1. TRANSACTION MODAL */}
+      {/* 1. TRANSACTION KEYPAD MODAL */}
       {isTxModalOpen && activeGoal && (
-        <div className="fixed inset-0 z-50 bg-[#2D2A26]/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm ceramic-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
-            
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex-1 bg-[#FAF7F2] p-1 rounded-full flex border border-[#EADBCC]">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 font-mono">
+          <div className="relative w-full max-w-sm terminal-panel terminal-panel-glow rounded-t-2xl sm:rounded-2xl p-5 animate-terminal-up max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-3">
+              <div className="flex-1 bg-[#070A12] p-1 rounded-lg flex border border-slate-800">
                 <button
                   type="button"
                   onClick={() => setActionType('deposit')}
-                  className={`flex-1 py-2 text-xs font-mono font-bold rounded-full transition ${
-                    actionType === 'deposit' ? 'bg-[#2A9D8F] text-white shadow-xs' : 'text-[#7D756D]'
+                  className={`flex-1 py-1.5 text-xs font-bold rounded transition ${
+                    actionType === 'deposit' ? 'bg-sky-500 text-slate-950' : 'text-slate-400'
                   }`}
                 >
-                  Deposit (+)
+                  DEPOSIT (+)
                 </button>
                 <button
                   type="button"
                   onClick={() => setActionType('withdraw')}
-                  className={`flex-1 py-2 text-xs font-mono font-bold rounded-full transition ${
-                    actionType === 'withdraw' ? 'bg-[#E76F51] text-white shadow-xs' : 'text-[#7D756D]'
+                  className={`flex-1 py-1.5 text-xs font-bold rounded transition ${
+                    actionType === 'withdraw' ? 'bg-rose-500 text-slate-950' : 'text-slate-400'
                   }`}
                 >
-                  Withdraw (-)
+                  WITHDRAW (−)
                 </button>
               </div>
-
-              <button 
-                onClick={() => setIsTxModalOpen(false)} 
-                className="w-9 h-9 rounded-full bg-[#FAF7F2] text-[#7D756D] border border-[#EADBCC] flex items-center justify-center shrink-0"
-              >
+              <button onClick={() => setIsTxModalOpen(false)} className="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl p-4 text-center mt-4">
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#7D756D] block">
-                {actionType === 'deposit' ? 'ADD TO GOAL' : 'WITHDRAW FROM GOAL'} ({activeGoal.name.toUpperCase()})
-              </span>
-              <div className="text-2xl font-mono font-bold text-[#2D2A26] mt-1">
-                <span className="text-[#E07A5F] mr-1 text-lg">₹</span>
-                {amountStr ? Number(amountStr).toLocaleString() : '0'}
+            <div className="bg-[#070A12] border border-slate-800 rounded-xl p-3 text-center mt-3">
+              <span className="text-[10px] text-slate-500 uppercase font-bold block">{activeGoal.name}</span>
+              <div className="text-2xl font-black text-white mt-1">
+                <span className="text-sky-400 mr-1">₹</span>{amountStr ? Number(amountStr).toLocaleString() : '0'}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5 mt-3">
+            <div className="grid grid-cols-2 gap-2 mt-3">
               <button
                 type="button"
                 onClick={() => setWalletType('online')}
-                className={`p-3 rounded-2xl border text-left transition flex items-center gap-2 ${
-                  walletType === 'online' 
-                    ? 'bg-[#2A9D8F]/10 border-[#2A9D8F] text-[#1D6C63] ring-1 ring-[#2A9D8F]' 
-                    : 'bg-white border-[#EADBCC] text-[#7D756D]'
+                className={`p-2.5 rounded-lg border text-left text-xs ${
+                  walletType === 'online' ? 'border-sky-400 bg-sky-950/40 text-sky-300' : 'border-slate-800 bg-[#070A12] text-slate-400'
                 }`}
               >
-                <Smartphone className="w-4 h-4 shrink-0 text-[#2A9D8F]" />
-                <div>
-                  <span className="text-xs font-bold block leading-tight">Online</span>
-                  <span className="text-[11px] font-mono font-bold">(₹{totalOnline.toLocaleString()})</span>
-                </div>
+                <span className="block font-bold">ONLINE</span>
+                <span className="text-[10px] text-slate-500">₹{totalOnline.toLocaleString()}</span>
               </button>
-
               <button
                 type="button"
                 onClick={() => setWalletType('cash')}
-                className={`p-3 rounded-2xl border text-left transition flex items-center gap-2 ${
-                  walletType === 'cash' 
-                    ? 'bg-[#2A9D8F]/10 border-[#2A9D8F] text-[#1D6C63] ring-1 ring-[#2A9D8F]' 
-                    : 'bg-white border-[#EADBCC] text-[#7D756D]'
+                className={`p-2.5 rounded-lg border text-left text-xs ${
+                  walletType === 'cash' ? 'border-sky-400 bg-sky-950/40 text-sky-300' : 'border-slate-800 bg-[#070A12] text-slate-400'
                 }`}
               >
-                <Banknote className="w-4 h-4 shrink-0 text-[#9C948B]" />
-                <div>
-                  <span className="text-xs font-bold block leading-tight">Cash</span>
-                  <span className="text-[11px] font-mono font-bold">(₹{totalCash.toLocaleString()})</span>
-                </div>
+                <span className="block font-bold">CASH</span>
+                <span className="text-[10px] text-slate-500">₹{totalCash.toLocaleString()}</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 mt-4">
+            <div className="grid grid-cols-3 gap-2 mt-3 text-sm font-black">
               {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
                 <button
                   key={digit}
                   type="button"
                   onClick={() => handleTxKeypad(digit)}
-                  className="h-12 bg-white text-[#2D2A26] font-bold text-lg rounded-2xl border border-[#EADBCC] active:bg-[#FAF7F2] flex items-center justify-center transition active:scale-95"
+                  className="h-11 bg-slate-900 border border-slate-800 rounded-lg hover:border-slate-700 text-white flex items-center justify-center active:scale-95"
                 >
                   {digit}
                 </button>
               ))}
-              <button
-                type="button"
-                onClick={() => setAmountStr('')}
-                className="h-12 bg-[#FAF7F2] text-[#7D756D] font-bold text-xs rounded-2xl border border-[#EADBCC] flex items-center justify-center active:scale-95 font-mono"
-              >
-                Clear
+              <button type="button" onClick={() => setAmountStr('')} className="h-11 bg-slate-900 border border-slate-800 rounded-lg text-slate-400 text-xs">
+                CLR
               </button>
-              <button
-                type="button"
-                onClick={() => handleTxKeypad('0')}
-                className="h-12 bg-white text-[#2D2A26] font-bold text-lg rounded-2xl border border-[#EADBCC] active:bg-[#FAF7F2] flex items-center justify-center active:scale-95"
-              >
+              <button type="button" onClick={() => handleTxKeypad('0')} className="h-11 bg-slate-900 border border-slate-800 rounded-lg text-white">
                 0
               </button>
-              <button
-                type="button"
-                onClick={() => setAmountStr((prev) => prev.slice(0, -1))}
-                className="h-12 bg-[#E76F51]/10 text-[#E76F51] font-bold text-xs rounded-2xl border border-[#E76F51]/30 flex items-center justify-center active:scale-95"
-              >
-                <Delete className="w-4 h-4 text-[#E76F51]" />
+              <button type="button" onClick={() => setAmountStr((prev) => prev.slice(0, -1))} className="h-11 bg-rose-950 border border-rose-900 rounded-lg text-rose-300 flex items-center justify-center">
+                <Delete className="w-4 h-4" />
               </button>
             </div>
 
             <input
               type="text"
-              placeholder="Memo / Note (optional)"
+              placeholder="Flight memo (optional)"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="w-full bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-4 py-2.5 text-xs text-[#2D2A26] mt-3 font-medium focus:outline-none focus:bg-white focus:border-[#E07A5F]"
+              className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white mt-3 focus:outline-none focus:border-sky-400"
             />
 
             <button
               type="button"
               onClick={handleTransactionSubmit}
               disabled={!amountStr || Number(amountStr) <= 0}
-              className={`w-full py-3.5 text-white font-bold text-xs rounded-2xl mt-3 shadow-md disabled:opacity-40 transition active:scale-98 ${
-                actionType === 'deposit' 
-                  ? 'bg-[#2A9D8F] hover:bg-[#238276] shadow-[#2A9D8F]/25' 
-                  : 'bg-[#E76F51] hover:bg-[#D55F42] shadow-[#E76F51]/25'
-              }`}
+              className="w-full py-3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded-xl mt-3 transition disabled:opacity-40"
             >
-              Confirm {actionType === 'deposit' ? 'Deposit' : 'Withdrawal'}
+              EXECUTE {actionType.toUpperCase()}
             </button>
           </div>
         </div>
       )}
 
-      {/* 2. DEDICATED CASH <-> BANK SHIFT MODAL */}
+      {/* 2. CASH <-> BANK SHIFT MODAL */}
       {isTransferModalOpen && activeGoal && (
-        <div className="fixed inset-0 z-50 bg-[#2D2A26]/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm ceramic-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
-            
-            <div className="flex items-center justify-between pb-3 border-b border-[#F1E8DF]">
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-[#E07A5F]/15 text-[#E07A5F] flex items-center justify-center">
-                  <ArrowLeftRight className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-black text-sm text-[#2D2A26]">Shift Vault Funds</h3>
-                  <p className="text-[10px] text-[#9C948B]">Move balance between Cash and Bank</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setIsTransferModalOpen(false)} 
-                className="w-8 h-8 rounded-full bg-[#FAF7F2] border border-[#EADBCC] text-[#7D756D] flex items-center justify-center"
-              >
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 font-mono">
+          <div className="relative w-full max-w-sm terminal-panel terminal-panel-glow rounded-t-2xl sm:rounded-2xl p-5 animate-terminal-up max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <span className="font-black text-sm text-white">SHIFT CAPITAL TYPE</span>
+              <button onClick={() => setIsTransferModalOpen(false)} className="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -1748,391 +1573,189 @@ export default function App() {
             <div className="grid grid-cols-2 gap-2 mt-3">
               <button
                 type="button"
-                onClick={() => {
-                  setTransferDirection('cash_to_bank');
-                  setTransferAmountStr('');
-                }}
-                className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
-                  transferDirection === 'cash_to_bank' 
-                    ? 'border-[#2A9D8F] ring-2 ring-[#2A9D8F]/20 bg-white' 
-                    : 'border-[#EADBCC] bg-[#FAF7F2]'
+                onClick={() => { setTransferDirection('cash_to_bank'); setTransferAmountStr(''); }}
+                className={`p-2.5 rounded-lg border text-left text-xs ${
+                  transferDirection === 'cash_to_bank' ? 'border-sky-400 bg-sky-950/40 text-sky-300' : 'border-slate-800 bg-[#070A12] text-slate-400'
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-black flex items-center gap-1 text-[#2D2A26]">
-                    <Banknote className="w-3.5 h-3.5 text-[#2A9D8F]" /> Cash ➔ Bank
-                  </span>
-                  {transferDirection === 'cash_to_bank' && (
-                    <span className="w-2 h-2 rounded-full bg-[#2A9D8F]" />
-                  )}
-                </div>
-                <div className="mt-2 text-xs font-semibold">
-                  <span className="text-[10px] text-[#9C948B] block">Available:</span>
-                  <span className="font-mono font-black text-[#2D2A26]">₹{totalCash.toLocaleString()}</span>
-                </div>
+                <span className="block font-bold">CASH ➔ BANK</span>
+                <span className="text-[10px] text-slate-500">₹{totalCash.toLocaleString()}</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => {
-                  setTransferDirection('bank_to_cash');
-                  setTransferAmountStr('');
-                }}
-                className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
-                  transferDirection === 'bank_to_cash' 
-                    ? 'border-[#E07A5F] ring-2 ring-[#E07A5F]/20 bg-white' 
-                    : 'border-[#EADBCC] bg-[#FAF7F2]'
+                onClick={() => { setTransferDirection('bank_to_cash'); setTransferAmountStr(''); }}
+                className={`p-2.5 rounded-lg border text-left text-xs ${
+                  transferDirection === 'bank_to_cash' ? 'border-sky-400 bg-sky-950/40 text-sky-300' : 'border-slate-800 bg-[#070A12] text-slate-400'
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-black flex items-center gap-1 text-[#2D2A26]">
-                    <Smartphone className="w-3.5 h-3.5 text-[#E07A5F]" /> Bank ➔ Cash
-                  </span>
-                  {transferDirection === 'bank_to_cash' && (
-                    <span className="w-2 h-2 rounded-full bg-[#E07A5F]" />
-                  )}
-                </div>
-                <div className="mt-2 text-xs font-semibold">
-                  <span className="text-[10px] text-[#9C948B] block">Available:</span>
-                  <span className="font-mono font-black text-[#E07A5F]">₹{totalOnline.toLocaleString()}</span>
-                </div>
+                <span className="block font-bold">BANK ➔ CASH</span>
+                <span className="text-[10px] text-slate-500">₹{totalOnline.toLocaleString()}</span>
               </button>
             </div>
 
-            <div className="flex items-center justify-between px-1 text-xs mt-3">
-              <span className="text-[#7D756D] font-medium">
-                Source: {transferDirection === 'cash_to_bank' ? 'Cash Stash' : 'Bank Account'}
-              </span>
-              <button
-                type="button"
-                onClick={() => setTransferAmountStr(String(transferDirection === 'cash_to_bank' ? totalCash : totalOnline))}
-                className="font-mono text-[11px] font-bold text-[#E07A5F] bg-[#FAF7F2] border border-[#EADBCC] px-2.5 py-1 rounded-xl"
-              >
-                Shift Max (₹{(transferDirection === 'cash_to_bank' ? totalCash : totalOnline).toLocaleString()})
-              </button>
-            </div>
-
-            <div className="bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl p-3.5 text-center mt-2">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B] block">
-                TRANSFER SUM
-              </span>
-              <div className="text-2xl font-mono font-bold text-[#2D2A26] mt-0.5">
-                <span className="text-[#E07A5F] mr-1 text-lg">₹</span>
-                {transferAmountStr ? Number(transferAmountStr).toLocaleString() : '0'}
+            <div className="bg-[#070A12] border border-slate-800 rounded-xl p-3 text-center mt-3">
+              <span className="text-[10px] text-slate-500 uppercase font-bold block">SUM TO CONVERT</span>
+              <div className="text-2xl font-black text-white mt-1">
+                <span className="text-sky-400 mr-1">₹</span>{transferAmountStr ? Number(transferAmountStr).toLocaleString() : '0'}
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 mt-3">
+            <div className="grid grid-cols-3 gap-2 mt-3 text-sm font-black">
               {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
                 <button
                   key={digit}
                   type="button"
                   onClick={() => handleTransferKeypad(digit)}
-                  className="h-11 bg-white text-[#2D2A26] font-bold text-lg rounded-2xl border border-[#EADBCC] active:bg-[#FAF7F2] flex items-center justify-center transition active:scale-95"
+                  className="h-11 bg-slate-900 border border-slate-800 rounded-lg text-white flex items-center justify-center"
                 >
                   {digit}
                 </button>
               ))}
-              <button
-                type="button"
-                onClick={() => setTransferAmountStr('')}
-                className="h-11 bg-[#FAF7F2] text-[#7D756D] font-bold text-xs rounded-2xl border border-[#EADBCC] flex items-center justify-center font-mono"
-              >
-                Clear
+              <button type="button" onClick={() => setTransferAmountStr('')} className="h-11 bg-slate-900 border border-slate-800 rounded-lg text-slate-400 text-xs">
+                CLR
               </button>
-              <button
-                type="button"
-                onClick={() => handleTransferKeypad('0')}
-                className="h-11 bg-white text-[#2D2A26] font-bold text-lg rounded-2xl border border-[#EADBCC] active:bg-[#FAF7F2] flex items-center justify-center active:scale-95"
-              >
+              <button type="button" onClick={() => handleTransferKeypad('0')} className="h-11 bg-slate-900 border border-slate-800 rounded-lg text-white">
                 0
               </button>
-              <button
-                type="button"
-                onClick={() => setTransferAmountStr((prev) => prev.slice(0, -1))}
-                className="h-11 bg-[#E76F51]/10 text-[#E76F51] font-bold text-xs rounded-2xl border border-[#E76F51]/30 flex items-center justify-center"
-              >
-                <Delete className="w-4 h-4 text-[#E76F51]" />
+              <button type="button" onClick={() => setTransferAmountStr((prev) => prev.slice(0, -1))} className="h-11 bg-rose-950 border border-rose-900 rounded-lg text-rose-300 flex items-center justify-center">
+                <Delete className="w-4 h-4" />
               </button>
             </div>
-
-            <input
-              type="text"
-              placeholder="Transfer note (e.g. ATM withdrawal, bank deposit)"
-              value={transferNote}
-              onChange={(e) => setTransferNote(e.target.value)}
-              className="w-full bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-4 py-2.5 text-xs text-[#2D2A26] mt-2 font-medium focus:outline-none focus:bg-white focus:border-[#E07A5F]"
-            />
 
             <button
               type="button"
               onClick={handleTransferSubmit}
               disabled={!transferAmountStr || Number(transferAmountStr) <= 0}
-              className="w-full py-3.5 bg-[#2A9D8F] hover:bg-[#238276] text-white font-bold text-xs rounded-2xl mt-3 shadow-md shadow-[#2A9D8F]/20 disabled:opacity-40"
+              className="w-full py-3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded-xl mt-3 transition disabled:opacity-40"
             >
-              Confirm Transfer (₹{transferAmountStr ? Number(transferAmountStr).toLocaleString() : '0'})
+              CONFIRM CAPITAL CONVERSION
             </button>
           </div>
         </div>
       )}
 
-      {/* 3. DEDICATED CROSS-GOAL TRANSFER MODAL */}
+      {/* 3. CROSS-GOAL REALLOCATION MODAL */}
       {isGoalTransferModalOpen && activeGoal && (
-        <div className="fixed inset-0 z-50 bg-[#2D2A26]/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm ceramic-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
-            
-            <div className="flex items-center justify-between pb-3 border-b border-[#F1E8DF]">
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-[#2A9D8F]/15 text-[#2A9D8F] flex items-center justify-center">
-                  <Share2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-black text-sm text-[#2D2A26]">Transfer to Another Goal</h3>
-                  <p className="text-[10px] text-[#9C948B]">Shift surplus from {activeGoal.name}</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setIsGoalTransferModalOpen(false)} 
-                className="w-8 h-8 rounded-full bg-[#FAF7F2] border border-[#EADBCC] text-[#7D756D] flex items-center justify-center"
-              >
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 font-mono">
+          <div className="relative w-full max-w-sm terminal-panel terminal-panel-glow rounded-t-2xl sm:rounded-2xl p-5 animate-terminal-up max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <span className="font-black text-sm text-white">INTER-FLEET REALLOCATION</span>
+              <button onClick={() => setIsGoalTransferModalOpen(false)} className="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleCrossGoalTransferSubmit} className="space-y-3 mt-3">
               <div>
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B] block mb-1">
-                  Destination Goal
-                </label>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET CORRIDOR</label>
                 <select
                   value={targetGoalId}
                   onChange={(e) => setTargetGoalId(e.target.value)}
-                  className="w-full bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs font-bold text-[#2D2A26] focus:outline-none focus:border-[#2A9D8F]"
+                  className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
                   required
                 >
                   {eligibleTargetGoals.map((g) => (
-                    <option key={g.id} value={g.id}>
-                      {g.name} (Target: ₹{g.targetAmount.toLocaleString()})
-                    </option>
+                    <option key={g.id} value={g.id}>{g.name} (Cap: ₹{g.targetAmount.toLocaleString()})</option>
                   ))}
                 </select>
               </div>
 
-              <div>
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B] block mb-1">
-                  Take From Balance
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setGoalTransferWallet('online')}
-                    className={`py-2 px-3 rounded-2xl border text-left transition ${
-                      goalTransferWallet === 'online' 
-                        ? 'border-[#2A9D8F] bg-[#2A9D8F]/10 ring-2 ring-[#2A9D8F]/20' 
-                        : 'border-[#EADBCC] bg-white'
-                    }`}
-                  >
-                    <span className="text-xs font-bold flex items-center gap-1 text-[#2D2A26]">
-                      <Smartphone className="w-3.5 h-3.5 text-[#E07A5F]" /> Online
-                    </span>
-                    <span className="text-[11px] font-mono font-bold text-[#7D756D] block mt-0.5">
-                      ₹{totalOnline.toLocaleString()}
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setGoalTransferWallet('cash')}
-                    className={`py-2 px-3 rounded-2xl border text-left transition ${
-                      goalTransferWallet === 'cash' 
-                        ? 'border-[#2A9D8F] bg-[#2A9D8F]/10 ring-2 ring-[#2A9D8F]/20' 
-                        : 'border-[#EADBCC] bg-white'
-                    }`}
-                  >
-                    <span className="text-xs font-bold flex items-center gap-1 text-[#2D2A26]">
-                      <Banknote className="w-3.5 h-3.5 text-[#2A9D8F]" /> Cash
-                    </span>
-                    <span className="text-[11px] font-mono font-bold text-[#7D756D] block mt-0.5">
-                      ₹{totalCash.toLocaleString()}
-                    </span>
-                  </button>
+              <div className="bg-[#070A12] border border-slate-800 rounded-xl p-3 text-center">
+                <span className="text-[10px] text-slate-500 uppercase font-bold block">REALLOCATION SUM</span>
+                <div className="text-2xl font-black text-white mt-1">
+                  <span className="text-sky-400 mr-1">₹</span>{goalTransferAmountStr ? Number(goalTransferAmountStr).toLocaleString() : '0'}
                 </div>
               </div>
 
-              <div className="flex items-center justify-between px-1 text-xs">
-                <span className="text-[#7D756D] font-medium">Available to shift:</span>
-                <button
-                  type="button"
-                  onClick={() => setGoalTransferAmountStr(String(goalTransferWallet === 'cash' ? totalCash : totalOnline))}
-                  className="font-mono text-[11px] font-bold text-[#2A9D8F] bg-[#FAF7F2] border border-[#EADBCC] px-2.5 py-0.5 rounded-xl"
-                >
-                  Send Max (₹{(goalTransferWallet === 'cash' ? totalCash : totalOnline).toLocaleString()})
-                </button>
-              </div>
-
-              <div className="bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl p-3 text-center">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B] block">
-                  AMOUNT TO TRANSFER
-                </span>
-                <div className="text-2xl font-mono font-bold text-[#2D2A26] mt-0.5">
-                  <span className="text-[#2A9D8F] mr-1 text-lg">₹</span>
-                  {goalTransferAmountStr ? Number(goalTransferAmountStr).toLocaleString() : '0'}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2 text-sm font-black">
                 {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
                   <button
                     key={digit}
                     type="button"
                     onClick={() => handleGoalTransferKeypad(digit)}
-                    className="h-11 bg-white text-[#2D2A26] font-bold text-lg rounded-2xl border border-[#EADBCC] active:bg-[#FAF7F2] flex items-center justify-center transition active:scale-95"
+                    className="h-11 bg-slate-900 border border-slate-800 rounded-lg text-white flex items-center justify-center"
                   >
                     {digit}
                   </button>
                 ))}
-                <button
-                  type="button"
-                  onClick={() => setGoalTransferAmountStr('')}
-                  className="h-11 bg-[#FAF7F2] text-[#7D756D] font-bold text-xs rounded-2xl border border-[#EADBCC] flex items-center justify-center font-mono"
-                >
-                  Clear
+                <button type="button" onClick={() => setGoalTransferAmountStr('')} className="h-11 bg-slate-900 border border-slate-800 rounded-lg text-slate-400 text-xs">
+                  CLR
                 </button>
-                <button
-                  type="button"
-                  onClick={() => handleGoalTransferKeypad('0')}
-                  className="h-11 bg-white text-[#2D2A26] font-bold text-lg rounded-2xl border border-[#EADBCC] active:bg-[#FAF7F2] flex items-center justify-center active:scale-95"
-                >
+                <button type="button" onClick={() => handleGoalTransferKeypad('0')} className="h-11 bg-slate-900 border border-slate-800 rounded-lg text-white">
                   0
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setGoalTransferAmountStr((prev) => prev.slice(0, -1))}
-                  className="h-11 bg-[#E76F51]/10 text-[#E76F51] font-bold text-xs rounded-2xl border border-[#E76F51]/30 flex items-center justify-center"
-                >
-                  <Delete className="w-4 h-4 text-[#E76F51]" />
+                <button type="button" onClick={() => setGoalTransferAmountStr((prev) => prev.slice(0, -1))} className="h-11 bg-rose-950 border border-rose-900 rounded-lg text-rose-300 flex items-center justify-center">
+                  <Delete className="w-4 h-4" />
                 </button>
               </div>
-
-              <input
-                type="text"
-                placeholder="Reason (e.g. Surplus funds transferred)"
-                value={goalTransferNote}
-                onChange={(e) => setGoalTransferNote(e.target.value)}
-                className="w-full bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-4 py-2.5 text-xs text-[#2D2A26] font-medium focus:outline-none focus:bg-white focus:border-[#2A9D8F]"
-              />
 
               <button
                 type="submit"
                 disabled={!goalTransferAmountStr || Number(goalTransferAmountStr) <= 0 || !targetGoalId}
-                className="w-full py-3.5 bg-[#2A9D8F] hover:bg-[#238276] active:scale-98 text-white font-bold text-xs rounded-2xl shadow-md shadow-[#2A9D8F]/20 disabled:opacity-40"
+                className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl mt-3 transition disabled:opacity-40"
               >
-                Execute Goal Transfer
+                EXECUTE REALLOCATION
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* 4. NEW FINANCIAL GOAL MODAL */}
+      {/* 4. NEW GOAL CREATION MODAL */}
       {isAddGoalOpen && (
-        <div className="fixed inset-0 z-50 bg-[#2D2A26]/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm ceramic-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
-            
-            <div className="flex items-center justify-between pb-3 border-b border-[#F1E8DF]">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-[#E07A5F]/15 text-[#E07A5F] flex items-center justify-center">
-                  <Target className="w-5 h-5" />
-                </div>
-                <h3 className="font-black text-[#2D2A26] text-base">New Financial Goal</h3>
-              </div>
-              <button 
-                onClick={() => setIsAddGoalOpen(false)} 
-                className="w-8 h-8 rounded-full bg-[#FAF7F2] border border-[#EADBCC] text-[#7D756D] flex items-center justify-center"
-              >
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 font-mono">
+          <div className="relative w-full max-w-sm terminal-panel terminal-panel-glow rounded-t-2xl sm:rounded-2xl p-5 animate-terminal-up max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <span className="font-black text-sm text-white">DEPLOY NEW FLEET TARGET</span>
+              <button onClick={() => setIsAddGoalOpen(false)} className="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateGoal} className="mt-4 space-y-3.5">
+            <form onSubmit={handleCreateGoal} className="space-y-3 mt-3">
               <div>
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B] block mb-2">
-                  CATEGORY
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {CATEGORY_PRESETS.map((cat) => {
-                    const CatIcon = cat.icon;
-                    const isSelected = newGoalCategory === cat.id;
-                    return (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => setNewGoalCategory(cat.id)}
-                        className={`p-2.5 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1 ${
-                          isSelected 
-                            ? 'bg-[#E07A5F] text-white border-[#E07A5F] shadow-sm' 
-                            : 'bg-white text-[#7D756D] border-[#EADBCC] hover:bg-[#FAF7F2]'
-                        }`}
-                      >
-                        <CatIcon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-[#2A9D8F]'}`} />
-                        <span className="text-[11px] font-bold">{cat.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B]">
-                  GOAL TITLE
-                </label>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">CALLSIGN / TITLE</label>
                 <input
                   type="text"
-                  placeholder="e.g. 5-Year Savings, MacBook, Bali Trip"
+                  placeholder="e.g. Boeing 787 Fleet, New Route"
                   value={newGoalName}
                   onChange={(e) => setNewGoalName(e.target.value)}
-                  className="w-full mt-1 bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#E07A5F]"
+                  className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B]">
-                  TARGET CAPITAL (₹)
-                </label>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">CAPITAL TARGET (₹)</label>
                 <input
                   type="number"
-                  placeholder="e.g. 1000000"
+                  placeholder="e.g. 1500000"
                   value={newGoalAmount}
                   onChange={(e) => setNewGoalAmount(e.target.value)}
-                  className="w-full mt-1 bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#E07A5F]"
+                  className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B]">
-                    START DATE
-                  </label>
+                  <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">START DATE</label>
                   <input
                     type="date"
                     value={newGoalStartDate}
                     onChange={(e) => setNewGoalStartDate(e.target.value)}
-                    className="w-full mt-1 bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-3 py-2 text-xs font-semibold"
+                    className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-white"
                     required
                   />
                 </div>
-
                 <div>
-                  <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B]">
-                    TARGET DATE
-                  </label>
+                  <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">ARRIVAL DATE</label>
                   <input
                     type="date"
                     value={newGoalDate}
                     onChange={(e) => setNewGoalDate(e.target.value)}
-                    className="w-full mt-1 bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-3 py-2 text-xs font-semibold"
+                    className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-white"
                     required
                   />
                 </div>
@@ -2140,101 +1763,67 @@ export default function App() {
 
               <button
                 type="submit"
-                className="w-full py-3.5 bg-[#E07A5F] hover:bg-[#D46B50] active:scale-98 text-white font-bold text-xs rounded-2xl shadow-md shadow-[#E07A5F]/20 mt-2"
+                className="w-full py-3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded-xl mt-2 transition"
               >
-                Launch Financial Target
+                INITIALIZE FLEET CORRIDOR
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* 5. EXTEND TIMELINE / EDIT GOAL PARAMETERS MODAL */}
+      {/* 5. EXTEND TIMELINE / EDIT MODAL */}
       {isEditGoalOpen && activeGoal && (
-        <div className="fixed inset-0 z-50 bg-[#2D2A26]/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm ceramic-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
-            
-            <div className="flex items-center justify-between pb-3 border-b border-[#F1E8DF]">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-[#E07A5F]/15 text-[#E07A5F] flex items-center justify-center">
-                  <Edit3 className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-black text-[#2D2A26] text-base">Extend Timeline / Modify</h3>
-                  <p className="text-[10px] text-[#9C948B]">Adjust date or target after unexpected withdrawals</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setIsEditGoalOpen(false)} 
-                className="w-8 h-8 rounded-full bg-[#FAF7F2] border border-[#EADBCC] text-[#7D756D] flex items-center justify-center"
-              >
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 font-mono">
+          <div className="relative w-full max-w-sm terminal-panel terminal-panel-glow rounded-t-2xl sm:rounded-2xl p-5 animate-terminal-up max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <span className="font-black text-sm text-white">MODIFY CORRIDOR TELEMETRY</span>
+              <button onClick={() => setIsEditGoalOpen(false)} className="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveGoalChanges} className="mt-4 space-y-3.5">
+            <form onSubmit={handleSaveGoalChanges} className="space-y-3 mt-3">
               <div>
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B]">
-                  Goal Title
-                </label>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">GOAL NAME</label>
                 <input
                   type="text"
                   value={editGoalName}
                   onChange={(e) => setEditGoalName(e.target.value)}
-                  className="w-full mt-1 bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-[#E07A5F]"
+                  className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B]">
-                  Target Amount (₹)
-                </label>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET CAPITAL (₹)</label>
                 <input
                   type="number"
                   value={editGoalAmount}
                   onChange={(e) => setEditGoalAmount(e.target.value)}
-                  className="w-full mt-1 bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-[#E07A5F]"
+                  className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
                   required
                 />
               </div>
 
               <div>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B]">
-                    Extended Completion Date
-                  </label>
-                  <span className="text-[10px] text-[#E07A5F] font-bold">Postpone deadline</span>
-                </div>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">EXTENDED COMPLETION DATE</label>
                 <input
                   type="date"
                   value={editGoalDate}
                   onChange={(e) => setEditGoalDate(e.target.value)}
-                  className="w-full mt-1 bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-[#E07A5F]"
+                  className="w-full bg-[#070A12] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
                   required
                 />
-                <p className="text-[10px] text-[#9C948B] mt-1">
-                  Extending the deadline will recalculate and lower your daily required pace.
-                </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsEditGoalOpen(false)}
-                  className="w-full py-3 bg-[#FAF7F2] hover:bg-[#F1E8DF] text-[#7D756D] font-bold text-xs rounded-2xl transition border border-[#EADBCC]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSavingEdit}
-                  className="w-full py-3 bg-[#E07A5F] hover:bg-[#D46B50] active:scale-98 text-white font-bold text-xs rounded-2xl transition shadow-md shadow-[#E07A5F]/20 disabled:opacity-50 flex items-center justify-center gap-1.5"
-                >
-                  {isSavingEdit ? <Loader2 className="w-4 h-4 animate-spin" /> : <Edit3 className="w-4 h-4" />}
-                  <span>Save Updates</span>
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={isSavingEdit}
+                className="w-full py-3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded-xl mt-2 transition"
+              >
+                {isSavingEdit ? 'COMMITTING...' : 'SAVE MODIFIED TELEMETRY'}
+              </button>
             </form>
           </div>
         </div>
@@ -2242,58 +1831,46 @@ export default function App() {
 
       {/* 6. RESET ALL DATA CONFIRMATION MODAL */}
       {isResetModalOpen && (
-        <div className="fixed inset-0 z-50 bg-[#2D2A26]/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm ceramic-panel rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border border-[#E76F51]/30 flex flex-col animate-sheet-up">
-            
-            <div className="flex items-center justify-between pb-3 border-b border-[#F1E8DF]">
-              <div className="flex items-center gap-2 text-[#E76F51]">
-                <div className="w-9 h-9 rounded-full bg-[#E76F51]/10 flex items-center justify-center">
-                  <RotateCcw className="w-5 h-5 text-[#E76F51]" />
-                </div>
-                <h3 className="font-black text-[#2D2A26] text-base">Reset All Data</h3>
-              </div>
-              <button 
-                onClick={() => setIsResetModalOpen(false)} 
-                className="w-8 h-8 rounded-full bg-[#FAF7F2] border border-[#EADBCC] text-[#7D756D] flex items-center justify-center"
-              >
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 font-mono">
+          <div className="relative w-full max-w-sm terminal-panel border border-rose-600 rounded-t-2xl sm:rounded-2xl p-6 animate-terminal-up">
+            <div className="flex items-center justify-between border-b border-rose-900/60 pb-3 text-rose-400">
+              <span className="font-black text-sm uppercase flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4" /> MASTER PURGE PROTOCOL
+              </span>
+              <button onClick={() => setIsResetModalOpen(false)} className="w-8 h-8 rounded-lg bg-rose-950 text-rose-300 flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleResetAllData} className="mt-4 space-y-4">
-              <p className="text-xs text-[#7D756D] leading-relaxed font-medium">
-                This action is <span className="text-[#E76F51] font-bold">permanent and irreversible</span>. All your savings goals, timelines, and transaction records will be permanently deleted from the cloud.
+            <form onSubmit={handleResetAllData} className="mt-4 space-y-4 text-xs">
+              <p className="text-slate-300 leading-relaxed">
+                Confirming this action will <span className="text-rose-400 font-bold">permanently erase</span> all flight paths, targets, and ledger records.
               </p>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B]">
-                  Type <span className="text-[#E76F51] font-black">RESET</span> to confirm
+              <div>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">
+                  Type <span className="text-rose-400 font-bold">RESET</span> to confirm
                 </label>
                 <input
                   type="text"
                   placeholder="RESET"
                   value={resetInput}
                   onChange={(e) => setResetInput(e.target.value)}
-                  className="w-full bg-[#FAF7F2] border border-[#E76F51]/30 rounded-2xl px-4 py-3 text-xs font-mono font-bold uppercase text-[#2D2A26] focus:outline-none focus:bg-white focus:border-[#E76F51]"
+                  className="w-full bg-[#070A12] border border-rose-900/80 rounded-xl px-3 py-2 text-white font-mono uppercase"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setIsResetModalOpen(false)}
-                  className="w-full py-3 bg-[#FAF7F2] hover:bg-[#F1E8DF] text-[#7D756D] font-bold text-xs rounded-2xl transition border border-[#EADBCC]"
-                >
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => setIsResetModalOpen(false)} className="py-2.5 bg-slate-900 text-slate-400 font-bold rounded-xl">
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={resetInput.trim().toUpperCase() !== 'RESET' || isResetting}
-                  className="w-full py-3 bg-[#E76F51] hover:bg-[#D55F42] active:scale-98 text-white font-bold text-xs rounded-2xl transition shadow-md shadow-[#E76F51]/20 disabled:opacity-40 flex items-center justify-center gap-1.5"
+                  className="py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-black rounded-xl disabled:opacity-40"
                 >
-                  {isResetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
-                  <span>Wipe Everything</span>
+                  {isResetting ? 'Purging...' : 'Execute Wipe'}
                 </button>
               </div>
             </form>
