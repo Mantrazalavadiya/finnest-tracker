@@ -718,7 +718,7 @@ export default function App() {
     if (!activeGoal || !editGoalName.trim() || !editGoalAmount || !editGoalDate) return;
 
     if (new Date(editGoalDate) <= new Date(activeGoal.startDate)) {
-      alert("Extended end date must be after the starting date.");
+      alert("Ending target date must be after start date.");
       return;
     }
 
@@ -740,7 +740,7 @@ export default function App() {
       if (error) throw error;
 
       setIsEditGoalOpen(false);
-      fetchData();
+      await fetchData();
       alert('Goal details, category, and timeline updated successfully!');
     } catch (err) {
       alert('Failed to update: ' + err.message);
@@ -1493,7 +1493,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Stream Card */}
+                    {/* Stream Card (Recent activity for selected goal only) */}
                     <div className="butter-card rounded-3xl p-5 space-y-3 shadow-sm">
                       <div className="flex items-center justify-between border-b border-[#EADBCC] pb-2.5 text-xs">
                         <span className="font-bold text-[#1A1A18] uppercase tracking-wider">Recent Activity</span>
