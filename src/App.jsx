@@ -286,6 +286,7 @@ export default function App() {
 
   // Goal Editing & Timeline Extension
   const [editGoalName, setEditGoalName] = useState('');
+  const [editGoalCategory, setEditGoalCategory] = useState('mobile');
   const [editGoalAmount, setEditGoalAmount] = useState('');
   const [editGoalDate, setEditGoalDate] = useState('');
   const [isSavingEdit, setIsSavingEdit] = useState(false);
@@ -700,6 +701,7 @@ export default function App() {
   const handleOpenEditGoal = () => {
     if (!activeGoal) return;
     setEditGoalName(activeGoal.name);
+    setEditGoalCategory(activeGoal.category || 'mobile');
     setEditGoalAmount(String(activeGoal.targetAmount));
     setEditGoalDate(activeGoal.targetDate);
     setIsEditGoalOpen(true);
@@ -720,12 +722,16 @@ export default function App() {
       return;
     }
 
+    const chosenCat = CATEGORY_PRESETS.find((c) => c.id === editGoalCategory) || CATEGORY_PRESETS[0];
+
     setIsSavingEdit(true);
     try {
       const { error } = await supabase
         .from('goals')
         .update({
           name: editGoalName.trim(),
+          category: chosenCat.id,
+          badge: chosenCat.label,
           target_amount: Number(editGoalAmount),
           target_date: editGoalDate
         })
@@ -735,7 +741,7 @@ export default function App() {
 
       setIsEditGoalOpen(false);
       fetchData();
-      alert('Goal details and extended timeline updated successfully!');
+      alert('Goal details, category, and timeline updated successfully!');
     } catch (err) {
       alert('Failed to update: ' + err.message);
     } finally {
@@ -1890,12 +1896,12 @@ export default function App() {
                         key={cat.id}
                         type="button"
                         onClick={() => setNewGoalCategory(cat.id)}
-                        className={`p-2.5 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1 ${
+                        className={`p-2 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1 ${
                           isSelected ? 'bg-[#1A1A18] text-[#FEF6D8] border-[#1A1A18]' : 'bg-[#FAF9F5] text-slate-600 border-[#EADBCC]'
                         }`}
                       >
                         <CatIcon className="w-4 h-4" />
-                        <span className="text-[10px] font-bold">{cat.label.split(' ')[0]}</span>
+                        <span className="text-[9px] font-bold leading-tight">{cat.label.split(' ')[0]}</span>
                       </button>
                     );
                   })}
@@ -1960,18 +1966,31 @@ export default function App() {
         </div>
       )}
 
-      {/* 5. EXTEND TIMELINE / EDIT MODAL */}
+      {/* 5. EXTEND TIMELINE / EDIT MODAL (With Category Correction) */}
       {isEditGoalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#EADBCC] pb-3">
-              <span className="font-black text-sm text-[#1A1A18]">Extend Timeline / Modify Goal</span>
+              <span className="font-black text-sm text-[#1A1A18]">Edit Goal & Category</span>
               <button onClick={() => setIsEditGoalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-[#706B5E] flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleSaveGoalChanges} className="space-y-3 mt-3">
+              <div>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">CATEGORY CORRECTION</label>
+                <select
+                  value={editGoalCategory}
+                  onChange={(e) => setEditGoalCategory(e.target.value)}
+                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18] font-bold"
+                >
+                  {CATEGORY_PRESETS.map((cat) => (
+                    <option key={cat.id} value={cat.id}>{cat.label}</option>
+                  ))}
+                </select>
+              </div>
+
               <div>
                 <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TITLE</label>
                 <input
@@ -2055,7 +2074,7 @@ export default function App() {
                 disabled={isSavingEdit}
                 className="w-full py-3.5 bg-[#1A1A18] hover:bg-black text-[#FEF6D8] font-bold text-xs rounded-2xl mt-2 transition"
               >
-                {isSavingEdit ? 'Saving...' : 'Save Extended Timeline'}
+                {isSavingEdit ? 'Saving...' : 'Save Goal Changes'}
               </button>
             </form>
           </div>
