@@ -37,9 +37,7 @@ import {
   Share2,
   PiggyBank,
   Edit3,
-  SlidersHorizontal,
-  FolderDown,
-  CheckCircle2
+  SlidersHorizontal
 } from 'lucide-react';
 
 const CATEGORY_PRESETS = [
@@ -925,7 +923,7 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 2: SESSION HISTORY (Dark Session Panel from image) */}
+          {/* TAB 2: SESSION HISTORY */}
           {activeTab === 'history' && (
             <div className="space-y-5 max-w-2xl mx-auto">
               <div>
@@ -962,7 +960,7 @@ export default function App() {
                               </p>
                             </div>
                           </div>
-                          <span className={`font-mono font-bold text-sm ${isWithdraw ? 'text-rose-400' : 'text-[#FEF6D8]'}`}>
+                          <span className={`font-mono font-bold text-sm ${isWithdraw ? 'text-rose-500 font-black' : 'text-emerald-400 font-black'}`}>
                             {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
                           </span>
                         </div>
@@ -974,7 +972,7 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 3: GOALS (Exact style of devices & people in image) */}
+          {/* TAB 3: GOALS */}
           {activeTab === 'goals' && (
             <div className="space-y-6">
               
@@ -998,7 +996,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Goals Cards Horizontal / Grid */}
+              {/* Goals Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {goals.map((g) => {
                   const isSelected = g.id === selectedGoalId;
@@ -1062,7 +1060,7 @@ export default function App() {
                 })}
               </div>
 
-              {/* Selected Goal Command Card (Yellow style from Katy Fuller card in image) */}
+              {/* Selected Goal Command Card */}
               {activeGoal && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
                   
@@ -1219,26 +1217,23 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Right Column: Pace & History */}
+                  {/* Right Column: Pace & Transaction Stream */}
                   <div className="lg:col-span-5 space-y-4">
                     
-                    {/* Security / Pace Status (Circular style from 3rd card in image) */}
-                    <div className="butter-card rounded-3xl p-5 space-y-4 text-center">
-                      <h3 className="text-sm font-black text-[#1A1A18]">Target Pace Horizon</h3>
-
-                      <div className="w-28 h-28 rounded-full border-8 border-[#FEF6D8] border-t-[#1A1A18] flex flex-col items-center justify-center mx-auto my-2">
-                        <span className="text-xl font-black text-[#1A1A18]">{percentage}%</span>
-                        <span className="text-[9px] text-slate-400 font-bold uppercase">Saved</span>
+                    {/* Pace Box */}
+                    <div className="butter-card rounded-3xl p-5 space-y-3">
+                      <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-2 text-xs">
+                        <span className="font-bold text-[#1A1A18] uppercase tracking-wider">Pace & Horizon</span>
+                        <span className="text-[10px] text-slate-500 font-bold">{daysLeft} days remaining</span>
                       </div>
-
-                      <div className="grid grid-cols-2 gap-2 text-left pt-2 border-t border-[#EAE4D6]">
-                        <div className="bg-[#FAF9F5] p-2.5 rounded-xl border border-[#E6DEC8]">
-                          <span className="text-[9px] text-slate-400 font-bold uppercase block">DAILY PACE</span>
-                          <p className="text-base font-black text-[#1A1A18]">₹{requiredPace}/d</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="bg-[#FAF9F5] p-3 rounded-2xl border border-[#E6DEC8]">
+                          <span className="text-[10px] text-slate-400 font-bold uppercase block">DAILY PACE</span>
+                          <p className="text-lg font-black text-[#1A1A18] mt-0.5">₹{requiredPace}/d</p>
                         </div>
-                        <div className="bg-[#FAF9F5] p-2.5 rounded-xl border border-[#E6DEC8]">
-                          <span className="text-[9px] text-slate-400 font-bold uppercase block">REMAINING</span>
-                          <p className="text-base font-black text-[#1A1A18]">{daysLeft} days</p>
+                        <div className="bg-[#FAF9F5] p-3 rounded-2xl border border-[#E6DEC8]">
+                          <span className="text-[10px] text-slate-400 font-bold uppercase block">TARGET REMAINING</span>
+                          <p className="text-lg font-black text-[#1A1A18] mt-0.5">₹{remainingNeeded.toLocaleString()}</p>
                         </div>
                       </div>
                     </div>
@@ -1250,11 +1245,11 @@ export default function App() {
                         <span className="text-[10px] text-slate-400">{currentTxs.length} items</span>
                       </div>
 
-                      <div className="divide-y divide-[#EAE4D6] max-h-56 overflow-y-auto">
+                      <div className="divide-y divide-[#EAE4D6] max-h-72 overflow-y-auto">
                         {currentTxs.length === 0 ? (
-                          <p className="text-xs text-slate-400 py-4 text-center">No transactions recorded for this goal.</p>
+                          <p className="text-xs text-slate-400 py-6 text-center">No transactions recorded for this goal.</p>
                         ) : (
-                          currentTxs.slice(0, 5).map((tx) => {
+                          currentTxs.slice(0, 7).map((tx) => {
                             const isWithdraw = tx.action === 'withdraw';
                             return (
                               <div key={tx.id} className="py-2.5 flex items-center justify-between text-xs">
@@ -1262,7 +1257,7 @@ export default function App() {
                                   <p className="font-bold text-[#1A1A18]">{tx.note || 'Savings Entry'}</p>
                                   <p className="text-[10px] text-slate-400">{tx.type} • {tx.date}</p>
                                 </div>
-                                <span className={`font-mono font-bold ${isWithdraw ? 'text-rose-600' : 'text-[#1A1A18]'}`}>
+                                <span className={`font-mono font-bold text-sm ${isWithdraw ? 'text-rose-600 font-black' : 'text-emerald-600 font-black'}`}>
                                   {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
                                 </span>
                               </div>
@@ -1368,20 +1363,26 @@ export default function App() {
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
               <div className="flex-1 bg-[#FAF9F5] p-1 rounded-2xl flex border border-[#EADBCC]">
+                {/* ACTIVE GREEN TAB FOR DEPOSIT / ADD MONEY */}
                 <button
                   type="button"
                   onClick={() => setActionType('deposit')}
                   className={`flex-1 py-1.5 text-xs font-bold rounded-xl transition ${
-                    actionType === 'deposit' ? 'bg-[#1A1A18] text-[#FEF6D8]' : 'text-slate-600'
+                    actionType === 'deposit' 
+                      ? 'bg-emerald-600 text-white shadow-sm' 
+                      : 'text-slate-600'
                   }`}
                 >
                   Deposit (+)
                 </button>
+                {/* ACTIVE RED TAB FOR WITHDRAW */}
                 <button
                   type="button"
                   onClick={() => setActionType('withdraw')}
                   className={`flex-1 py-1.5 text-xs font-bold rounded-xl transition ${
-                    actionType === 'withdraw' ? 'bg-rose-600 text-white' : 'text-slate-600'
+                    actionType === 'withdraw' 
+                      ? 'bg-rose-600 text-white shadow-sm' 
+                      : 'text-slate-600'
                   }`}
                 >
                   Withdraw (−)
@@ -1456,7 +1457,9 @@ export default function App() {
               type="button"
               onClick={handleTransactionSubmit}
               disabled={!amountStr || Number(amountStr) <= 0}
-              className="w-full py-3.5 bg-[#1A1A18] hover:bg-black text-[#FEF6D8] font-bold text-xs rounded-2xl mt-3 transition disabled:opacity-40"
+              className={`w-full py-3.5 text-white font-bold text-xs rounded-2xl mt-3 transition disabled:opacity-40 shadow-sm ${
+                actionType === 'deposit' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'
+              }`}
             >
               Confirm {actionType === 'deposit' ? 'Deposit' : 'Withdrawal'}
             </button>
