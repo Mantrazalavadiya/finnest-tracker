@@ -18,7 +18,6 @@
   }
 }
 
-/* Hide scrollbar utility */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -27,11 +26,20 @@
   scrollbar-width: none;
 }
 
-/* FinNest Warm Card Surfaces */
+/* FinNest Modular Card Surfaces */
 .butter-card {
   background: #FFFFFF;
-  border: 1px solid rgba(230, 222, 203, 0.7);
+  border: 1px solid #EADBCC;
   box-shadow: 0 4px 20px rgba(180, 160, 120, 0.06);
+}
+
+.butter-card-hover {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.butter-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(180, 160, 120, 0.12);
+  border-color: #D9CBB7;
 }
 
 .butter-highlight-card {
@@ -40,14 +48,12 @@
   box-shadow: 0 6px 24px rgba(230, 195, 75, 0.12);
 }
 
-/* Updated Warm Session History Panel (Replaces Dark Panel) */
 .session-history-panel {
   background: #FFFFFF;
-  border: 1px solid #E6DEC8;
+  border: 1px solid #EADBCC;
   box-shadow: 0 8px 30px rgba(180, 160, 120, 0.08);
 }
 
-/* Modal Bottom-sheet Animation */
 @keyframes butterSheetUp {
   from {
     opacity: 0;

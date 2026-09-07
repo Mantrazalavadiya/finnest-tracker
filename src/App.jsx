@@ -39,10 +39,10 @@ import {
   Edit3,
   SlidersHorizontal,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  ChevronRight
 } from 'lucide-react';
 
-// Reusable smooth number counter animation
 function AnimatedNumber({ value, duration = 650, decimals = 0, prefix = '', suffix = '' }) {
   const [displayValue, setDisplayValue] = useState(0);
   const startValueRef = useRef(0);
@@ -767,7 +767,7 @@ export default function App() {
     <div className="min-h-screen bg-[#F6F4EE] text-[#1A1A18] flex flex-col md:flex-row pb-24 md:pb-0 font-sans">
       
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden md:flex flex-col w-64 butter-card border-r border-[#E6DEC8] p-5 shrink-0 justify-between sticky top-0 h-screen z-20">
+      <aside className="hidden md:flex flex-col w-64 butter-card border-r border-[#EADBCC] p-5 shrink-0 justify-between sticky top-0 h-screen z-20">
         <div className="space-y-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-[#1A1A18] text-[#FEF6D8] flex items-center justify-center shadow-md">
@@ -819,7 +819,7 @@ export default function App() {
         </div>
 
         <div className="space-y-3 pt-4 border-t border-[#EAE4D6]">
-          <div className="bg-[#FEF6D8] p-3.5 rounded-2xl border border-[#F6E6AA]">
+          <div className="butter-highlight-card p-4 rounded-2xl">
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#706B5E] block">TOTAL VAULT BALANCE</span>
             <p className="text-xl font-black text-[#1A1A18] mt-0.5">
               ₹<AnimatedNumber value={portfolioTotal} />
@@ -838,7 +838,7 @@ export default function App() {
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* Mobile Header */}
-        <header className="md:hidden butter-card px-5 pt-4 pb-3 border-b border-[#E6DEC8] sticky top-0 z-20 flex items-center justify-between">
+        <header className="md:hidden butter-card px-5 pt-4 pb-3 border-b border-[#EADBCC] sticky top-0 z-20 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-[#1A1A18] text-[#FEF6D8] flex items-center justify-center font-black text-xs">
               FN
@@ -857,7 +857,7 @@ export default function App() {
         </header>
 
         {/* Laptop Subheader */}
-        <div className="hidden md:flex items-center justify-between px-8 py-4 butter-card border-b border-[#E6DEC8]">
+        <div className="hidden md:flex items-center justify-between px-8 py-4 butter-card border-b border-[#EADBCC]">
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-black text-[#1A1A18] capitalize">{activeTab}</h1>
             <span className="text-xs font-semibold text-[#706B5E]">Vault: {user.email}</span>
@@ -872,7 +872,7 @@ export default function App() {
                   setGoalTransferNote('');
                   setIsGoalTransferModalOpen(true);
                 }}
-                className="bg-[#FAF9F5] border border-[#E0D8C3] hover:bg-white text-[#1A1A18] font-bold text-xs px-3.5 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95"
+                className="butter-card butter-card-hover text-[#1A1A18] font-bold text-xs px-3.5 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95"
               >
                 <Share2 className="w-3.5 h-3.5" /> Shift to Goal
               </button>
@@ -883,7 +883,7 @@ export default function App() {
                 setTransferNote('');
                 setIsTransferModalOpen(true);
               }}
-              className="bg-[#FAF9F5] border border-[#E0D8C3] hover:bg-white text-[#1A1A18] font-bold text-xs px-4 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95"
+              className="butter-card butter-card-hover text-[#1A1A18] font-bold text-xs px-4 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95"
             >
               <ArrowLeftRight className="w-3.5 h-3.5" /> Shift Funds
             </button>
@@ -911,7 +911,7 @@ export default function App() {
                 </p>
               </div>
 
-              {/* Total Vault Butter Card */}
+              {/* Total Vault Hero Bento Card */}
               <div className="butter-highlight-card rounded-3xl p-6 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] font-mono uppercase tracking-wider text-[#706B5E] font-bold block">
@@ -926,9 +926,13 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Quick Actions */}
-              <div className="space-y-3 pt-1">
-                <h2 className="text-base font-black text-[#1A1A18]">Quick Operations</h2>
+              {/* Quick Operations Bento Card */}
+              <div className="butter-card rounded-3xl p-6 space-y-4">
+                <div className="flex items-center justify-between border-b border-[#EADBCC] pb-3">
+                  <h2 className="text-base font-black text-[#1A1A18]">Operations Center</h2>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#706B5E]">Instant Actions</span>
+                </div>
+                
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
                     onClick={() => {
@@ -936,9 +940,9 @@ export default function App() {
                       setTransferNote('');
                       setIsTransferModalOpen(true);
                     }}
-                    className="butter-card hover:bg-white text-[#1A1A18] font-bold text-xs py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition"
+                    className="p-4 rounded-2xl bg-[#FAF9F5] border border-[#EADBCC] hover:bg-white text-[#1A1A18] font-bold text-xs flex items-center justify-center gap-2 active:scale-98 transition shadow-2xs"
                   >
-                    <ArrowLeftRight className="w-4 h-4" /> Shift (Cash ➔ Bank)
+                    <ArrowLeftRight className="w-4 h-4 text-[#706B5E]" /> Shift (Cash ➔ Bank)
                   </button>
 
                   <button
@@ -948,7 +952,7 @@ export default function App() {
                       setNote('');
                       setIsTxModalOpen(true);
                     }}
-                    className="bg-[#1A1A18] hover:bg-black text-[#FEF6D8] font-bold text-xs py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow-sm"
+                    className="p-4 rounded-2xl bg-[#1A1A18] hover:bg-black text-[#FEF6D8] font-bold text-xs flex items-center justify-center gap-2 active:scale-98 transition shadow-sm"
                   >
                     <Plus className="w-4 h-4" /> Add / Withdraw
                   </button>
@@ -964,7 +968,7 @@ export default function App() {
                     }}
                     className="w-full bg-[#FEF6D8] hover:bg-[#FDF0C2] border border-[#F6E6AA] text-[#1A1A18] font-bold text-xs py-3.5 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow-xs"
                   >
-                    <Share2 className="w-4 h-4" /> Inter-Goal Surplus Transfer
+                    <Share2 className="w-4 h-4 text-[#706B5E]" /> Inter-Goal Surplus Transfer
                   </button>
                 )}
               </div>
@@ -979,9 +983,9 @@ export default function App() {
                 <p className="text-xs font-semibold text-[#706B5E] mt-0.5">Audit trail of transactions across all goals.</p>
               </div>
 
-              {/* High-Contrast Warm Session Panel */}
+              {/* High-Contrast Card Panel */}
               <div className="session-history-panel rounded-3xl p-5 sm:p-6 space-y-4">
-                <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
+                <div className="flex items-center justify-between border-b border-[#EADBCC] pb-3">
                   <span className="text-[11px] font-mono uppercase tracking-wider text-[#706B5E] font-bold">
                     RECORDED SESSIONS
                   </span>
@@ -990,7 +994,7 @@ export default function App() {
                   </span>
                 </div>
 
-                <div className="divide-y divide-[#EAE4D6] max-h-96 overflow-y-auto pr-1">
+                <div className="divide-y divide-[#EADBCC] max-h-96 overflow-y-auto pr-1">
                   {allTransactions.length === 0 ? (
                     <p className="text-xs text-[#706B5E] font-medium py-10 text-center">No transaction sessions recorded yet.</p>
                   ) : (
@@ -1040,15 +1044,15 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 3: GOALS */}
+          {/* TAB 3: GOALS (Bento Cards Grid) */}
           {activeTab === 'goals' && (
             <div className="space-y-6">
               
-              {/* Header section with pills */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              {/* Header card */}
+              <div className="butter-card rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <h1 className="text-2xl font-black text-[#1A1A18] tracking-tight">Devices & Goals</h1>
-                  <p className="text-xs font-semibold text-[#706B5E]">Active FinNest targets ({goals.length})</p>
+                  <h1 className="text-xl font-black text-[#1A1A18] tracking-tight">Devices & Financial Goals</h1>
+                  <p className="text-xs font-semibold text-[#706B5E]">Active targets monitoring timeline velocity</p>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -1057,7 +1061,7 @@ export default function App() {
                   </span>
                   <button 
                     onClick={() => setIsAddGoalOpen(true)}
-                    className="text-xs font-bold px-3.5 py-1.5 rounded-full butter-card hover:bg-white text-[#1A1A18] transition"
+                    className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-[#FEF6D8] border border-[#F6E6AA] hover:bg-[#FDF0C2] text-[#1A1A18] transition"
                   >
                     + New Target
                   </button>
@@ -1065,7 +1069,7 @@ export default function App() {
               </div>
 
               {/* Goals Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {goals.map((g) => {
                   const isSelected = g.id === selectedGoalId;
                   const gTxs = txStore[g.id] || [];
@@ -1089,10 +1093,10 @@ export default function App() {
                     <div
                       key={g.id}
                       onClick={() => setSelectedGoalId(g.id)}
-                      className={`p-4 rounded-3xl border transition-all cursor-pointer ${
+                      className={`p-4 sm:p-5 rounded-3xl border transition-all cursor-pointer butter-card-hover ${
                         isSelected 
                           ? 'butter-highlight-card shadow-md ring-2 ring-[#1A1A18]' 
-                          : 'butter-card hover:bg-white'
+                          : 'butter-card'
                       }`}
                     >
                       <div className="flex items-center justify-between text-xs">
@@ -1109,9 +1113,9 @@ export default function App() {
                         </span>
                       </div>
 
-                      <h3 className="text-base font-black text-[#1A1A18] mt-2">{g.name}</h3>
+                      <h3 className="text-base font-black text-[#1A1A18] mt-2.5">{g.name}</h3>
 
-                      <div className="flex items-center justify-between text-xs mt-1">
+                      <div className="flex items-center justify-between text-xs mt-1.5">
                         <span className="font-semibold text-slate-700">
                           ₹<AnimatedNumber value={gSaved} /> <span className="text-[#706B5E] font-normal">/ ₹{g.targetAmount.toLocaleString()}</span>
                         </span>
@@ -1122,7 +1126,7 @@ export default function App() {
                         )}
                       </div>
 
-                      <div className="w-full bg-[#EAE4D6] h-1.5 rounded-full overflow-hidden mt-3">
+                      <div className="w-full bg-[#EAE4D6] h-2 rounded-full overflow-hidden mt-3">
                         <div 
                           className="h-full bg-[#1A1A18] rounded-full transition-all duration-700 ease-out" 
                           style={{ width: `${gPct}%` }} 
@@ -1133,12 +1137,14 @@ export default function App() {
                 })}
               </div>
 
-              {/* Selected Goal Command Card */}
+              {/* Selected Goal Workspace Bento Grid */}
               {activeGoal && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
                   
                   {/* Left Column */}
                   <div className="lg:col-span-7 space-y-4">
+                    
+                    {/* Goal Identity Card */}
                     <div className="butter-highlight-card rounded-3xl p-5 sm:p-6 space-y-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
@@ -1176,8 +1182,8 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* Date Box */}
-                      <div className="bg-white/80 border border-[#EADBCC] rounded-2xl p-3 flex items-center justify-between text-xs">
+                      {/* Date Pill Card */}
+                      <div className="bg-white/85 border border-[#EADBCC] rounded-2xl p-3 flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2 text-slate-700 font-semibold text-[11px]">
                           <Calendar className="w-3.5 h-3.5 text-slate-400" />
                           <span>{activeGoal.startDate}</span>
@@ -1197,7 +1203,7 @@ export default function App() {
                             setTransferNote('');
                             setIsTransferModalOpen(true);
                           }}
-                          className="bg-white border border-[#EADBCC] hover:bg-[#FAF9F5] text-[#1A1A18] font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 transition active:scale-98"
+                          className="bg-white border border-[#EADBCC] hover:bg-[#FAF9F5] text-[#1A1A18] font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 transition active:scale-98 shadow-2xs"
                         >
                           <ArrowLeftRight className="w-3.5 h-3.5" /> Shift Cash
                         </button>
@@ -1210,7 +1216,7 @@ export default function App() {
                               setGoalTransferNote('');
                               setIsGoalTransferModalOpen(true);
                             }}
-                            className="bg-white border border-[#EADBCC] hover:bg-[#FAF9F5] text-[#1A1A18] font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 transition active:scale-98"
+                            className="bg-white border border-[#EADBCC] hover:bg-[#FAF9F5] text-[#1A1A18] font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 transition active:scale-98 shadow-2xs"
                           >
                             <Share2 className="w-3.5 h-3.5" /> Shift to Goal
                           </button>
@@ -1233,7 +1239,7 @@ export default function App() {
                     </div>
 
                     {/* Schedule Velocity Card */}
-                    <div className={`p-4 rounded-2xl border flex flex-col gap-1.5 ${
+                    <div className={`p-4 rounded-3xl border flex flex-col gap-1.5 shadow-2xs ${
                       trajectoryStatus === 'delay' 
                         ? 'bg-rose-50 border-rose-200 text-rose-900' 
                         : 'bg-emerald-50 border-emerald-200 text-emerald-950'
@@ -1269,8 +1275,8 @@ export default function App() {
                       </p>
                     </div>
 
-                    {/* Total Saved & Animated Status Bar Card */}
-                    <div className="butter-card rounded-3xl p-5 space-y-3.5">
+                    {/* Total Saved & Sub-Accounts Card */}
+                    <div className="butter-card rounded-3xl p-5 space-y-4 shadow-sm">
                       <div className="flex items-baseline justify-between">
                         <div>
                           <span className="text-[10px] text-[#706B5E] uppercase font-bold block tracking-wider">
@@ -1290,7 +1296,7 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* Smooth Liquid Progress Bar with eased transition */}
+                      {/* Smooth Liquid Progress Bar */}
                       <div className="h-2.5 w-full bg-[#EAE4D6] rounded-full overflow-hidden p-0.5">
                         <div 
                           className="h-full bg-[#1A1A18] rounded-full transition-all duration-700 ease-out shadow-xs" 
@@ -1298,15 +1304,21 @@ export default function App() {
                         />
                       </div>
 
-                      {/* Animated Sub-Account Cards */}
-                      <div className="flex items-center gap-2 pt-1 text-xs">
-                        <div className="bg-[#FAF9F5] border border-[#E6DEC8] px-3.5 py-1.5 rounded-xl font-bold text-[#1A1A18] flex items-center gap-1.5">
-                          <Banknote className="w-3.5 h-3.5 text-[#706B5E]" />
-                          <span>Cash Stash: ₹<AnimatedNumber value={totalCash} /></span>
+                      {/* Sub-Account Cards */}
+                      <div className="grid grid-cols-2 gap-2 pt-1 text-xs">
+                        <div className="bg-[#FAF9F5] border border-[#EADBCC] p-3 rounded-2xl font-bold text-[#1A1A18] flex items-center gap-2 shadow-2xs">
+                          <Banknote className="w-4 h-4 text-[#706B5E]" />
+                          <div>
+                            <span className="text-[9px] uppercase text-[#706B5E] block font-semibold">Cash Stash</span>
+                            <span className="text-sm font-black">₹<AnimatedNumber value={totalCash} /></span>
+                          </div>
                         </div>
-                        <div className="bg-[#FAF9F5] border border-[#E6DEC8] px-3.5 py-1.5 rounded-xl font-bold text-[#1A1A18] flex items-center gap-1.5">
-                          <Smartphone className="w-3.5 h-3.5 text-[#706B5E]" />
-                          <span>Bank Account: ₹<AnimatedNumber value={totalOnline} /></span>
+                        <div className="bg-[#FAF9F5] border border-[#EADBCC] p-3 rounded-2xl font-bold text-[#1A1A18] flex items-center gap-2 shadow-2xs">
+                          <Smartphone className="w-4 h-4 text-[#706B5E]" />
+                          <div>
+                            <span className="text-[9px] uppercase text-[#706B5E] block font-semibold">Bank Account</span>
+                            <span className="text-sm font-black">₹<AnimatedNumber value={totalOnline} /></span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1315,23 +1327,23 @@ export default function App() {
                   {/* Right Column: Pace & Transaction Stream */}
                   <div className="lg:col-span-5 space-y-4">
                     
-                    {/* Pace Box */}
-                    <div className="butter-card rounded-3xl p-5 space-y-3">
-                      <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-2 text-xs">
+                    {/* Velocity & Horizon Card */}
+                    <div className="butter-card rounded-3xl p-5 space-y-3 shadow-sm">
+                      <div className="flex items-center justify-between border-b border-[#EADBCC] pb-2.5 text-xs">
                         <span className="font-bold text-[#1A1A18] uppercase tracking-wider">Pace & Horizon</span>
                         <span className="text-[10px] text-[#706B5E] font-bold">
                           <AnimatedNumber value={daysLeft} suffix=" days remaining" />
                         </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="bg-[#FAF9F5] p-3 rounded-2xl border border-[#E6DEC8]">
-                          <span className="text-[10px] text-[#706B5E] font-bold uppercase block">DAILY PACE</span>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <div className="bg-[#FAF9F5] p-3.5 rounded-2xl border border-[#EADBCC] shadow-2xs">
+                          <span className="text-[9px] text-[#706B5E] font-bold uppercase block">DAILY PACE</span>
                           <p className="text-lg font-black text-[#1A1A18] mt-0.5">
                             ₹<AnimatedNumber value={requiredPace} />/d
                           </p>
                         </div>
-                        <div className="bg-[#FAF9F5] p-3 rounded-2xl border border-[#E6DEC8]">
-                          <span className="text-[10px] text-[#706B5E] font-bold uppercase block">TARGET REMAINING</span>
+                        <div className="bg-[#FAF9F5] p-3.5 rounded-2xl border border-[#EADBCC] shadow-2xs">
+                          <span className="text-[9px] text-[#706B5E] font-bold uppercase block">TARGET REMAINING</span>
                           <p className="text-lg font-black text-[#1A1A18] mt-0.5">
                             ₹<AnimatedNumber value={remainingNeeded} />
                           </p>
@@ -1339,16 +1351,16 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Transaction Stream Card */}
-                    <div className="butter-card rounded-3xl p-5 space-y-3">
-                      <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-2 text-xs">
+                    {/* Stream Card */}
+                    <div className="butter-card rounded-3xl p-5 space-y-3 shadow-sm">
+                      <div className="flex items-center justify-between border-b border-[#EADBCC] pb-2.5 text-xs">
                         <span className="font-bold text-[#1A1A18] uppercase tracking-wider">Recent Activity</span>
-                        <span className="text-[10px] text-[#706B5E]">{currentTxs.length} items</span>
+                        <span className="text-[10px] text-[#706B5E] font-semibold">{currentTxs.length} items</span>
                       </div>
 
-                      <div className="divide-y divide-[#EAE4D6] max-h-72 overflow-y-auto">
+                      <div className="divide-y divide-[#EADBCC] max-h-72 overflow-y-auto pr-1">
                         {currentTxs.length === 0 ? (
-                          <p className="text-xs text-[#706B5E] py-6 text-center">No transactions recorded for this goal.</p>
+                          <p className="text-xs text-[#706B5E] py-8 text-center">No transactions recorded for this goal.</p>
                         ) : (
                           currentTxs.slice(0, 7).map((tx) => {
                             const isWithdraw = tx.action === 'withdraw';
@@ -1382,19 +1394,19 @@ export default function App() {
                 <p className="text-xs text-[#706B5E]">Callsign and master reset controls.</p>
               </div>
 
-              <div className="butter-card rounded-3xl p-5 space-y-3">
+              <div className="butter-card rounded-3xl p-5 space-y-3 shadow-sm">
                 <span className="text-xs font-bold uppercase text-[#706B5E] block">ACTIVE USER</span>
                 <p className="text-base font-black text-[#1A1A18]">{user.email}</p>
 
                 <button
                   onClick={() => supabase.auth.signOut()}
-                  className="w-full mt-2 bg-[#FAF9F5] hover:bg-[#EAE4D6] text-slate-700 font-bold text-xs py-3 rounded-2xl transition border border-[#E0D8C3]"
+                  className="w-full mt-2 bg-[#FAF9F5] hover:bg-[#EAE4D6] text-slate-700 font-bold text-xs py-3 rounded-2xl transition border border-[#EADBCC]"
                 >
                   Sign Out of FinNest
                 </button>
               </div>
 
-              <div className="butter-card border-rose-200 rounded-3xl p-5 space-y-3">
+              <div className="butter-card border-rose-200 rounded-3xl p-5 space-y-3 shadow-sm">
                 <div className="flex items-center gap-2 text-rose-700">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span className="text-xs font-bold uppercase tracking-wider">Danger Zone</span>
@@ -1417,7 +1429,7 @@ export default function App() {
       </div>
 
       {/* MOBILE BOTTOM NAVIGATION */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 butter-card border-t border-[#E6DEC8] px-6 py-2 z-40">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 butter-card border-t border-[#EADBCC] px-6 py-2 z-40">
         <div className="max-w-md mx-auto flex items-center justify-between text-xs font-bold">
           <button
             onClick={() => setActiveTab('home')}
@@ -1462,7 +1474,7 @@ export default function App() {
       {isTxModalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
+            <div className="flex items-center justify-between border-b border-[#EADBCC] pb-3">
               <div className="flex-1 bg-[#FAF9F5] p-1 rounded-2xl flex border border-[#EADBCC]">
                 <button
                   type="button"
@@ -1492,7 +1504,7 @@ export default function App() {
               </button>
             </div>
 
-            <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-4 text-center mt-3">
+            <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-4 text-center mt-3 shadow-2xs">
               <span className="text-[10px] text-[#706B5E] uppercase font-bold block">{activeGoal.name}</span>
               <div className="text-2xl font-black text-[#1A1A18] mt-1">
                 <span className="text-slate-400 mr-1">₹</span>{amountStr ? Number(amountStr).toLocaleString() : '0'}
@@ -1528,7 +1540,7 @@ export default function App() {
                   key={digit}
                   type="button"
                   onClick={() => handleTxKeypad(digit)}
-                  className="h-11 bg-white border border-[#EADBCC] rounded-2xl hover:bg-[#FAF9F5] text-[#1A1A18] flex items-center justify-center active:scale-95"
+                  className="h-11 bg-white border border-[#EADBCC] rounded-2xl hover:bg-[#FAF9F5] text-[#1A1A18] flex items-center justify-center active:scale-95 shadow-2xs"
                 >
                   {digit}
                 </button>
@@ -1570,7 +1582,7 @@ export default function App() {
       {isTransferModalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
+            <div className="flex items-center justify-between border-b border-[#EADBCC] pb-3">
               <span className="font-black text-sm text-[#1A1A18]">Shift Vault Funds</span>
               <button onClick={() => setIsTransferModalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-[#706B5E] flex items-center justify-center">
                 <X className="w-4 h-4" />
@@ -1601,7 +1613,7 @@ export default function App() {
               </button>
             </div>
 
-            <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-3 text-center mt-3">
+            <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-3 text-center mt-3 shadow-2xs">
               <span className="text-[10px] text-[#706B5E] uppercase font-bold block">SUM TO SHIFT</span>
               <div className="text-2xl font-black text-[#1A1A18] mt-1">
                 <span className="text-slate-400 mr-1">₹</span>{transferAmountStr ? Number(transferAmountStr).toLocaleString() : '0'}
@@ -1614,7 +1626,7 @@ export default function App() {
                   key={digit}
                   type="button"
                   onClick={() => handleTransferKeypad(digit)}
-                  className="h-11 bg-white border border-[#EADBCC] rounded-2xl text-[#1A1A18] flex items-center justify-center"
+                  className="h-11 bg-white border border-[#EADBCC] rounded-2xl text-[#1A1A18] flex items-center justify-center shadow-2xs"
                 >
                   {digit}
                 </button>
@@ -1646,7 +1658,7 @@ export default function App() {
       {isGoalTransferModalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
+            <div className="flex items-center justify-between border-b border-[#EADBCC] pb-3">
               <span className="font-black text-sm text-[#1A1A18]">Shift to Other Goal</span>
               <button onClick={() => setIsGoalTransferModalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-[#706B5E] flex items-center justify-center">
                 <X className="w-4 h-4" />
@@ -1668,7 +1680,7 @@ export default function App() {
                 </select>
               </div>
 
-              <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-3 text-center">
+              <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-3 text-center shadow-2xs">
                 <span className="text-[10px] text-[#706B5E] uppercase font-bold block">AMOUNT TO TRANSFER</span>
                 <div className="text-2xl font-black text-[#1A1A18] mt-1">
                   <span className="text-slate-400 mr-1">₹</span>{goalTransferAmountStr ? Number(goalTransferAmountStr).toLocaleString() : '0'}
@@ -1681,7 +1693,7 @@ export default function App() {
                     key={digit}
                     type="button"
                     onClick={() => handleGoalTransferKeypad(digit)}
-                    className="h-11 bg-white border border-[#EADBCC] rounded-2xl text-[#1A1A18] flex items-center justify-center"
+                    className="h-11 bg-white border border-[#EADBCC] rounded-2xl text-[#1A1A18] flex items-center justify-center shadow-2xs"
                   >
                     {digit}
                   </button>
@@ -1713,7 +1725,7 @@ export default function App() {
       {isAddGoalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
+            <div className="flex items-center justify-between border-b border-[#EADBCC] pb-3">
               <span className="font-black text-sm text-[#1A1A18]">Create New Target</span>
               <button onClick={() => setIsAddGoalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-[#706B5E] flex items-center justify-center">
                 <X className="w-4 h-4" />
@@ -1806,11 +1818,8 @@ export default function App() {
       {isEditGoalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
-              <div>
-                <span className="font-black text-sm text-[#1A1A18] block">Modify Goal & Extend</span>
-                <span className="text-[10px] text-[#706B5E] font-medium">Adjust capital target or postpone deadline</span>
-              </div>
+            <div className="flex items-center justify-between border-b border-[#EADBCC] pb-3">
+              <span className="font-black text-sm text-[#1A1A18]">Extend Timeline / Modify Goal</span>
               <button onClick={() => setIsEditGoalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-[#706B5E] flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
@@ -1818,28 +1827,27 @@ export default function App() {
 
             <form onSubmit={handleSaveGoalChanges} className="space-y-3 mt-3">
               <div>
-                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">TITLE</label>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TITLE</label>
                 <input
                   type="text"
                   value={editGoalName}
                   onChange={(e) => setEditGoalName(e.target.value)}
-                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18] font-semibold focus:outline-none focus:bg-white"
+                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18]"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">TARGET CAPITAL (₹)</label>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET AMOUNT (₹)</label>
                 <input
                   type="number"
                   value={editGoalAmount}
                   onChange={(e) => setEditGoalAmount(e.target.value)}
-                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18] font-semibold focus:outline-none focus:bg-white"
+                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18]"
                   required
                 />
               </div>
 
-              {/* Preset buttons to postpone completion date */}
               <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-3.5 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
@@ -1849,7 +1857,7 @@ export default function App() {
                     </span>
                   </div>
                   <span className="text-[10px] font-bold text-slate-500">
-                    <AnimatedNumber value={daysLeft} suffix="d currently left" />
+                    {daysLeft}d left
                   </span>
                 </div>
 
@@ -1912,7 +1920,7 @@ export default function App() {
       {isResetModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-butter-up">
-            <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3 text-rose-700">
+            <div className="flex items-center justify-between border-b border-[#EADBCC] pb-3 text-rose-700">
               <span className="font-black text-sm uppercase flex items-center gap-1.5">
                 <AlertCircle className="w-4 h-4" /> Reset All Data
               </span>
