@@ -38,7 +38,8 @@ import {
   PiggyBank,
   Edit3,
   SlidersHorizontal,
-  Clock
+  Clock,
+  CheckCircle2
 } from 'lucide-react';
 
 const CATEGORY_PRESETS = [
@@ -633,7 +634,6 @@ export default function App() {
     setIsEditGoalOpen(true);
   };
 
-  // Helper to extend timeline by given number of days from current target
   const handleQuickExtendDays = (days) => {
     const base = editGoalDate ? new Date(editGoalDate) : new Date();
     base.setDate(base.getDate() + days);
@@ -1114,7 +1114,6 @@ export default function App() {
                         </div>
 
                         <div className="flex items-center gap-1">
-                          {/* EDIT BUTTON (Opens modal containing Timeline Extension and Goal Parameters) */}
                           <button 
                             onClick={handleOpenEditGoal} 
                             className="p-2 text-[#706B5E] hover:text-black hover:bg-white/60 rounded-xl transition"
@@ -1132,7 +1131,7 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* Clean Date Box: REMOVED the clickable (Extend ->) button and kept clean badge */}
+                      {/* Clean Date Box */}
                       <div className="bg-white/80 border border-[#EADBCC] rounded-2xl p-3 flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2 text-slate-700 font-semibold text-[11px]">
                           <Calendar className="w-3.5 h-3.5 text-slate-400" />
@@ -1188,29 +1187,39 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Schedule Velocity Card */}
+                    {/* Schedule Velocity Card: Emerald Green on Track */}
                     <div className={`p-4 rounded-2xl border flex flex-col gap-1.5 ${
                       trajectoryStatus === 'delay' 
                         ? 'bg-rose-50 border-rose-200 text-rose-900' 
-                        : 'bg-[#FEF6D8] border-[#F6E6AA] text-[#1A1A18]'
+                        : 'bg-emerald-50 border-emerald-200 text-emerald-950'
                     }`}>
                       <div className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
-                          <AlertCircle className="w-4 h-4 text-slate-700" />
-                          <span className="font-black uppercase tracking-wider">Schedule Status</span>
+                          {trajectoryStatus === 'delay' ? (
+                            <AlertCircle className="w-4 h-4 text-rose-600" />
+                          ) : (
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          )}
+                          <span className="font-black uppercase tracking-wider">SCHEDULE STATUS</span>
                         </div>
                         <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
-                          trajectoryStatus === 'delay' ? 'bg-rose-600 text-white' : 'bg-[#1A1A18] text-[#FEF6D8]'
+                          trajectoryStatus === 'delay' ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'
                         }`}>
                           {trajectoryStatus === 'delay' ? `-${daysDifference}d Behind (-₹${varianceAmount.toLocaleString()})` : 'On Track'}
                         </span>
                       </div>
                       <p className="text-xs font-semibold leading-snug">
-                        Schedule lag: {daysDifference} days. Suggested daily rate: ₹{requiredPace}/day.
-                        {trajectoryStatus === 'delay' && (
-                          <span onClick={handleOpenEditGoal} className="ml-1 underline font-bold cursor-pointer">
-                            Extend target date?
-                          </span>
+                        {trajectoryStatus === 'delay' ? (
+                          <>
+                            Schedule lag: {daysDifference} days. Suggested daily rate: ₹{requiredPace}/day.
+                            <span onClick={handleOpenEditGoal} className="ml-1 underline font-bold cursor-pointer text-rose-700">
+                              Extend target date?
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            Pace is healthy. Daily target to finish on time: ₹{requiredPace}/day.
+                          </>
                         )}
                       </p>
                     </div>
@@ -1243,7 +1252,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Right Column: Pace & Transaction Stream */}
+                  {/* Right Column */}
                   <div className="lg:col-span-5 space-y-4">
                     
                     {/* Pace Box */}
@@ -1727,44 +1736,41 @@ export default function App() {
         </div>
       )}
 
-      {/* 5. EDIT GOAL & EXTEND TIMELINE MODAL (Comprehensive controls moved here) */}
+      {/* 5. EXTEND TIMELINE / EDIT MODAL */}
       {isEditGoalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
-              <div>
-                <span className="font-black text-sm text-[#1A1A18] block">Modify Goal & Extend</span>
-                <span className="text-[10px] text-[#706B5E] font-medium">Adjust capital target or postpone deadline</span>
-              </div>
+              <span className="font-black text-sm text-[#1A1A18]">Extend Timeline / Modify Goal</span>
               <button onClick={() => setIsEditGoalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-[#706B5E] flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveGoalChanges} className="space-y-4 mt-3">
+            <form onSubmit={handleSaveGoalChanges} className="space-y-3 mt-3">
               <div>
-                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">GOAL TITLE</label>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TITLE</label>
                 <input
                   type="text"
                   value={editGoalName}
                   onChange={(e) => setEditGoalName(e.target.value)}
-                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18] font-semibold focus:outline-none focus:bg-white"
+                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18]"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">TARGET CAPITAL (₹)</label>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET AMOUNT (₹)</label>
                 <input
                   type="number"
                   value={editGoalAmount}
                   onChange={(e) => setEditGoalAmount(e.target.value)}
-                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18] font-semibold focus:outline-none focus:bg-white"
+                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18]"
                   required
                 />
               </div>
 
-              {/* TIMELINE EXTENSION SECTION INSIDE EDIT MODAL */}
+              {/* Quick Preset Buttons for Easy Timeline Postponing */}
               <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-3.5 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
@@ -1774,11 +1780,10 @@ export default function App() {
                     </span>
                   </div>
                   <span className="text-[10px] font-bold text-slate-500">
-                    {daysLeft}d currently left
+                    {daysLeft}d left
                   </span>
                 </div>
 
-                {/* Quick Add Presets (+30d, +90d, +180d, +1 yr) */}
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
@@ -1811,7 +1816,7 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label className="text-[9px] text-[#706B5E] font-semibold block mb-1">Or pick exact date:</label>
+                  <label className="text-[9px] text-[#706B5E] font-semibold block mb-1">Pick specific date:</label>
                   <input
                     type="date"
                     value={editGoalDate}
@@ -1820,27 +1825,15 @@ export default function App() {
                     required
                   />
                 </div>
-                <p className="text-[10px] text-[#706B5E] leading-tight">
-                  Extending the deadline will recalculate and lower your required daily pace.
-                </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setIsEditGoalOpen(false)}
-                  className="py-3 bg-[#FAF9F5] border border-[#EADBCC] text-slate-700 font-bold text-xs rounded-2xl hover:bg-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSavingEdit}
-                  className="py-3 bg-[#1A1A18] hover:bg-black text-[#FEF6D8] font-bold text-xs rounded-2xl transition shadow-sm disabled:opacity-40"
-                >
-                  {isSavingEdit ? 'Saving...' : 'Save Updates'}
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={isSavingEdit}
+                className="w-full py-3.5 bg-[#1A1A18] hover:bg-black text-[#FEF6D8] font-bold text-xs rounded-2xl mt-2 transition"
+              >
+                {isSavingEdit ? 'Saving...' : 'Save Extended Timeline'}
+              </button>
             </form>
           </div>
         </div>
