@@ -40,7 +40,8 @@ import {
   SlidersHorizontal,
   Clock,
   CheckCircle2,
-  ChevronRight
+  Archive,
+  Hourglass
 } from 'lucide-react';
 
 function AnimatedNumber({ value, duration = 650, decimals = 0, prefix = '', suffix = '' }) {
@@ -359,17 +360,40 @@ export default function App() {
     }
   }, [user]);
 
+  const today = useMemo(() => new Date(), []);
+
+  // Split goals: active on dashboard (already started OR starts within 5 days) vs archived in advance (> 5 days away)
+  const { activeGoals, archivedGoals } = useMemo(() => {
+    const active = [];
+    const archived = [];
+
+    goals.forEach((g) => {
+      const startDt = new Date(g.startDate);
+      const diffMs = startDt - today;
+      const daysUntilStart = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+      // If start date is more than 5 days in the future, quarantine into the advance archive
+      if (daysUntilStart > 5) {
+        archived.push({ ...g, daysUntilStart });
+      } else {
+        active.push({ ...g, daysUntilStart });
+      }
+    });
+
+    return { activeGoals: active, archivedGoals: archived };
+  }, [goals, today]);
+
   useEffect(() => {
-    if (goals.length === 0) {
+    if (activeGoals.length === 0) {
       setSelectedGoalId(null);
-    } else if (!goals.some((g) => g.id === selectedGoalId)) {
-      setSelectedGoalId(goals[0].id);
+    } else if (!activeGoals.some((g) => g.id === selectedGoalId)) {
+      setSelectedGoalId(activeGoals[0].id);
     }
-  }, [goals, selectedGoalId]);
+  }, [activeGoals, selectedGoalId]);
 
   const activeGoal = useMemo(() => {
-    return goals.find((g) => g.id === selectedGoalId) || null;
-  }, [goals, selectedGoalId]);
+    return activeGoals.find((g) => g.id === selectedGoalId) || null;
+  }, [activeGoals, selectedGoalId]);
 
   const currentTxs = activeGoal ? (txStore[activeGoal.id] || []) : [];
 
@@ -428,7 +452,6 @@ export default function App() {
     }
   }, [isCompleted, activeGoal]);
 
-  const today = new Date();
   const startDt = activeGoal ? new Date(activeGoal.startDate || today) : today;
   const targetDt = activeGoal ? new Date(activeGoal.targetDate) : today;
 
@@ -653,7 +676,6 @@ export default function App() {
     }]).select();
 
     if (!error && data && data.length > 0) {
-      setSelectedGoalId(data[0].id);
       setNewGoalName('');
       setNewGoalCategory('tech');
       setNewGoalAmount('');
@@ -1044,7 +1066,7 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 3: GOALS (Bento Cards Grid) */}
+          {/* TAB 3: GOALS */}
           {activeTab === 'goals' && (
             <div className="space-y-6">
               
@@ -1052,12 +1074,14 @@ export default function App() {
               <div className="butter-card rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h1 className="text-xl font-black text-[#1A1A18] tracking-tight">Devices & Financial Goals</h1>
-                  <p className="text-xs font-semibold text-[#706B5E]">Active targets monitoring timeline velocity</p>
+                  <p className="text-xs font-semibold text-[#706B5E]">
+                    Showing goals active or launching within 5 days ({activeGoals.length} on dashboard)
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-[#1A1A18] text-[#FEF6D8]">
-                    {goals.length} active
+                    {activeGoals.length} active
                   </span>
                   <button 
                     onClick={() => setIsAddGoalOpen(true)}
@@ -1068,76 +1092,93 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Goals Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                {goals.map((g) => {
-                  const isSelected = g.id === selectedGoalId;
-                  const gTxs = txStore[g.id] || [];
-                  let gSaved = 0;
-                  gTxs.forEach((t) => { gSaved += (t.action === 'withdraw' ? -t.amount : t.amount); });
-                  gSaved = Math.max(0, gSaved);
-                  const gPct = Math.min(100, Math.round((gSaved / g.targetAmount) * 100));
+              {/* Active Goals Grid */}
+              {activeGoals.length === 0 ? (
+                <div className="butter-card rounded-3xl p-8 text-center space-y-2">
+                  <p className="text-sm font-bold text-[#1A1A18]">No goals currently in the active window.</p>
+                  <p className="text-xs text-[#706B5E]">
+                    Advance goals set further than 5 days in the future are archived in the Pre-Launch Vault below.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                  {activeGoals.map((g) => {
+                    const isSelected = g.id === selectedGoalId;
+                    const gTxs = txStore[g.id] || [];
+                    let gSaved = 0;
+                    gTxs.forEach((t) => { gSaved += (t.action === 'withdraw' ? -t.amount : t.amount); });
+                    gSaved = Math.max(0, gSaved);
+                    const gPct = Math.min(100, Math.round((gSaved / g.targetAmount) * 100));
 
-                  const gStart = new Date(g.startDate || today);
-                  const gTarget = new Date(g.targetDate);
-                  const gTotalDays = Math.max(1, Math.floor((gTarget - gStart) / (1000 * 60 * 60 * 24)));
-                  const gElapsed = Math.max(0, Math.floor((today - gStart) / (1000 * 60 * 60 * 24)));
-                  const gExpected = Math.round(g.targetAmount * Math.min(1, gElapsed / gTotalDays));
-                  const gDailyPace = Math.max(1, Math.round(g.targetAmount / gTotalDays));
-                  
-                  const isDelayed = gSaved < (gExpected - 20) && gSaved < g.targetAmount;
-                  const sidebarDaysGap = Math.max(1, Math.round(Math.abs(gSaved - gExpected) / gDailyPace));
-                  const GoalIcon = ICON_MAP[g.category] || Target;
+                    const gStart = new Date(g.startDate || today);
+                    const gTarget = new Date(g.targetDate);
+                    const gTotalDays = Math.max(1, Math.floor((gTarget - gStart) / (1000 * 60 * 60 * 24)));
+                    const gElapsed = Math.max(0, Math.floor((today - gStart) / (1000 * 60 * 60 * 24)));
+                    const gExpected = Math.round(g.targetAmount * Math.min(1, gElapsed / gTotalDays));
+                    const gDailyPace = Math.max(1, Math.round(g.targetAmount / gTotalDays));
+                    
+                    const isDelayed = gSaved < (gExpected - 20) && gSaved < g.targetAmount;
+                    const sidebarDaysGap = Math.max(1, Math.round(Math.abs(gSaved - gExpected) / gDailyPace));
+                    const GoalIcon = ICON_MAP[g.category] || Target;
 
-                  return (
-                    <div
-                      key={g.id}
-                      onClick={() => setSelectedGoalId(g.id)}
-                      className={`p-4 sm:p-5 rounded-3xl border transition-all cursor-pointer butter-card-hover ${
-                        isSelected 
-                          ? 'butter-highlight-card shadow-md ring-2 ring-[#1A1A18]' 
-                          : 'butter-card'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-xl bg-[#1A1A18] text-[#FEF6D8] flex items-center justify-center">
-                            <GoalIcon className="w-4 h-4" />
+                    return (
+                      <div
+                        key={g.id}
+                        onClick={() => setSelectedGoalId(g.id)}
+                        className={`p-4 sm:p-5 rounded-3xl border transition-all cursor-pointer butter-card-hover ${
+                          isSelected 
+                            ? 'butter-highlight-card shadow-md ring-2 ring-[#1A1A18]' 
+                            : 'butter-card'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-xl bg-[#1A1A18] text-[#FEF6D8] flex items-center justify-center">
+                              <GoalIcon className="w-4 h-4" />
+                            </div>
+                            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#706B5E]">
+                              {g.badge || 'Goal'}
+                            </span>
                           </div>
-                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#706B5E]">
-                            {g.badge || 'Goal'}
-                          </span>
+                          
+                          {/* Indicator if entering via 5-day advance window */}
+                          {g.daysUntilStart > 0 && g.daysUntilStart <= 5 ? (
+                            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-amber-900">
+                              Starts in {g.daysUntilStart}d
+                            </span>
+                          ) : (
+                            <span className="text-xs font-mono font-black text-[#1A1A18]">
+                              <AnimatedNumber value={gPct} suffix="%" />
+                            </span>
+                          )}
                         </div>
-                        <span className="text-xs font-mono font-black text-[#1A1A18]">
-                          <AnimatedNumber value={gPct} suffix="%" />
-                        </span>
-                      </div>
 
-                      <h3 className="text-base font-black text-[#1A1A18] mt-2.5">{g.name}</h3>
+                        <h3 className="text-base font-black text-[#1A1A18] mt-2.5">{g.name}</h3>
 
-                      <div className="flex items-center justify-between text-xs mt-1.5">
-                        <span className="font-semibold text-slate-700">
-                          ₹<AnimatedNumber value={gSaved} /> <span className="text-[#706B5E] font-normal">/ ₹{g.targetAmount.toLocaleString()}</span>
-                        </span>
-                        {isDelayed && (
-                          <span className="text-[10px] font-mono font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full">
-                            -{sidebarDaysGap}d delay
+                        <div className="flex items-center justify-between text-xs mt-1.5">
+                          <span className="font-semibold text-slate-700">
+                            ₹<AnimatedNumber value={gSaved} /> <span className="text-[#706B5E] font-normal">/ ₹{g.targetAmount.toLocaleString()}</span>
                           </span>
-                        )}
-                      </div>
+                          {isDelayed && (
+                            <span className="text-[10px] font-mono font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full">
+                              -{sidebarDaysGap}d delay
+                            </span>
+                          )}
+                        </div>
 
-                      <div className="w-full bg-[#EAE4D6] h-2 rounded-full overflow-hidden mt-3">
-                        <div 
-                          className="h-full bg-[#1A1A18] rounded-full transition-all duration-700 ease-out" 
-                          style={{ width: `${gPct}%` }} 
-                        />
+                        <div className="w-full bg-[#EAE4D6] h-2 rounded-full overflow-hidden mt-3">
+                          <div 
+                            className="h-full bg-[#1A1A18] rounded-full transition-all duration-700 ease-out" 
+                            style={{ width: `${gPct}%` }} 
+                          />
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
 
-              {/* Selected Goal Workspace Bento Grid */}
+              {/* Selected Goal Workspace */}
               {activeGoal && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
                   
@@ -1383,6 +1424,57 @@ export default function App() {
                   </div>
                 </div>
               )}
+
+              {/* ARCHIVE / PRE-LAUNCH QUEUE CARD (Goals created in advance > 5 days away) */}
+              {archivedGoals.length > 0 && (
+                <div className="butter-card rounded-3xl p-5 sm:p-6 space-y-3 mt-6 border-dashed border-[#D9CBB7]">
+                  <div className="flex items-center justify-between border-b border-[#EADBCC] pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-[#FAF9F5] border border-[#EADBCC] flex items-center justify-center text-[#706B5E]">
+                        <Archive className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-black text-[#1A1A18]">Advance Goals Vault (Archived)</h3>
+                        <p className="text-[11px] text-[#706B5E]">
+                          Goals appearing automatically 5 days before start date
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#FEF6D8] border border-[#F6E6AA] text-[#1A1A18]">
+                      {archivedGoals.length} queued
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    {archivedGoals.map((g) => {
+                      const CatIcon = ICON_MAP[g.category] || Target;
+                      return (
+                        <div key={g.id} className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-3.5 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-white border border-[#EADBCC] flex items-center justify-center text-[#706B5E]">
+                              <CatIcon className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-black text-[#1A1A18] leading-snug">{g.name}</p>
+                              <p className="text-[10px] text-[#706B5E] mt-0.5">
+                                Starts: {g.startDate} • Target: ₹{g.targetAmount.toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA] block">
+                              In {g.daysUntilStart} days
+                            </span>
+                            <span className="text-[9px] text-[#706B5E] block mt-0.5 font-medium">Pre-Launch</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
             </div>
           )}
 
@@ -1582,7 +1674,7 @@ export default function App() {
       {isTransferModalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#EADBCC] pb-3">
+            <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
               <span className="font-black text-sm text-[#1A1A18]">Shift Vault Funds</span>
               <button onClick={() => setIsTransferModalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-[#706B5E] flex items-center justify-center">
                 <X className="w-4 h-4" />
@@ -1848,6 +1940,7 @@ export default function App() {
                 />
               </div>
 
+              {/* Preset buttons to postpone completion date */}
               <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-3.5 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
