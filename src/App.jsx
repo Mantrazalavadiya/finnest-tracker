@@ -33,7 +33,8 @@ import {
   Landmark,
   TrendingUp,
   Activity,
-  RotateCcw
+  RotateCcw,
+  Share2
 } from 'lucide-react';
 
 const CATEGORY_PRESETS = [
@@ -203,6 +204,7 @@ export default function App() {
   // Modals
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [isGoalTransferModalOpen, setIsGoalTransferModalOpen] = useState(false);
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [resetInput, setResetInput] = useState('');
@@ -214,10 +216,16 @@ export default function App() {
   const [amountStr, setAmountStr] = useState('');
   const [note, setNote] = useState('');
 
-  // Transfer states
+  // Cash <-> Bank Transfer states
   const [transferDirection, setTransferDirection] = useState('cash_to_bank');
   const [transferAmountStr, setTransferAmountStr] = useState('');
   const [transferNote, setTransferNote] = useState('');
+
+  // Cross-Goal Transfer states
+  const [targetGoalId, setTargetGoalId] = useState('');
+  const [goalTransferWallet, setGoalTransferWallet] = useState('online');
+  const [goalTransferAmountStr, setGoalTransferAmountStr] = useState('');
+  const [goalTransferNote, setGoalTransferNote] = useState('');
 
   const todayStr = new Date().toISOString().split('T')[0];
   const [newGoalName, setNewGoalName] = useState('');
@@ -382,7 +390,6 @@ export default function App() {
   const requiredPace = isCompleted ? 0 : Math.ceil(remainingNeeded / daysLeft);
   const baselineDailyPace = activeGoal ? Math.max(1, Math.round(activeGoal.targetAmount / totalDurationDays)) : 1;
 
-  // Strict ₹20 tolerance calculation
   const { trajectoryStatus, daysDifference, varianceAmount } = useMemo(() => {
     if (!activeGoal) return { trajectoryStatus: 'on-track', daysDifference: 0, varianceAmount: 0 };
     if (isCompleted) return { trajectoryStatus: 'completed', daysDifference: 0, varianceAmount: 0 };
@@ -423,6 +430,11 @@ export default function App() {
   const handleTransferKeypad = (digit) => {
     if (transferAmountStr.length >= 8) return;
     setTransferAmountStr((prev) => (prev === '0' ? digit : prev + digit));
+  };
+
+  const handleGoalTransferKeypad = (digit) => {
+    if (goalTransferAmountStr.length >= 8) return;
+    setGoalTransferAmountStr((prev) => (prev === '0' ? digit : prev + digit));
   };
 
   const handleTransactionSubmit = async (e) => {
@@ -532,6 +544,54 @@ export default function App() {
     fetchData();
   };
 
+  // CROSS-GOAL TRANSFER SUBMISSION
+  const handleCrossGoalTransferSubmit = async (e) => {
+    e.preventDefault();
+    const val = Number(goalTransferAmountStr);
+    if (!val || val <= 0 || !activeGoal || !targetGoalId || !user) return;
+
+    const available = goalTransferWallet === 'cash' ? totalCash : totalOnline;
+    if (val > available) {
+      alert(`Cannot transfer ₹${val.toLocaleString()}. Available in ${goalTransferWallet === 'cash' ? 'Cash' : 'Online'} is ₹${available.toLocaleString()}`);
+      return;
+    }
+
+    const destinationGoal = goals.find((g) => g.id === targetGoalId);
+    const destName = destinationGoal ? destinationGoal.name : 'Target Goal';
+
+    try {
+      await supabase.from('transactions').insert([
+        {
+          user_id: user.id,
+          goal_id: activeGoal.id,
+          amount: val,
+          action: 'withdraw',
+          type: goalTransferWallet,
+          note: goalTransferNote.trim() ? `Transferred to ${destName} (${goalTransferNote.trim()})` : `Transferred to ${destName}`,
+          date: todayStr
+        },
+        {
+          user_id: user.id,
+          goal_id: targetGoalId,
+          amount: val,
+          action: 'deposit',
+          type: goalTransferWallet,
+          note: goalTransferNote.trim() ? `Received from ${activeGoal.name} (${goalTransferNote.trim()})` : `Received from ${activeGoal.name}`,
+          date: todayStr
+        }
+      ]);
+
+      playSound('transfer');
+      setGoalTransferAmountStr('');
+      setGoalTransferNote('');
+      setIsGoalTransferModalOpen(false);
+      fetchData();
+      alert(`Successfully shifted ₹${val.toLocaleString()} from ${activeGoal.name} to ${destName}!`);
+    } catch (err) {
+      alert('Cross-goal transfer failed: ' + err.message);
+    }
+  };
+
   const handleCreateGoal = async (e) => {
     e.preventDefault();
     if (!newGoalName.trim() || !newGoalAmount || !newGoalDate || !newGoalStartDate || !user) return;
@@ -572,7 +632,6 @@ export default function App() {
     }
   };
 
-  // FULL RESET ALL DATA HANDLER
   const handleResetAllData = async (e) => {
     e.preventDefault();
     if (resetInput.trim().toUpperCase() !== 'RESET') {
@@ -582,18 +641,12 @@ export default function App() {
 
     setIsResetting(true);
     try {
-      // 1. Delete all transactions for the user
       await supabase.from('transactions').delete().eq('user_id', user.id);
-
-      // 2. Delete all goals for the user
       await supabase.from('goals').delete().eq('user_id', user.id);
-
-      // 3. Clear any local cache
       localStorage.removeItem('fintrack_cache');
       localStorage.removeItem('finnest_goals');
       localStorage.removeItem('finnest_txs');
 
-      // 4. Reset local states
       setGoals([]);
       setTxStore({});
       setSelectedGoalId(null);
@@ -624,6 +677,7 @@ export default function App() {
   }
 
   const ActiveIcon = activeGoal ? (ICON_MAP[activeGoal.category] || Target) : Target;
+  const eligibleTargetGoals = goals.filter((g) => g.id !== selectedGoalId);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col md:flex-row pb-24 md:pb-0 font-sans">
@@ -718,6 +772,19 @@ export default function App() {
             <p className="text-xs text-slate-400 font-medium">Logged in as {user.email}</p>
           </div>
           <div className="flex items-center gap-2.5">
+            {goals.length > 1 && (
+              <button
+                onClick={() => {
+                  setTargetGoalId(eligibleTargetGoals[0]?.id || '');
+                  setGoalTransferAmountStr('');
+                  setGoalTransferNote('');
+                  setIsGoalTransferModalOpen(true);
+                }}
+                className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs px-3.5 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95 border border-emerald-200"
+              >
+                <Share2 className="w-3.5 h-3.5" /> Goal ➔ Goal
+              </button>
+            )}
             <button
               onClick={() => {
                 setTransferAmountStr('');
@@ -777,7 +844,7 @@ export default function App() {
                     }}
                     className="bg-white border border-slate-200 hover:bg-slate-50 text-indigo-600 font-bold text-xs py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-98 shadow-xs transition"
                   >
-                    <ArrowLeftRight className="w-4 h-4" /> Shift Funds
+                    <ArrowLeftRight className="w-4 h-4" /> Shift Funds (Cash/Bank)
                   </button>
 
                   <button
@@ -792,6 +859,20 @@ export default function App() {
                     <Plus className="w-4 h-4" /> Add / Withdraw
                   </button>
                 </div>
+
+                {goals.length > 1 && (
+                  <button
+                    onClick={() => {
+                      setTargetGoalId(eligibleTargetGoals[0]?.id || '');
+                      setGoalTransferAmountStr('');
+                      setGoalTransferNote('');
+                      setIsGoalTransferModalOpen(true);
+                    }}
+                    className="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs py-3.5 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow-xs"
+                  >
+                    <Share2 className="w-4 h-4 text-emerald-600" /> Transfer Money to Another Goal
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -992,18 +1073,33 @@ export default function App() {
                         </span>
                       </div>
 
-                      {/* Action Buttons */}
-                      <div className="grid grid-cols-2 gap-3">
+                      {/* Action Buttons: Shift, Cross-Goal, Add/Withdraw */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <button
                           onClick={() => {
                             setTransferAmountStr('');
                             setTransferNote('');
                             setIsTransferModalOpen(true);
                           }}
-                          className="bg-white border border-slate-200 hover:bg-slate-50 text-indigo-600 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 active:scale-98 shadow-xs transition"
+                          className="bg-white border border-slate-200 hover:bg-slate-50 text-indigo-600 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 active:scale-98 shadow-xs transition"
                         >
-                          <ArrowLeftRight className="w-4 h-4" /> Shift Funds
+                          <ArrowLeftRight className="w-3.5 h-3.5" /> Shift Funds
                         </button>
+
+                        {eligibleTargetGoals.length > 0 && (
+                          <button
+                            onClick={() => {
+                              setTargetGoalId(eligibleTargetGoals[0].id);
+                              setGoalTransferAmountStr('');
+                              setGoalTransferNote('');
+                              setIsGoalTransferModalOpen(true);
+                            }}
+                            className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 active:scale-98 transition shadow-xs"
+                          >
+                            <Share2 className="w-3.5 h-3.5 text-emerald-600" /> Transfer to Goal
+                          </button>
+                        )}
+
                         <button
                           onClick={() => {
                             setActionType('deposit');
@@ -1011,9 +1107,11 @@ export default function App() {
                             setNote('');
                             setIsTxModalOpen(true);
                           }}
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 active:scale-98 shadow-md shadow-indigo-600/20 transition"
+                          className={`bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 active:scale-98 shadow-md shadow-indigo-600/20 transition ${
+                            eligibleTargetGoals.length === 0 ? 'sm:col-span-2' : ''
+                          }`}
                         >
-                          <Plus className="w-4 h-4" /> Add / Withdraw
+                          <Plus className="w-3.5 h-3.5" /> Add / Withdraw
                         </button>
                       </div>
                     </div>
@@ -1201,7 +1299,7 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 4: SETTINGS (Includes RESET ALL DATA) */}
+          {/* TAB 4: SETTINGS */}
           {activeTab === 'settings' && (
             <div className="space-y-6 max-w-lg mx-auto">
               <div>
@@ -1209,7 +1307,6 @@ export default function App() {
                 <p className="text-xs text-slate-500 font-medium">Manage preferences, records, and access.</p>
               </div>
               
-              {/* Account Card */}
               <div className="bg-white border border-slate-200/80 rounded-3xl p-5 space-y-4 shadow-xs">
                 <h3 className="text-xs font-mono font-bold uppercase text-slate-400 tracking-wider">Account Details</h3>
                 <div className="flex items-center justify-between text-xs font-semibold">
@@ -1225,7 +1322,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Danger Zone Card (Reset All Data) */}
               <div className="bg-white border border-rose-200 rounded-3xl p-5 space-y-3 shadow-xs">
                 <div className="flex items-center gap-2 text-rose-600">
                   <AlertCircle className="w-4 h-4 shrink-0" />
@@ -1431,7 +1527,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 2. DEDICATED TRANSFER MODAL */}
+      {/* 2. DEDICATED CASH <-> BANK SHIFT MODAL */}
       {isTransferModalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
@@ -1585,7 +1681,171 @@ export default function App() {
         </div>
       )}
 
-      {/* 3. NEW FINANCIAL GOAL MODAL */}
+      {/* 3. DEDICATED CROSS-GOAL TRANSFER MODAL (Move Money to Another Goal) */}
+      {isGoalTransferModalOpen && activeGoal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border border-emerald-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
+            
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <Share2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-black text-sm text-slate-900">Transfer to Another Goal</h3>
+                  <p className="text-[10px] text-slate-400">Shift surplus from {activeGoal.name}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsGoalTransferModalOpen(false)} 
+                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCrossGoalTransferSubmit} className="space-y-3 mt-3">
+              
+              {/* Destination Goal Selector */}
+              <div>
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                  Destination Goal
+                </label>
+                <select
+                  value={targetGoalId}
+                  onChange={(e) => setTargetGoalId(e.target.value)}
+                  className="w-full bg-[#FAFBFD] border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-emerald-600"
+                  required
+                >
+                  {eligibleTargetGoals.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.name} (Target: ₹{g.targetAmount.toLocaleString()})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Source Wallet Type */}
+              <div>
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                  Take From Balance
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setGoalTransferWallet('online')}
+                    className={`py-2 px-3 rounded-2xl border text-left transition ${
+                      goalTransferWallet === 'online' 
+                        ? 'border-emerald-500 bg-emerald-50/60 ring-2 ring-emerald-500/20' 
+                        : 'border-slate-200 bg-white'
+                    }`}
+                  >
+                    <span className="text-xs font-bold flex items-center gap-1 text-slate-900">
+                      <Smartphone className="w-3.5 h-3.5 text-indigo-600" /> Online
+                    </span>
+                    <span className="text-[11px] font-mono font-bold text-slate-500 block mt-0.5">
+                      ₹{totalOnline.toLocaleString()}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setGoalTransferWallet('cash')}
+                    className={`py-2 px-3 rounded-2xl border text-left transition ${
+                      goalTransferWallet === 'cash' 
+                        ? 'border-emerald-500 bg-emerald-50/60 ring-2 ring-emerald-500/20' 
+                        : 'border-slate-200 bg-white'
+                    }`}
+                  >
+                    <span className="text-xs font-bold flex items-center gap-1 text-slate-900">
+                      <Banknote className="w-3.5 h-3.5 text-emerald-600" /> Cash
+                    </span>
+                    <span className="text-[11px] font-mono font-bold text-slate-500 block mt-0.5">
+                      ₹{totalCash.toLocaleString()}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick Fill Max */}
+              <div className="flex items-center justify-between px-1 text-xs">
+                <span className="text-slate-500 font-medium">Available to shift:</span>
+                <button
+                  type="button"
+                  onClick={() => setGoalTransferAmountStr(String(goalTransferWallet === 'cash' ? totalCash : totalOnline))}
+                  className="font-mono text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-xl"
+                >
+                  Send Max (₹{(goalTransferWallet === 'cash' ? totalCash : totalOnline).toLocaleString()})
+                </button>
+              </div>
+
+              {/* Amount Display */}
+              <div className="bg-[#FAFBFD] border border-slate-200 rounded-2xl p-3 text-center">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
+                  AMOUNT TO TRANSFER
+                </span>
+                <div className="text-2xl font-mono font-bold text-slate-900 mt-0.5">
+                  <span className="text-emerald-600 mr-1 text-lg">₹</span>
+                  {goalTransferAmountStr ? Number(goalTransferAmountStr).toLocaleString() : '0'}
+                </div>
+              </div>
+
+              {/* Number Pad */}
+              <div className="grid grid-cols-3 gap-2">
+                {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
+                  <button
+                    key={digit}
+                    type="button"
+                    onClick={() => handleGoalTransferKeypad(digit)}
+                    className="h-11 bg-white text-slate-800 font-bold text-lg rounded-2xl border border-slate-200 active:bg-slate-100 flex items-center justify-center transition active:scale-95"
+                  >
+                    {digit}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setGoalTransferAmountStr('')}
+                  className="h-11 bg-slate-100 text-slate-700 font-bold text-xs rounded-2xl border border-slate-200 flex items-center justify-center font-mono"
+                >
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleGoalTransferKeypad('0')}
+                  className="h-11 bg-white text-slate-800 font-bold text-lg rounded-2xl border border-slate-200 active:bg-slate-100 flex items-center justify-center active:scale-95"
+                >
+                  0
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGoalTransferAmountStr((prev) => prev.slice(0, -1))}
+                  className="h-11 bg-rose-50 text-rose-600 font-bold text-xs rounded-2xl border border-rose-100 flex items-center justify-center"
+                >
+                  <Delete className="w-4 h-4 text-rose-500" />
+                </button>
+              </div>
+
+              <input
+                type="text"
+                placeholder="Reason (e.g. iPhone surplus funds transferred)"
+                value={goalTransferNote}
+                onChange={(e) => setGoalTransferNote(e.target.value)}
+                className="w-full bg-[#FAFBFD] border border-slate-200 rounded-2xl px-4 py-2.5 text-xs text-slate-900 font-medium focus:outline-none focus:bg-white"
+              />
+
+              <button
+                type="submit"
+                disabled={!goalTransferAmountStr || Number(goalTransferAmountStr) <= 0 || !targetGoalId}
+                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-bold text-xs rounded-2xl shadow-md shadow-emerald-600/20 disabled:opacity-40"
+              >
+                Execute Goal Transfer
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 4. NEW FINANCIAL GOAL MODAL */}
       {isAddGoalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
@@ -1700,7 +1960,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 4. RESET ALL DATA CONFIRMATION MODAL */}
+      {/* 5. RESET ALL DATA CONFIRMATION MODAL */}
       {isResetModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border border-rose-100 flex flex-col animate-sheet-up">
