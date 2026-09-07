@@ -130,7 +130,7 @@ function AuthScreen({ onLogin }) {
             <Layers className="w-6 h-6" />
           </div>
           <h1 className="text-2xl font-black text-[#1A1A18] tracking-tight">FinNest</h1>
-          <p className="text-xs text-slate-500 font-medium">Warm Sanctuary Financial Studio</p>
+          <p className="text-xs text-[#706B5E] font-medium">Warm Sanctuary Financial Studio</p>
         </div>
 
         {errorMsg && (
@@ -141,7 +141,7 @@ function AuthScreen({ onLogin }) {
 
         <form onSubmit={handleAuth} className="space-y-3">
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 pl-1">Email</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-[#706B5E] pl-1">Email</label>
             <div className="relative">
               <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
               <input
@@ -156,7 +156,7 @@ function AuthScreen({ onLogin }) {
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 pl-1">Password</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-[#706B5E] pl-1">Password</label>
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
               <input
@@ -184,7 +184,7 @@ function AuthScreen({ onLogin }) {
           <button
             type="button"
             onClick={() => { setIsSignUp(!isSignUp); setErrorMsg(''); }}
-            className="text-xs font-bold text-slate-600 hover:text-black transition"
+            className="text-xs font-bold text-[#706B5E] hover:text-black transition"
           >
             {isSignUp ? 'Existing account? Sign In' : 'New to FinNest? Register'}
           </button>
@@ -729,7 +729,7 @@ export default function App() {
             </div>
             <div>
               <span className="text-xl font-black text-[#1A1A18] block leading-tight">FinNest</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Vault Studio</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#706B5E]">Vault Studio</span>
             </div>
           </div>
 
@@ -737,7 +737,7 @@ export default function App() {
             <button
               onClick={() => setActiveTab('home')}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl transition ${
-                activeTab === 'home' ? 'bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA]' : 'text-slate-600 hover:bg-[#FAF9F5]'
+                activeTab === 'home' ? 'bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA]' : 'text-[#706B5E] hover:bg-[#FAF9F5]'
               }`}
             >
               <HomeIcon className="w-4 h-4" /> Overview
@@ -746,7 +746,7 @@ export default function App() {
             <button
               onClick={() => setActiveTab('goals')}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl transition ${
-                activeTab === 'goals' ? 'bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA]' : 'text-slate-600 hover:bg-[#FAF9F5]'
+                activeTab === 'goals' ? 'bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA]' : 'text-[#706B5E] hover:bg-[#FAF9F5]'
               }`}
             >
               <Target className="w-4 h-4" /> Goals & Devices
@@ -755,7 +755,7 @@ export default function App() {
             <button
               onClick={() => setActiveTab('history')}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl transition ${
-                activeTab === 'history' ? 'bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA]' : 'text-slate-600 hover:bg-[#FAF9F5]'
+                activeTab === 'history' ? 'bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA]' : 'text-[#706B5E] hover:bg-[#FAF9F5]'
               }`}
             >
               <History className="w-4 h-4" /> Session History
@@ -764,7 +764,7 @@ export default function App() {
             <button
               onClick={() => setActiveTab('settings')}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl transition ${
-                activeTab === 'settings' ? 'bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA]' : 'text-slate-600 hover:bg-[#FAF9F5]'
+                activeTab === 'settings' ? 'bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA]' : 'text-[#706B5E] hover:bg-[#FAF9F5]'
               }`}
             >
               <Settings className="w-4 h-4" /> Settings
@@ -774,12 +774,12 @@ export default function App() {
 
         <div className="space-y-3 pt-4 border-t border-[#EAE4D6]">
           <div className="bg-[#FEF6D8] p-3.5 rounded-2xl border border-[#F6E6AA]">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">TOTAL VAULT BALANCE</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#706B5E] block">TOTAL VAULT BALANCE</span>
             <p className="text-xl font-black text-[#1A1A18] mt-0.5">₹{portfolioTotal.toLocaleString()}</p>
           </div>
           <button
             onClick={() => supabase.auth.signOut()}
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-400 hover:text-rose-600 transition"
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-[#706B5E] hover:text-rose-600 transition"
           >
             <LogOut className="w-4 h-4" /> Sign Out
           </button>
@@ -799,10 +799,10 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-1">
-            <button className="p-2 text-slate-500 hover:text-black rounded-full transition">
+            <button className="p-2 text-[#706B5E] hover:text-black rounded-full transition">
               <SlidersHorizontal className="w-4 h-4" />
             </button>
-            <button className="p-2 text-slate-500 hover:text-black rounded-full transition">
+            <button className="p-2 text-[#706B5E] hover:text-black rounded-full transition">
               <Bell className="w-4 h-4" />
             </button>
           </div>
@@ -812,7 +812,7 @@ export default function App() {
         <div className="hidden md:flex items-center justify-between px-8 py-4 butter-card border-b border-[#E6DEC8]">
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-black text-[#1A1A18] capitalize">{activeTab}</h1>
-            <span className="text-xs font-semibold text-slate-400">Vault: {user.email}</span>
+            <span className="text-xs font-semibold text-[#706B5E]">Vault: {user.email}</span>
           </div>
 
           <div className="flex items-center gap-2.5">
@@ -858,7 +858,7 @@ export default function App() {
                 <h1 className="text-2xl sm:text-3xl font-black text-[#1A1A18] tracking-tight">
                   Good morning, {user.email?.split('@')[0] || 'Member'}
                 </h1>
-                <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-0.5">
+                <p className="text-xs sm:text-sm font-semibold text-[#706B5E] mt-0.5">
                   FinNest Sanctuary overview of your capital and devices.
                 </p>
               </div>
@@ -866,7 +866,7 @@ export default function App() {
               {/* Total Vault Butter Card */}
               <div className="butter-highlight-card rounded-3xl p-6 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-600 font-bold block">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-[#706B5E] font-bold block">
                     TOTAL VAULT CAPITAL
                   </span>
                   <p className="text-3xl sm:text-4xl font-black text-[#1A1A18] mt-1 tracking-tight">
@@ -928,41 +928,61 @@ export default function App() {
             <div className="space-y-5 max-w-2xl mx-auto">
               <div>
                 <h1 className="text-2xl font-black text-[#1A1A18] tracking-tight">Session History</h1>
-                <p className="text-xs font-semibold text-slate-500">Audit trail of transactions across all goals.</p>
+                <p className="text-xs font-semibold text-[#706B5E] mt-0.5">Audit trail of transactions across all goals.</p>
               </div>
 
-              <div className="dark-session-panel rounded-3xl p-6 shadow-xl space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-700/60 pb-3">
-                  <span className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold">
+              {/* High-Contrast Warm Session Panel */}
+              <div className="session-history-panel rounded-3xl p-5 sm:p-6 space-y-4">
+                <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-[#706B5E] font-bold">
                     RECORDED SESSIONS
                   </span>
-                  <span className="text-xs font-mono font-bold text-[#FEF6D8]">
+                  <span className="text-xs font-mono font-black text-[#1A1A18] bg-[#FEF6D8] border border-[#F6E6AA] px-3 py-0.5 rounded-full">
                     {allTransactions.length} Items
                   </span>
                 </div>
 
-                <div className="divide-y divide-slate-800 max-h-96 overflow-y-auto pr-1">
+                <div className="divide-y divide-[#EAE4D6] max-h-96 overflow-y-auto pr-1">
                   {allTransactions.length === 0 ? (
-                    <p className="text-xs text-slate-400 py-8 text-center">No transaction sessions recorded yet.</p>
+                    <p className="text-xs text-[#706B5E] font-medium py-10 text-center">No transaction sessions recorded yet.</p>
                   ) : (
                     allTransactions.map((tx) => {
                       const isWithdraw = tx.action === 'withdraw';
                       return (
-                        <div key={tx.id} className="py-3 flex items-center justify-between text-xs">
+                        <div 
+                          key={tx.id} 
+                          className="py-3.5 flex items-center justify-between text-xs hover:bg-[#FAF9F5] px-2 rounded-2xl transition"
+                        >
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center shrink-0">
+                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border ${
+                              isWithdraw 
+                                ? 'bg-rose-50 border-rose-200 text-rose-600' 
+                                : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                            }`}>
                               {tx.type === 'online' ? <Smartphone className="w-4 h-4" /> : <Banknote className="w-4 h-4" />}
                             </div>
                             <div>
-                              <p className="font-bold text-white leading-tight">{tx.note || 'Savings Transaction'}</p>
-                              <p className="text-[10px] text-slate-400 mt-0.5">
-                                {tx.goalName} • {tx.type.toUpperCase()} • {tx.date}
+                              <p className="font-extrabold text-[#1A1A18] text-sm leading-tight">
+                                {tx.note || 'Savings Transaction'}
+                              </p>
+                              <p className="text-[11px] font-semibold text-[#706B5E] mt-0.5">
+                                <span className="text-[#1A1A18] font-bold">{tx.goalName}</span> • {tx.type.toUpperCase()} • {tx.date}
                               </p>
                             </div>
                           </div>
-                          <span className={`font-mono font-bold text-sm ${isWithdraw ? 'text-rose-500 font-black' : 'text-emerald-400 font-black'}`}>
-                            {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
-                          </span>
+                          
+                          <div className="text-right shrink-0">
+                            <span className={`font-mono font-black text-sm block ${
+                              isWithdraw ? 'text-[#E11D48]' : 'text-[#059669]'
+                            }`}>
+                              {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
+                            </span>
+                            <span className={`text-[10px] font-bold uppercase ${
+                              isWithdraw ? 'text-rose-600' : 'text-emerald-700'
+                            }`}>
+                              {isWithdraw ? 'Debited' : 'Added'}
+                            </span>
+                          </div>
                         </div>
                       );
                     })
@@ -980,7 +1000,7 @@ export default function App() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h1 className="text-2xl font-black text-[#1A1A18] tracking-tight">Devices & Goals</h1>
-                  <p className="text-xs font-semibold text-slate-500">Active FinNest targets ({goals.length})</p>
+                  <p className="text-xs font-semibold text-[#706B5E]">Active FinNest targets ({goals.length})</p>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -1032,7 +1052,7 @@ export default function App() {
                           <div className="w-8 h-8 rounded-xl bg-[#1A1A18] text-[#FEF6D8] flex items-center justify-center">
                             <GoalIcon className="w-4 h-4" />
                           </div>
-                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-600">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#706B5E]">
                             {g.badge || 'Goal'}
                           </span>
                         </div>
@@ -1043,7 +1063,7 @@ export default function App() {
 
                       <div className="flex items-center justify-between text-xs mt-1">
                         <span className="font-semibold text-slate-700">
-                          ₹{gSaved.toLocaleString()} <span className="text-slate-400 font-normal">/ ₹{g.targetAmount.toLocaleString()}</span>
+                          ₹{gSaved.toLocaleString()} <span className="text-[#706B5E] font-normal">/ ₹{g.targetAmount.toLocaleString()}</span>
                         </span>
                         {isDelayed && (
                           <span className="text-[10px] font-mono font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full">
@@ -1079,7 +1099,7 @@ export default function App() {
                                 {activeGoal.badge}
                               </span>
                             </div>
-                            <p className="text-xs font-semibold text-slate-600 mt-0.5">
+                            <p className="text-xs font-semibold text-[#706B5E] mt-0.5">
                               Cap Target: ₹{activeGoal.targetAmount.toLocaleString()}
                             </p>
                           </div>
@@ -1088,7 +1108,7 @@ export default function App() {
                         <div className="flex items-center gap-1">
                           <button 
                             onClick={handleOpenEditGoal} 
-                            className="p-2 text-slate-600 hover:text-black hover:bg-white/60 rounded-xl transition"
+                            className="p-2 text-[#706B5E] hover:text-black hover:bg-white/60 rounded-xl transition"
                             title="Extend Timeline / Modify Goal"
                           >
                             <Edit3 className="w-4 h-4" />
@@ -1193,12 +1213,12 @@ export default function App() {
                     <div className="butter-card rounded-3xl p-5 space-y-3">
                       <div className="flex items-baseline justify-between">
                         <div>
-                          <span className="text-[10px] text-slate-400 uppercase font-bold block">SAVED CAPITAL</span>
+                          <span className="text-[10px] text-[#706B5E] uppercase font-bold block">SAVED CAPITAL</span>
                           <span className="text-3xl font-black text-[#1A1A18]">₹{totalSaved.toLocaleString()}</span>
                         </div>
                         <div className="text-right">
                           <span className="text-2xl font-black text-[#1A1A18]">{percentage}%</span>
-                          <span className="text-[11px] text-slate-400 block font-medium">₹{remainingNeeded.toLocaleString()} remaining</span>
+                          <span className="text-[11px] text-[#706B5E] block font-medium">₹{remainingNeeded.toLocaleString()} remaining</span>
                         </div>
                       </div>
 
@@ -1224,15 +1244,15 @@ export default function App() {
                     <div className="butter-card rounded-3xl p-5 space-y-3">
                       <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-2 text-xs">
                         <span className="font-bold text-[#1A1A18] uppercase tracking-wider">Pace & Horizon</span>
-                        <span className="text-[10px] text-slate-500 font-bold">{daysLeft} days remaining</span>
+                        <span className="text-[10px] text-[#706B5E] font-bold">{daysLeft} days remaining</span>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div className="bg-[#FAF9F5] p-3 rounded-2xl border border-[#E6DEC8]">
-                          <span className="text-[10px] text-slate-400 font-bold uppercase block">DAILY PACE</span>
+                          <span className="text-[10px] text-[#706B5E] font-bold uppercase block">DAILY PACE</span>
                           <p className="text-lg font-black text-[#1A1A18] mt-0.5">₹{requiredPace}/d</p>
                         </div>
                         <div className="bg-[#FAF9F5] p-3 rounded-2xl border border-[#E6DEC8]">
-                          <span className="text-[10px] text-slate-400 font-bold uppercase block">TARGET REMAINING</span>
+                          <span className="text-[10px] text-[#706B5E] font-bold uppercase block">TARGET REMAINING</span>
                           <p className="text-lg font-black text-[#1A1A18] mt-0.5">₹{remainingNeeded.toLocaleString()}</p>
                         </div>
                       </div>
@@ -1242,12 +1262,12 @@ export default function App() {
                     <div className="butter-card rounded-3xl p-5 space-y-3">
                       <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-2 text-xs">
                         <span className="font-bold text-[#1A1A18] uppercase tracking-wider">Recent Activity</span>
-                        <span className="text-[10px] text-slate-400">{currentTxs.length} items</span>
+                        <span className="text-[10px] text-[#706B5E]">{currentTxs.length} items</span>
                       </div>
 
                       <div className="divide-y divide-[#EAE4D6] max-h-72 overflow-y-auto">
                         {currentTxs.length === 0 ? (
-                          <p className="text-xs text-slate-400 py-6 text-center">No transactions recorded for this goal.</p>
+                          <p className="text-xs text-[#706B5E] py-6 text-center">No transactions recorded for this goal.</p>
                         ) : (
                           currentTxs.slice(0, 7).map((tx) => {
                             const isWithdraw = tx.action === 'withdraw';
@@ -1255,7 +1275,7 @@ export default function App() {
                               <div key={tx.id} className="py-2.5 flex items-center justify-between text-xs">
                                 <div>
                                   <p className="font-bold text-[#1A1A18]">{tx.note || 'Savings Entry'}</p>
-                                  <p className="text-[10px] text-slate-400">{tx.type} • {tx.date}</p>
+                                  <p className="text-[10px] text-[#706B5E]">{tx.type} • {tx.date}</p>
                                 </div>
                                 <span className={`font-mono font-bold text-sm ${isWithdraw ? 'text-rose-600 font-black' : 'text-emerald-600 font-black'}`}>
                                   {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
@@ -1278,11 +1298,11 @@ export default function App() {
             <div className="space-y-5 max-w-lg mx-auto">
               <div>
                 <h1 className="text-2xl font-black text-[#1A1A18] tracking-tight">Vault Settings</h1>
-                <p className="text-xs text-slate-500">Callsign and master reset controls.</p>
+                <p className="text-xs text-[#706B5E]">Callsign and master reset controls.</p>
               </div>
 
               <div className="butter-card rounded-3xl p-5 space-y-3">
-                <span className="text-xs font-bold uppercase text-slate-400 block">ACTIVE USER</span>
+                <span className="text-xs font-bold uppercase text-[#706B5E] block">ACTIVE USER</span>
                 <p className="text-base font-black text-[#1A1A18]">{user.email}</p>
 
                 <button
@@ -1388,13 +1408,13 @@ export default function App() {
                   Withdraw (−)
                 </button>
               </div>
-              <button onClick={() => setIsTxModalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-slate-500 flex items-center justify-center ml-2">
+              <button onClick={() => setIsTxModalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-[#706B5E] flex items-center justify-center ml-2">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-4 text-center mt-3">
-              <span className="text-[10px] text-slate-400 uppercase font-bold block">{activeGoal.name}</span>
+              <span className="text-[10px] text-[#706B5E] uppercase font-bold block">{activeGoal.name}</span>
               <div className="text-2xl font-black text-[#1A1A18] mt-1">
                 <span className="text-slate-400 mr-1">₹</span>{amountStr ? Number(amountStr).toLocaleString() : '0'}
               </div>
@@ -1409,7 +1429,7 @@ export default function App() {
                 }`}
               >
                 <span className="block font-bold">Online</span>
-                <span className="text-[10px] text-slate-400">₹{totalOnline.toLocaleString()}</span>
+                <span className="text-[10px] text-[#706B5E]">₹{totalOnline.toLocaleString()}</span>
               </button>
               <button
                 type="button"
@@ -1419,7 +1439,7 @@ export default function App() {
                 }`}
               >
                 <span className="block font-bold">Cash</span>
-                <span className="text-[10px] text-slate-400">₹{totalCash.toLocaleString()}</span>
+                <span className="text-[10px] text-[#706B5E]">₹{totalCash.toLocaleString()}</span>
               </button>
             </div>
 
@@ -1434,7 +1454,7 @@ export default function App() {
                   {digit}
                 </button>
               ))}
-              <button type="button" onClick={() => setAmountStr('')} className="h-11 bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl text-slate-500 text-xs">
+              <button type="button" onClick={() => setAmountStr('')} className="h-11 bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl text-[#706B5E] text-xs">
                 Clear
               </button>
               <button type="button" onClick={() => handleTxKeypad('0')} className="h-11 bg-white border border-[#EADBCC] rounded-2xl text-[#1A1A18]">
@@ -1473,7 +1493,7 @@ export default function App() {
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
               <span className="font-black text-sm text-[#1A1A18]">Shift Vault Funds</span>
-              <button onClick={() => setIsTransferModalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-slate-500 flex items-center justify-center">
+              <button onClick={() => setIsTransferModalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-[#706B5E] flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -1487,7 +1507,7 @@ export default function App() {
                 }`}
               >
                 <span className="block font-bold">Cash ➔ Bank</span>
-                <span className="text-[10px] text-slate-400">Available: ₹{totalCash.toLocaleString()}</span>
+                <span className="text-[10px] text-[#706B5E]">Available: ₹{totalCash.toLocaleString()}</span>
               </button>
 
               <button
@@ -1498,12 +1518,12 @@ export default function App() {
                 }`}
               >
                 <span className="block font-bold">Bank ➔ Cash</span>
-                <span className="text-[10px] text-slate-400">Available: ₹{totalOnline.toLocaleString()}</span>
+                <span className="text-[10px] text-[#706B5E]">Available: ₹{totalOnline.toLocaleString()}</span>
               </button>
             </div>
 
             <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-3 text-center mt-3">
-              <span className="text-[10px] text-slate-400 uppercase font-bold block">SUM TO SHIFT</span>
+              <span className="text-[10px] text-[#706B5E] uppercase font-bold block">SUM TO SHIFT</span>
               <div className="text-2xl font-black text-[#1A1A18] mt-1">
                 <span className="text-slate-400 mr-1">₹</span>{transferAmountStr ? Number(transferAmountStr).toLocaleString() : '0'}
               </div>
@@ -1520,7 +1540,7 @@ export default function App() {
                   {digit}
                 </button>
               ))}
-              <button type="button" onClick={() => setTransferAmountStr('')} className="h-11 bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl text-slate-500 text-xs">
+              <button type="button" onClick={() => setTransferAmountStr('')} className="h-11 bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl text-[#706B5E] text-xs">
                 Clear
               </button>
               <button type="button" onClick={() => handleTransferKeypad('0')} className="h-11 bg-white border border-[#EADBCC] rounded-2xl text-[#1A1A18]">
@@ -1549,14 +1569,14 @@ export default function App() {
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
               <span className="font-black text-sm text-[#1A1A18]">Shift to Other Goal</span>
-              <button onClick={() => setIsGoalTransferModalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-slate-500 flex items-center justify-center">
+              <button onClick={() => setIsGoalTransferModalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-[#706B5E] flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleCrossGoalTransferSubmit} className="space-y-3 mt-3">
               <div>
-                <label className="text-[10px] text-slate-500 uppercase font-bold block mb-1">DESTINATION GOAL</label>
+                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">DESTINATION GOAL</label>
                 <select
                   value={targetGoalId}
                   onChange={(e) => setTargetGoalId(e.target.value)}
@@ -1570,7 +1590,7 @@ export default function App() {
               </div>
 
               <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-3 text-center">
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">AMOUNT TO TRANSFER</span>
+                <span className="text-[10px] text-[#706B5E] uppercase font-bold block">AMOUNT TO TRANSFER</span>
                 <div className="text-2xl font-black text-[#1A1A18] mt-1">
                   <span className="text-slate-400 mr-1">₹</span>{goalTransferAmountStr ? Number(goalTransferAmountStr).toLocaleString() : '0'}
                 </div>
@@ -1587,7 +1607,7 @@ export default function App() {
                     {digit}
                   </button>
                 ))}
-                <button type="button" onClick={() => setGoalTransferAmountStr('')} className="h-11 bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl text-slate-500 text-xs">
+                <button type="button" onClick={() => setGoalTransferAmountStr('')} className="h-11 bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl text-[#706B5E] text-xs">
                   Clear
                 </button>
                 <button type="button" onClick={() => handleGoalTransferKeypad('0')} className="h-11 bg-white border border-[#EADBCC] rounded-2xl text-[#1A1A18]">
@@ -1616,14 +1636,14 @@ export default function App() {
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
               <span className="font-black text-sm text-[#1A1A18]">Create New Target</span>
-              <button onClick={() => setIsAddGoalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-slate-500 flex items-center justify-center">
+              <button onClick={() => setIsAddGoalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-[#706B5E] flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleCreateGoal} className="space-y-3 mt-3">
               <div>
-                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">CATEGORY</label>
+                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">CATEGORY</label>
                 <div className="grid grid-cols-3 gap-2">
                   {CATEGORY_PRESETS.map((cat) => {
                     const CatIcon = cat.icon;
@@ -1634,7 +1654,7 @@ export default function App() {
                         type="button"
                         onClick={() => setNewGoalCategory(cat.id)}
                         className={`p-2.5 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1 ${
-                          isSelected ? 'bg-[#1A1A18] text-[#FEF6D8] border-[#1A1A18]' : 'bg-[#FAF9F5] text-slate-600 border-[#EADBCC]'
+                          isSelected ? 'bg-[#1A1A18] text-[#FEF6D8] border-[#1A1A18]' : 'bg-[#FAF9F5] text-[#706B5E] border-[#EADBCC]'
                         }`}
                       >
                         <CatIcon className="w-4 h-4" />
@@ -1646,7 +1666,7 @@ export default function App() {
               </div>
 
               <div>
-                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET TITLE</label>
+                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">TARGET TITLE</label>
                 <input
                   type="text"
                   placeholder="e.g. MacBook Air M2, Bali Trip"
@@ -1658,7 +1678,7 @@ export default function App() {
               </div>
 
               <div>
-                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET CAPITAL (₹)</label>
+                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">TARGET CAPITAL (₹)</label>
                 <input
                   type="number"
                   placeholder="e.g. 120000"
@@ -1671,7 +1691,7 @@ export default function App() {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">START DATE</label>
+                  <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">START DATE</label>
                   <input
                     type="date"
                     value={newGoalStartDate}
@@ -1681,7 +1701,7 @@ export default function App() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET END DATE</label>
+                  <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">TARGET END DATE</label>
                   <input
                     type="date"
                     value={newGoalDate}
@@ -1709,14 +1729,14 @@ export default function App() {
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
               <span className="font-black text-sm text-[#1A1A18]">Extend Timeline / Modify Goal</span>
-              <button onClick={() => setIsEditGoalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-slate-500 flex items-center justify-center">
+              <button onClick={() => setIsEditGoalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-[#706B5E] flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleSaveGoalChanges} className="space-y-3 mt-3">
               <div>
-                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TITLE</label>
+                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">TITLE</label>
                 <input
                   type="text"
                   value={editGoalName}
@@ -1727,7 +1747,7 @@ export default function App() {
               </div>
 
               <div>
-                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET AMOUNT (₹)</label>
+                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">TARGET AMOUNT (₹)</label>
                 <input
                   type="number"
                   value={editGoalAmount}
@@ -1738,7 +1758,7 @@ export default function App() {
               </div>
 
               <div>
-                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">EXTENDED COMPLETION DATE</label>
+                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">EXTENDED COMPLETION DATE</label>
                 <input
                   type="date"
                   value={editGoalDate}
@@ -1768,18 +1788,18 @@ export default function App() {
               <span className="font-black text-sm uppercase flex items-center gap-1.5">
                 <AlertCircle className="w-4 h-4" /> Reset All Data
               </span>
-              <button onClick={() => setIsResetModalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-slate-500 flex items-center justify-center">
+              <button onClick={() => setIsResetModalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-[#706B5E] flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleResetAllData} className="mt-4 space-y-4 text-xs">
-              <p className="text-slate-600 leading-relaxed font-medium">
+              <p className="text-[#706B5E] leading-relaxed font-medium">
                 This action is <span className="text-rose-700 font-bold">permanent</span>. All your goals, transaction sessions, and allocations will be wiped from FinNest.
               </p>
 
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-[#706B5E] block mb-1">
                   Type <span className="text-rose-700 font-black">RESET</span> to confirm
                 </label>
                 <input
@@ -1793,7 +1813,7 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-2 gap-2 pt-1">
-                <button type="button" onClick={() => setIsResetModalOpen(false)} className="py-2.5 bg-[#FAF9F5] text-slate-600 font-bold rounded-2xl">
+                <button type="button" onClick={() => setIsResetModalOpen(false)} className="py-2.5 bg-[#FAF9F5] text-[#706B5E] font-bold rounded-2xl">
                   Cancel
                 </button>
                 <button
