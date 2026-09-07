@@ -476,7 +476,7 @@ export default function App() {
   const requiredPace = isCompleted ? 0 : Math.ceil(remainingNeeded / daysLeft);
   const baselineDailyPace = activeGoal ? Math.max(1, Math.round(activeGoal.targetAmount / totalDurationDays)) : 1;
 
-  // Precise delay calculation based on savings shortfall vs daily rate
+  // Precise trajectory calculation (Delay, Ahead/Early, or On-Track)
   const { trajectoryStatus, daysDifference, varianceAmount } = useMemo(() => {
     if (!activeGoal) return { trajectoryStatus: 'on-track', daysDifference: 0, varianceAmount: 0 };
     if (isCompleted) return { trajectoryStatus: 'completed', daysDifference: 0, varianceAmount: 0 };
@@ -495,6 +495,7 @@ export default function App() {
       return { trajectoryStatus: 'delay', daysDifference: delayDays, varianceAmount: shortfall };
     } else if (variance > TOLERANCE) {
       const surplus = variance;
+      // Calculate how many days early the user is based on their surplus savings
       const advanceDays = Math.ceil(surplus / (idealDailyRate || 1));
       return { trajectoryStatus: 'advance', daysDifference: advanceDays, varianceAmount: surplus };
     } else {
@@ -1385,7 +1386,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Schedule Velocity Card with exact shortfall / delay calculation */}
+                    {/* Schedule Velocity Card: Accurately reporting Delay vs Ahead/Early vs On-Track */}
                     <div className={`p-4 rounded-3xl border flex flex-col gap-1.5 shadow-2xs ${
                       trajectoryStatus === 'delay' 
                         ? 'bg-rose-50 border-rose-200 text-rose-900' 
@@ -1403,7 +1404,11 @@ export default function App() {
                         <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
                           trajectoryStatus === 'delay' ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'
                         }`}>
-                          {trajectoryStatus === 'delay' ? `${daysDifference} Days Delayed (-₹${varianceAmount.toLocaleString()})` : `On Track • ${daysLeft} days remaining`}
+                          {trajectoryStatus === 'delay' 
+                            ? `${daysDifference} Days Delayed (-₹${varianceAmount.toLocaleString()})` 
+                            : trajectoryStatus === 'advance' 
+                            ? `${daysDifference} Days Early (+₹${varianceAmount.toLocaleString()})`
+                            : 'On Track'}
                         </span>
                       </div>
                       <p className="text-xs font-semibold leading-snug">
@@ -1414,9 +1419,13 @@ export default function App() {
                               Extend target date to adjust pace?
                             </span>
                           </>
+                        ) : trajectoryStatus === 'advance' ? (
+                          <>
+                            Fantastic! You have saved extra and are <strong className="text-emerald-900">{daysDifference} days ahead</strong> of schedule (Surplus: ₹{varianceAmount.toLocaleString()}). Daily target: ₹{requiredPace}/day.
+                          </>
                         ) : (
                           <>
-                            Pace is healthy. You are on track with your savings! Daily target: ₹{requiredPace}/day ({daysLeft} days remaining).
+                            Pace is healthy. You are right on track with your savings! Daily target: ₹{requiredPace}/day.
                           </>
                         )}
                       </p>
