@@ -39,8 +39,8 @@ import {
   Edit3
 } from 'lucide-react';
 
-/* 3D Animated Interactive Background Canvas */
-function Ambient3DCanvas() {
+/* Warm Organic Ambient 3D Canvas */
+function AmbientCeramicCanvas() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -59,16 +59,15 @@ function Ambient3DCanvas() {
     };
     window.addEventListener('resize', handleResize);
 
-    // Particle nodes for subtle floating depth
-    const particleCount = width < 768 ? 22 : 45;
+    const particleCount = width < 768 ? 20 : 38;
     const particles = Array.from({ length: particleCount }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      z: Math.random() * 0.8 + 0.2, // 3D depth scale
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      radius: Math.random() * 2.5 + 1.5,
-      hue: Math.random() > 0.5 ? 245 : 160 // Violet/Indigo or Mint/Emerald
+      z: Math.random() * 0.75 + 0.25,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.35,
+      radius: Math.random() * 2.8 + 1.2,
+      isTerracotta: Math.random() > 0.5
     }));
 
     let mouseX = width / 2;
@@ -83,34 +82,32 @@ function Ambient3DCanvas() {
     const render = () => {
       ctx.clearRect(0, 0, width, height);
 
-      // Large subtle gradient ambient orbs
-      const time = Date.now() * 0.0008;
-      const orb1X = width * 0.25 + Math.sin(time) * 45;
-      const orb1Y = height * 0.3 + Math.cos(time) * 40;
+      const time = Date.now() * 0.0006;
+      const orb1X = width * 0.25 + Math.sin(time) * 35;
+      const orb1Y = height * 0.3 + Math.cos(time) * 35;
       const orb1 = ctx.createRadialGradient(orb1X, orb1Y, 10, orb1X, orb1Y, width * 0.45);
-      orb1.addColorStop(0, 'rgba(99, 102, 241, 0.08)');
+      orb1.addColorStop(0, 'rgba(224, 122, 95, 0.08)');
       orb1.addColorStop(1, 'transparent');
       ctx.fillStyle = orb1;
       ctx.fillRect(0, 0, width, height);
 
-      const orb2X = width * 0.8 + Math.cos(time * 0.8) * 50;
-      const orb2Y = height * 0.7 + Math.sin(time * 0.8) * 45;
+      const orb2X = width * 0.8 + Math.cos(time * 0.9) * 40;
+      const orb2Y = height * 0.7 + Math.sin(time * 0.9) * 35;
       const orb2 = ctx.createRadialGradient(orb2X, orb2Y, 10, orb2X, orb2Y, width * 0.45);
-      orb2.addColorStop(0, 'rgba(0, 229, 153, 0.06)');
+      orb2.addColorStop(0, 'rgba(42, 157, 143, 0.07)');
       orb2.addColorStop(1, 'transparent');
       ctx.fillStyle = orb2;
       ctx.fillRect(0, 0, width, height);
 
-      // Connect near particles with 3D depth lines
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < 110) {
-            const alpha = (1 - dist / 110) * 0.15 * Math.min(particles[i].z, particles[j].z);
-            ctx.strokeStyle = `rgba(165, 180, 252, ${alpha})`;
+          if (dist < 115) {
+            const alpha = (1 - dist / 115) * 0.12 * Math.min(particles[i].z, particles[j].z);
+            ctx.strokeStyle = `rgba(224, 122, 95, ${alpha})`;
             ctx.lineWidth = 0.8;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
@@ -120,11 +117,9 @@ function Ambient3DCanvas() {
         }
       }
 
-      // Draw and animate particles
       particles.forEach((p) => {
-        // Perspective shift based on cursor
-        const offsetX = (mouseX - width / 2) * 0.015 * p.z;
-        const offsetY = (mouseY - height / 2) * 0.015 * p.z;
+        const offsetX = (mouseX - width / 2) * 0.012 * p.z;
+        const offsetY = (mouseY - height / 2) * 0.012 * p.z;
 
         p.x += p.vx * p.z;
         p.y += p.vy * p.z;
@@ -136,9 +131,9 @@ function Ambient3DCanvas() {
 
         ctx.beginPath();
         ctx.arc(p.x + offsetX, p.y + offsetY, p.radius * p.z, 0, Math.PI * 2);
-        ctx.fillStyle = p.hue === 245 
-          ? `rgba(99, 102, 241, ${0.25 * p.z})` 
-          : `rgba(0, 229, 153, ${0.3 * p.z})`;
+        ctx.fillStyle = p.isTerracotta 
+          ? `rgba(224, 122, 95, ${0.28 * p.z})` 
+          : `rgba(42, 157, 143, ${0.32 * p.z})`;
         ctx.fill();
       });
 
@@ -154,12 +149,7 @@ function Ambient3DCanvas() {
     };
   }, []);
 
-  return (
-    <canvas 
-      ref={canvasRef} 
-      className="fixed inset-0 pointer-events-none z-0 opacity-80"
-    />
-  );
+  return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0 opacity-70" />;
 }
 
 const CATEGORY_PRESETS = [
@@ -245,16 +235,16 @@ function AuthScreen({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col items-center justify-center p-4 relative">
-      <Ambient3DCanvas />
-      <div className="w-full max-w-sm glass-panel rounded-3xl p-6 sm:p-8 relative z-10 shadow-xl border border-slate-200">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#2D2A26] flex flex-col items-center justify-center p-4 relative">
+      <AmbientCeramicCanvas />
+      <div className="w-full max-w-sm ceramic-panel rounded-3xl p-6 sm:p-8 relative z-10">
         <div className="flex flex-col items-center text-center space-y-2 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-md mb-1">
+          <div className="w-12 h-12 rounded-2xl bg-[#E07A5F] flex items-center justify-center text-white shadow-md shadow-[#E07A5F]/25 mb-1">
             <Layers className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">FinTrack</h1>
-          <p className="text-xs text-slate-500 font-medium">
-            {isSignUp ? 'Create your personal savings dashboard' : 'Sign in to monitor your goals'}
+          <h1 className="text-2xl font-black text-[#2D2A26] tracking-tight">FinTrack</h1>
+          <p className="text-xs text-[#7D756D] font-medium">
+            {isSignUp ? 'Create your calm savings sanctuary' : 'Sign in to access your ledger'}
           </p>
         </div>
 
@@ -266,31 +256,31 @@ function AuthScreen({ onLogin }) {
 
         <form onSubmit={handleAuth} className="space-y-3">
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 pl-1">Email</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-[#9C948B] pl-1">Email</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+              <Mail className="w-4 h-4 text-[#9C948B] absolute left-3.5 top-3.5" />
               <input
                 type="email"
                 required
                 placeholder="name@domain.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/70 border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold focus:outline-none focus:bg-white focus:border-indigo-600 transition"
+                className="w-full bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold focus:outline-none focus:bg-white focus:border-[#E07A5F] transition"
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 pl-1">Password</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-[#9C948B] pl-1">Password</label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+              <Lock className="w-4 h-4 text-[#9C948B] absolute left-3.5 top-3.5" />
               <input
                 type="password"
                 required
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/70 border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold focus:outline-none focus:bg-white focus:border-indigo-600 transition"
+                className="w-full bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold focus:outline-none focus:bg-white focus:border-[#E07A5F] transition"
               />
             </div>
           </div>
@@ -298,20 +288,20 @@ function AuthScreen({ onLogin }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold text-xs rounded-2xl transition shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2"
+            className="w-full mt-2 py-3.5 bg-[#E07A5F] hover:bg-[#D46B50] active:scale-95 text-white font-bold text-xs rounded-2xl transition shadow-md shadow-[#E07A5F]/20 flex items-center justify-center gap-2"
           >
-            <span>{loading ? 'Please wait...' : isSignUp ? 'Sign Up' : 'Sign In'}</span>
+            <span>{loading ? 'Opening vault...' : isSignUp ? 'Create Sanctuary' : 'Enter Sanctuary'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
-        <div className="text-center mt-5 pt-4 border-t border-slate-100">
+        <div className="text-center mt-5 pt-4 border-t border-[#F1E8DF]">
           <button
             type="button"
             onClick={() => { setIsSignUp(!isSignUp); setErrorMsg(''); }}
-            className="text-xs font-bold text-slate-600 hover:text-indigo-600 transition"
+            className="text-xs font-bold text-[#7D756D] hover:text-[#E07A5F] transition"
           >
-            {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign up'}
+            {isSignUp ? 'Already registered? Sign In' : 'Need an account? Sign up'}
           </button>
         </div>
       </div>
@@ -526,7 +516,6 @@ export default function App() {
   const requiredPace = isCompleted ? 0 : Math.ceil(remainingNeeded / daysLeft);
   const baselineDailyPace = activeGoal ? Math.max(1, Math.round(activeGoal.targetAmount / totalDurationDays)) : 1;
 
-  // Strict ₹20 tolerance calculation
   const { trajectoryStatus, daysDifference, varianceAmount } = useMemo(() => {
     if (!activeGoal) return { trajectoryStatus: 'on-track', daysDifference: 0, varianceAmount: 0 };
     if (isCompleted) return { trajectoryStatus: 'completed', daysDifference: 0, varianceAmount: 0 };
@@ -842,8 +831,8 @@ export default function App() {
 
   if (loadingSession) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#E07A5F] animate-spin" />
       </div>
     );
   }
@@ -856,21 +845,21 @@ export default function App() {
   const eligibleTargetGoals = goals.filter((g) => g.id !== selectedGoalId);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col md:flex-row pb-24 md:pb-0 font-sans relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#2D2A26] flex flex-col md:flex-row pb-24 md:pb-0 font-sans relative overflow-x-hidden">
       
-      {/* 3D Ambient Background Layer */}
-      <Ambient3DCanvas />
+      {/* 3D Ambient Canvas */}
+      <AmbientCeramicCanvas />
 
       {/* LAPTOP SIDEBAR */}
-      <aside className="hidden md:flex flex-col w-64 glass-panel border-r border-slate-200 p-5 shrink-0 justify-between sticky top-0 h-screen z-20">
+      <aside className="hidden md:flex flex-col w-64 ceramic-panel border-r border-[#F1E8DF] p-5 shrink-0 justify-between sticky top-0 h-screen z-20">
         <div className="space-y-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 rounded-2xl bg-[#E07A5F] text-white flex items-center justify-center shadow-md shadow-[#E07A5F]/20">
               <Layers className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-xl font-black text-indigo-600 block leading-tight">FinTrack</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Vault Studio</span>
+              <span className="text-xl font-black text-[#E07A5F] block leading-tight">FinTrack</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#9C948B]">Warm Ceramic</span>
             </div>
           </div>
 
@@ -878,7 +867,7 @@ export default function App() {
             <button
               onClick={() => setActiveTab('home')}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'home' ? 'bg-[#E6FBF5] text-[#009360]' : 'text-slate-600 hover:bg-slate-50/80'
+                activeTab === 'home' ? 'bg-[#2A9D8F]/15 text-[#2A9D8F]' : 'text-[#7D756D] hover:bg-[#FAF7F2]'
               }`}
             >
               <HomeIcon className="w-4 h-4" /> Home
@@ -887,7 +876,7 @@ export default function App() {
             <button
               onClick={() => setActiveTab('goals')}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'goals' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50/80'
+                activeTab === 'goals' ? 'bg-[#E07A5F]/15 text-[#E07A5F]' : 'text-[#7D756D] hover:bg-[#FAF7F2]'
               }`}
             >
               <Target className="w-4 h-4" /> Goals & Tracker
@@ -896,7 +885,7 @@ export default function App() {
             <button
               onClick={() => setActiveTab('history')}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'history' ? 'bg-[#E6FBF5] text-[#009360]' : 'text-slate-600 hover:bg-slate-50/80'
+                activeTab === 'history' ? 'bg-[#2A9D8F]/15 text-[#2A9D8F]' : 'text-[#7D756D] hover:bg-[#FAF7F2]'
               }`}
             >
               <History className="w-4 h-4" /> Transactions
@@ -905,7 +894,7 @@ export default function App() {
             <button
               onClick={() => setActiveTab('settings')}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'settings' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50/80'
+                activeTab === 'settings' ? 'bg-[#E07A5F]/15 text-[#E07A5F]' : 'text-[#7D756D] hover:bg-[#FAF7F2]'
               }`}
             >
               <Settings className="w-4 h-4" /> Settings
@@ -913,42 +902,42 @@ export default function App() {
           </nav>
         </div>
 
-        <div className="space-y-3 pt-4 border-t border-slate-100">
-          <div className="bg-white/60 backdrop-blur-md p-3 rounded-2xl border border-slate-200/60 shadow-2xs">
-            <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">PORTFOLIO VAULT</span>
-            <p className="text-lg font-black text-slate-900 mt-0.5">₹{portfolioTotal.toLocaleString()}</p>
+        <div className="space-y-3 pt-4 border-t border-[#F1E8DF]">
+          <div className="bg-[#FAF7F2] p-3 rounded-2xl border border-[#EADBCC] shadow-2xs">
+            <span className="text-[10px] font-mono text-[#9C948B] uppercase font-bold block">PORTFOLIO VAULT</span>
+            <p className="text-lg font-black text-[#2D2A26] mt-0.5">₹{portfolioTotal.toLocaleString()}</p>
           </div>
           <button
             onClick={() => supabase.auth.signOut()}
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-400 hover:text-rose-600 transition"
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-[#9C948B] hover:text-[#E76F51] transition"
           >
             <LogOut className="w-4 h-4" /> Sign Out
           </button>
         </div>
       </aside>
 
-      {/* MAIN WORKSPACE */}
+      {/* MAIN CONTAINER */}
       <div className="flex-1 flex flex-col min-w-0 relative z-10">
         
         {/* Mobile Header */}
-        <header className="md:hidden glass-panel px-5 pt-4 pb-3 border-b border-slate-100 sticky top-0 z-20 flex items-center justify-between">
+        <header className="md:hidden ceramic-panel px-5 pt-4 pb-3 border-b border-[#F1E8DF] sticky top-0 z-20 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-[#EEF2FF] flex items-center justify-center text-indigo-600 font-black text-sm">
+            <div className="w-9 h-9 rounded-full bg-[#FAF7F2] border border-[#EADBCC] flex items-center justify-center text-[#E07A5F] font-black text-sm">
               {user.email ? user.email.charAt(0).toUpperCase() : 'A'}
             </div>
-            <span className="text-xl font-black tracking-tight text-indigo-600">FinTrack</span>
+            <span className="text-xl font-black tracking-tight text-[#E07A5F]">FinTrack</span>
           </div>
 
-          <button className="p-2 text-indigo-600 hover:bg-slate-50 rounded-full transition">
+          <button className="p-2 text-[#E07A5F] hover:bg-[#FAF7F2] rounded-full transition">
             <Bell className="w-5 h-5" />
           </button>
         </header>
 
         {/* Laptop Subheader */}
-        <div className="hidden md:flex items-center justify-between px-8 py-4 glass-panel border-b border-slate-200">
+        <div className="hidden md:flex items-center justify-between px-8 py-4 ceramic-panel border-b border-[#F1E8DF]">
           <div>
-            <h1 className="text-lg font-black text-slate-900 capitalize">{activeTab}</h1>
-            <p className="text-xs text-slate-400 font-medium">Logged in as {user.email}</p>
+            <h1 className="text-lg font-black text-[#2D2A26] capitalize">{activeTab}</h1>
+            <p className="text-xs text-[#9C948B] font-medium">Logged in as {user.email}</p>
           </div>
           <div className="flex items-center gap-2.5">
             {goals.length > 1 && (
@@ -959,7 +948,7 @@ export default function App() {
                   setGoalTransferNote('');
                   setIsGoalTransferModalOpen(true);
                 }}
-                className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs px-3.5 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95 border border-emerald-200"
+                className="bg-[#2A9D8F]/10 hover:bg-[#2A9D8F]/20 text-[#2A9D8F] font-bold text-xs px-3.5 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95 border border-[#2A9D8F]/30"
               >
                 <Share2 className="w-3.5 h-3.5" /> Goal ➔ Goal
               </button>
@@ -970,50 +959,50 @@ export default function App() {
                 setTransferNote('');
                 setIsTransferModalOpen(true);
               }}
-              className="bg-white border border-slate-200 hover:bg-slate-50 text-indigo-600 font-bold text-xs px-4 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95 shadow-xs"
+              className="bg-white border border-[#EADBCC] hover:bg-[#FAF7F2] text-[#E07A5F] font-bold text-xs px-4 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95 shadow-xs"
             >
               <ArrowLeftRight className="w-3.5 h-3.5" /> Shift Funds
             </button>
             <button
               onClick={() => setIsAddGoalOpen(true)}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95 shadow-md shadow-indigo-600/20"
+              className="bg-[#E07A5F] hover:bg-[#D46B50] text-white font-bold text-xs px-4 py-2 rounded-2xl flex items-center gap-1.5 transition active:scale-95 shadow-md shadow-[#E07A5F]/20"
             >
               <Plus className="w-3.5 h-3.5" /> New Goal
             </button>
           </div>
         </div>
 
-        {/* CONTENT */}
+        {/* CONTENT WORKSPACE */}
         <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full flex-1">
 
           {/* TAB 1: HOME */}
           {activeTab === 'home' && (
             <div className="space-y-6 max-w-2xl mx-auto">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-black text-[#2D2A26] tracking-tight">
                   Good morning, {user.email?.split('@')[0] || 'Member'}
                 </h1>
-                <p className="text-xs sm:text-sm font-semibold text-slate-400 mt-0.5">
+                <p className="text-xs sm:text-sm font-semibold text-[#9C948B] mt-0.5">
                   Here's a quick look at your sanctuary today.
                 </p>
               </div>
 
-              <div className="glass-panel rounded-3xl p-6 flex items-center justify-between">
+              <div className="ceramic-panel rounded-3xl p-6 flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold block">
+                  <span className="text-xs font-mono uppercase tracking-wider text-[#9C948B] font-bold block">
                     Total Vault
                   </span>
-                  <p className="text-3xl sm:text-4xl font-black text-slate-900 mt-1 tracking-tight">
+                  <p className="text-3xl sm:text-4xl font-black text-[#2D2A26] mt-1 tracking-tight">
                     ₹{portfolioTotal.toLocaleString()}
                   </p>
                 </div>
-                <div className="w-14 h-14 rounded-full bg-[#E6FBF5] text-[#00E599] flex items-center justify-center">
-                  <Landmark className="w-7 h-7 text-[#00C482]" />
+                <div className="w-14 h-14 rounded-full bg-[#2A9D8F]/15 text-[#2A9D8F] flex items-center justify-center">
+                  <Landmark className="w-7 h-7 text-[#2A9D8F]" />
                 </div>
               </div>
 
               <div className="space-y-3 pt-2">
-                <h2 className="text-lg font-black text-slate-900">Quick Actions</h2>
+                <h2 className="text-lg font-black text-[#2D2A26]">Quick Actions</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
                     onClick={() => {
@@ -1021,7 +1010,7 @@ export default function App() {
                       setTransferNote('');
                       setIsTransferModalOpen(true);
                     }}
-                    className="glass-panel hover:bg-white text-indigo-600 font-bold text-xs py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow-xs"
+                    className="ceramic-panel hover:bg-white text-[#E07A5F] font-bold text-xs py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow-xs"
                   >
                     <ArrowLeftRight className="w-4 h-4" /> Shift Funds (Cash/Bank)
                   </button>
@@ -1033,7 +1022,7 @@ export default function App() {
                       setNote('');
                       setIsTxModalOpen(true);
                     }}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-98 shadow-md shadow-indigo-600/20 transition"
+                    className="bg-[#E07A5F] hover:bg-[#D46B50] text-white font-bold text-xs py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-98 shadow-md shadow-[#E07A5F]/20 transition"
                   >
                     <Plus className="w-4 h-4" /> Add / Withdraw
                   </button>
@@ -1047,9 +1036,9 @@ export default function App() {
                       setGoalTransferNote('');
                       setIsGoalTransferModalOpen(true);
                     }}
-                    className="w-full bg-emerald-50/90 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 font-bold text-xs py-3.5 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow-xs backdrop-blur-md"
+                    className="w-full bg-[#2A9D8F]/10 hover:bg-[#2A9D8F]/20 text-[#2A9D8F] border border-[#2A9D8F]/30 font-bold text-xs py-3.5 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow-xs backdrop-blur-md"
                   >
-                    <Share2 className="w-4 h-4 text-emerald-600" /> Transfer Money to Another Goal
+                    <Share2 className="w-4 h-4 text-[#2A9D8F]" /> Transfer Money to Another Goal
                   </button>
                 )}
               </div>
@@ -1060,18 +1049,18 @@ export default function App() {
           {activeTab === 'history' && (
             <div className="space-y-4 max-w-3xl mx-auto">
               <div>
-                <h1 className="text-2xl font-black text-slate-900 tracking-tight">Transaction Stream</h1>
-                <p className="text-xs font-semibold text-slate-400">Recent savings and deposit records.</p>
+                <h1 className="text-2xl font-black text-[#2D2A26] tracking-tight">Transaction Stream</h1>
+                <p className="text-xs font-semibold text-[#9C948B]">Recent savings and deposit records.</p>
               </div>
 
-              <div className="glass-panel rounded-3xl p-5 space-y-4">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block border-b border-slate-100 pb-2">
+              <div className="ceramic-panel rounded-3xl p-5 space-y-4">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-[#9C948B] font-bold block border-b border-[#F1E8DF] pb-2">
                   All Records
                 </span>
 
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-[#F1E8DF]">
                   {allTransactions.length === 0 ? (
-                    <p className="text-xs text-slate-400 py-8 text-center">No transactions recorded yet.</p>
+                    <p className="text-xs text-[#9C948B] py-8 text-center">No transactions recorded yet.</p>
                   ) : (
                     allTransactions.map((tx) => {
                       const isWithdraw = tx.action === 'withdraw';
@@ -1079,13 +1068,13 @@ export default function App() {
                         <div key={tx.id} className="py-3.5 flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
-                              isWithdraw ? 'bg-rose-50 text-rose-600' : 'bg-[#EEF2FF] text-indigo-600'
+                              isWithdraw ? 'bg-[#E76F51]/15 text-[#E76F51]' : 'bg-[#2A9D8F]/15 text-[#2A9D8F]'
                             }`}>
                               {tx.type === 'online' ? <Smartphone className="w-5 h-5" /> : <Banknote className="w-5 h-5" />}
                             </div>
                             <div>
-                              <p className="text-xs font-bold text-slate-900 leading-snug">{tx.note || 'Savings Entry'}</p>
-                              <p className="text-[10px] text-slate-400 font-medium">
+                              <p className="text-xs font-bold text-[#2D2A26] leading-snug">{tx.note || 'Savings Entry'}</p>
+                              <p className="text-[10px] text-[#9C948B] font-medium">
                                 {tx.goalName} • {tx.type} • {tx.date}
                               </p>
                             </div>
@@ -1093,12 +1082,12 @@ export default function App() {
                           <div className="text-right">
                             <span className={`text-xs font-black px-2.5 py-1 rounded-xl font-mono inline-block border ${
                               isWithdraw 
-                                ? 'bg-rose-50 text-rose-600 border-rose-100' 
-                                : 'bg-[#E6FBF5] text-[#00C482] border-[#B7F4E0]'
+                                ? 'bg-[#E76F51]/10 text-[#E76F51] border-[#E76F51]/25' 
+                                : 'bg-[#2A9D8F]/10 text-[#2A9D8F] border-[#2A9D8F]/25'
                             }`}>
                               {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
                             </span>
-                            <p className="text-[9px] text-slate-400 font-medium mt-0.5">
+                            <p className="text-[9px] text-[#9C948B] font-medium mt-0.5">
                               {isWithdraw ? 'Debited' : 'Completed'}
                             </p>
                           </div>
@@ -1117,26 +1106,26 @@ export default function App() {
               
               <div className="space-y-2">
                 <div className="flex items-center justify-between px-1">
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-slate-500 font-bold">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-[#9C948B] font-bold">
                     Active Goals ({goals.length})
                   </span>
                   <button 
                     onClick={() => setIsAddGoalOpen(true)}
-                    className="text-xs font-bold text-indigo-600 hover:text-indigo-700"
+                    className="text-xs font-bold text-[#E07A5F] hover:text-[#D46B50]"
                   >
                     + Create Goal
                   </button>
                 </div>
 
                 {goals.length === 0 ? (
-                  <div className="glass-panel border-2 border-dashed border-slate-300 rounded-3xl p-8 text-center">
+                  <div className="ceramic-panel border-2 border-dashed border-[#EADBCC] rounded-3xl p-8 text-center">
                     <button
                       onClick={() => setIsAddGoalOpen(true)}
-                      className="w-10 h-10 rounded-full border border-slate-300 text-slate-400 mx-auto flex items-center justify-center"
+                      className="w-10 h-10 rounded-full border border-[#EADBCC] text-[#9C948B] mx-auto flex items-center justify-center"
                     >
                       <Plus className="w-5 h-5" />
                     </button>
-                    <p className="text-xs font-bold text-slate-500 mt-2">No goals created yet</p>
+                    <p className="text-xs font-bold text-[#7D756D] mt-2">No goals created yet</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -1165,39 +1154,39 @@ export default function App() {
                         <div
                           key={g.id}
                           onClick={() => setSelectedGoalId(g.id)}
-                          className={`glass-panel p-4 sm:p-5 rounded-3xl border transition-all cursor-pointer ${
+                          className={`ceramic-panel p-4 sm:p-5 rounded-3xl border transition-all cursor-pointer ${
                             isSelected 
-                              ? 'border-indigo-500 ring-2 ring-indigo-500/15 shadow-md' 
-                              : 'hover:border-slate-300'
+                              ? 'border-[#E07A5F] ring-2 ring-[#E07A5F]/15 shadow-md' 
+                              : 'hover:border-[#EADBCC]'
                           }`}
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-xl bg-[#EEF2FF] text-indigo-600 flex items-center justify-center">
+                              <div className="w-8 h-8 rounded-xl bg-[#FAF7F2] border border-[#EADBCC] text-[#E07A5F] flex items-center justify-center">
                                 <GoalIcon className="w-4 h-4" />
                               </div>
-                              <span className="text-[9px] font-mono uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full font-bold">
+                              <span className="text-[9px] font-mono uppercase tracking-wider bg-[#2D2A26] text-white px-2 py-0.5 rounded-full font-bold">
                                 {g.badge || 'Goal'}
                               </span>
                             </div>
-                            <span className="text-xs font-mono font-black text-[#00C482]">{gPct}%</span>
+                            <span className="text-xs font-mono font-black text-[#2A9D8F]">{gPct}%</span>
                           </div>
 
-                          <h3 className="text-base font-black text-slate-900 mt-2">{g.name}</h3>
+                          <h3 className="text-base font-black text-[#2D2A26] mt-2">{g.name}</h3>
                           
                           <div className="flex items-center justify-between text-xs mt-1">
-                            <span className="font-semibold text-slate-900">
-                              ₹{gSaved.toLocaleString()} <span className="text-slate-400 font-normal">/ ₹{g.targetAmount.toLocaleString()}</span>
+                            <span className="font-semibold text-[#2D2A26]">
+                              ₹{gSaved.toLocaleString()} <span className="text-[#9C948B] font-normal">/ ₹{g.targetAmount.toLocaleString()}</span>
                             </span>
                             {isDelayed && (
-                              <span className="text-[10px] font-mono font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">
+                              <span className="text-[10px] font-mono font-bold text-[#E76F51] bg-[#E76F51]/10 px-2 py-0.5 rounded-full">
                                 -{sidebarDaysGap}d delay
                               </span>
                             )}
                           </div>
 
-                          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-3">
-                            <div className="h-full bg-[#00E599] rounded-full" style={{ width: `${gPct}%` }} />
+                          <div className="w-full bg-[#FAF7F2] h-1.5 rounded-full overflow-hidden mt-3 border border-[#EADBCC]/60">
+                            <div className="h-full bg-[#2A9D8F] rounded-full" style={{ width: `${gPct}%` }} />
                           </div>
                         </div>
                       );
@@ -1213,20 +1202,20 @@ export default function App() {
                   <div className="lg:col-span-7 space-y-4">
                     
                     {/* Goal Header */}
-                    <div className="glass-panel rounded-3xl p-5 sm:p-6 space-y-4">
+                    <div className="ceramic-panel rounded-3xl p-5 sm:p-6 space-y-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-2xl bg-[#EEF2FF] text-indigo-600 flex items-center justify-center shadow-xs">
+                          <div className="w-12 h-12 rounded-2xl bg-[#FAF7F2] border border-[#EADBCC] text-[#E07A5F] flex items-center justify-center shadow-xs">
                             <ActiveIcon className="w-6 h-6" />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{activeGoal.name}</h2>
-                              <span className="text-[9px] font-mono uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full font-bold">
+                              <h2 className="text-xl sm:text-2xl font-black text-[#2D2A26] tracking-tight">{activeGoal.name}</h2>
+                              <span className="text-[9px] font-mono uppercase tracking-wider bg-[#2D2A26] text-white px-2 py-0.5 rounded-full font-bold">
                                 {activeGoal.badge}
                               </span>
                             </div>
-                            <p className="text-xs font-medium text-slate-400 mt-0.5">
+                            <p className="text-xs font-medium text-[#9C948B] mt-0.5">
                               Target Ceiling: ₹{activeGoal.targetAmount.toLocaleString()}
                             </p>
                           </div>
@@ -1235,7 +1224,7 @@ export default function App() {
                         <div className="flex items-center gap-1">
                           <button 
                             onClick={handleOpenEditGoal}
-                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition"
+                            className="p-2 text-[#9C948B] hover:text-[#E07A5F] hover:bg-[#FAF7F2] rounded-xl transition"
                             title="Extend Timeline / Edit Goal"
                           >
                             <Edit3 className="w-4 h-4" />
@@ -1243,7 +1232,7 @@ export default function App() {
 
                           <button 
                             onClick={() => handleDeleteGoal(activeGoal.id)}
-                            className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition"
+                            className="p-2 text-[#9C948B] hover:text-[#E76F51] hover:bg-rose-50 rounded-xl transition"
                             title="Delete Goal"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1252,16 +1241,16 @@ export default function App() {
                       </div>
 
                       {/* Date Box */}
-                      <div className="bg-white/70 border border-slate-200/60 rounded-2xl p-3 flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2 text-slate-600 font-semibold text-[11px]">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <div className="bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl p-3 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2 text-[#7D756D] font-semibold text-[11px]">
+                          <Calendar className="w-3.5 h-3.5 text-[#9C948B]" />
                           <span>{activeGoal.startDate}</span>
-                          <ArrowRight className="w-3 h-3 text-slate-400" />
+                          <ArrowRight className="w-3 h-3 text-[#9C948B]" />
                           <span>{activeGoal.targetDate}</span>
                         </div>
                         <button
                           onClick={handleOpenEditGoal}
-                          className="text-[11px] font-bold text-indigo-700 bg-[#EEF2FF] hover:bg-indigo-100 px-2.5 py-1 rounded-xl transition"
+                          className="text-[11px] font-bold text-[#E07A5F] bg-white border border-[#EADBCC] hover:bg-[#FAF7F2] px-2.5 py-1 rounded-xl transition"
                         >
                           {daysLeft}d left (Extend ➔)
                         </button>
@@ -1275,7 +1264,7 @@ export default function App() {
                             setTransferNote('');
                             setIsTransferModalOpen(true);
                           }}
-                          className="bg-white/80 border border-slate-200 hover:bg-white text-indigo-600 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 active:scale-98 shadow-xs transition"
+                          className="bg-white border border-[#EADBCC] hover:bg-[#FAF7F2] text-[#E07A5F] font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 active:scale-98 shadow-xs transition"
                         >
                           <ArrowLeftRight className="w-3.5 h-3.5" /> Shift Funds
                         </button>
@@ -1288,9 +1277,9 @@ export default function App() {
                               setGoalTransferNote('');
                               setIsGoalTransferModalOpen(true);
                             }}
-                            className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 active:scale-98 transition shadow-xs"
+                            className="bg-[#2A9D8F]/10 hover:bg-[#2A9D8F]/20 text-[#2A9D8F] border border-[#2A9D8F]/30 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 active:scale-98 transition shadow-xs"
                           >
-                            <Share2 className="w-3.5 h-3.5 text-emerald-600" /> Transfer to Goal
+                            <Share2 className="w-3.5 h-3.5 text-[#2A9D8F]" /> Transfer to Goal
                           </button>
                         )}
 
@@ -1301,7 +1290,7 @@ export default function App() {
                             setNote('');
                             setIsTxModalOpen(true);
                           }}
-                          className={`bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 active:scale-98 shadow-md shadow-indigo-600/20 transition ${
+                          className={`bg-[#E07A5F] hover:bg-[#D46B50] text-white font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 active:scale-98 shadow-md shadow-[#E07A5F]/20 transition ${
                             eligibleTargetGoals.length === 0 ? 'sm:col-span-2' : ''
                           }`}
                         >
@@ -1313,18 +1302,18 @@ export default function App() {
                     {/* Schedule Status Card */}
                     <div className={`p-4 rounded-3xl border flex flex-col gap-2 ${
                       trajectoryStatus === 'delay' 
-                        ? 'bg-rose-50/80 border-rose-100 text-rose-950 backdrop-blur-md' 
-                        : 'bg-[#E6FBF5]/90 border-[#B7F4E0] text-emerald-950 backdrop-blur-md'
+                        ? 'bg-[#E76F51]/10 border-[#E76F51]/25 text-[#A83D24] backdrop-blur-md' 
+                        : 'bg-[#2A9D8F]/10 border-[#2A9D8F]/25 text-[#1D6C63] backdrop-blur-md'
                     }`}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <AlertCircle className={`w-4 h-4 ${trajectoryStatus === 'delay' ? 'text-rose-500' : 'text-emerald-500'}`} />
+                          <AlertCircle className={`w-4 h-4 ${trajectoryStatus === 'delay' ? 'text-[#E76F51]' : 'text-[#2A9D8F]'}`} />
                           <span className="text-[11px] font-black uppercase tracking-wider font-mono">
                             Schedule Status:
                           </span>
                         </div>
                         <span className={`text-[10px] font-mono font-black px-2.5 py-0.5 rounded-full text-white ${
-                          trajectoryStatus === 'delay' ? 'bg-rose-500' : 'bg-emerald-500'
+                          trajectoryStatus === 'delay' ? 'bg-[#E76F51]' : 'bg-[#2A9D8F]'
                         }`}>
                           {trajectoryStatus === 'delay' ? `-${daysDifference}d Behind (-₹${varianceAmount.toLocaleString()})` : 'On Track'}
                         </span>
@@ -1334,7 +1323,7 @@ export default function App() {
                         {trajectoryStatus === 'delay' && (
                           <span 
                             onClick={handleOpenEditGoal}
-                            className="ml-1 text-indigo-700 underline font-bold cursor-pointer"
+                            className="ml-1 text-[#E07A5F] underline font-bold cursor-pointer"
                           >
                             Extend end date?
                           </span>
@@ -1343,47 +1332,47 @@ export default function App() {
                     </div>
 
                     {/* Total Saved Card */}
-                    <div className="glass-panel rounded-3xl p-5 space-y-4">
+                    <div className="ceramic-panel rounded-3xl p-5 space-y-4">
                       <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-[11px] font-mono font-bold text-slate-400">
+                        <div className="flex items-center justify-between text-[11px] font-mono font-bold text-[#9C948B]">
                           <span>TIMELINE WINDOW</span>
                           <span>{daysElapsed} OF {totalDurationDays} DAYS ({timeProgressPct}%)</span>
                         </div>
-                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-slate-900 rounded-full" style={{ width: `${timeProgressPct}%` }} />
+                        <div className="h-2 w-full bg-[#FAF7F2] rounded-full overflow-hidden border border-[#EADBCC]/60">
+                          <div className="h-full bg-[#2D2A26] rounded-full" style={{ width: `${timeProgressPct}%` }} />
                         </div>
                       </div>
 
                       <div className="pt-1 flex items-baseline justify-between">
                         <div>
-                          <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block">
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-[#9C948B] font-bold block">
                             TOTAL VAULT SAVED
                           </span>
-                          <span className="text-3xl font-black text-slate-900 tracking-tight">
+                          <span className="text-3xl font-black text-[#2D2A26] tracking-tight">
                             ₹{totalSaved.toLocaleString()}
                           </span>
                         </div>
                         <div className="text-right">
-                          <span className="text-2xl font-black text-[#00C482] font-mono">{percentage}%</span>
-                          <span className="text-[11px] text-slate-400 block font-medium">₹{remainingNeeded.toLocaleString()} remaining</span>
+                          <span className="text-2xl font-black text-[#2A9D8F] font-mono">{percentage}%</span>
+                          <span className="text-[11px] text-[#9C948B] block font-medium">₹{remainingNeeded.toLocaleString()} remaining</span>
                         </div>
                       </div>
 
-                      <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#00E599] rounded-full" style={{ width: `${percentage}%` }} />
+                      <div className="h-2 w-full bg-[#FAF7F2] rounded-full overflow-hidden border border-[#EADBCC]/60">
+                        <div className="h-full bg-[#2A9D8F] rounded-full" style={{ width: `${percentage}%` }} />
                       </div>
 
                       <div className="flex items-center gap-2 pt-1 overflow-x-auto no-scrollbar">
-                        <div className="bg-[#E6FBF5] border border-[#B7F4E0] px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shrink-0">
-                          <Banknote className="w-3.5 h-3.5 text-[#00C482]" />
-                          <span className="text-xs font-mono font-black text-[#009360]">
+                        <div className="bg-[#2A9D8F]/10 border border-[#2A9D8F]/25 px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shrink-0">
+                          <Banknote className="w-3.5 h-3.5 text-[#2A9D8F]" />
+                          <span className="text-xs font-mono font-black text-[#1D6C63]">
                             Cash: ₹{totalCash.toLocaleString()}
                           </span>
                         </div>
 
-                        <div className="bg-[#E6FBF5] border border-[#B7F4E0] px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shrink-0">
-                          <Smartphone className="w-3.5 h-3.5 text-[#00C482]" />
-                          <span className="text-xs font-mono font-black text-[#009360]">
+                        <div className="bg-[#2A9D8F]/10 border border-[#2A9D8F]/25 px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shrink-0">
+                          <Smartphone className="w-3.5 h-3.5 text-[#2A9D8F]" />
+                          <span className="text-xs font-mono font-black text-[#1D6C63]">
                             Bank: ₹{totalOnline.toLocaleString()}
                           </span>
                         </div>
@@ -1395,7 +1384,7 @@ export default function App() {
                             setTransferNote('');
                             setIsTransferModalOpen(true);
                           }}
-                          className="bg-white border border-slate-200 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-2xl shrink-0 active:bg-slate-50"
+                          className="bg-white border border-[#EADBCC] text-[#7D756D] text-xs font-bold px-3 py-1.5 rounded-2xl shrink-0 active:bg-[#FAF7F2]"
                         >
                           Withdraw to Cash ➔
                         </button>
@@ -1407,46 +1396,46 @@ export default function App() {
                   <div className="lg:col-span-5 space-y-4">
                     
                     {/* Pace & Timeline Card */}
-                    <div className="glass-panel rounded-3xl p-5 space-y-4">
+                    <div className="ceramic-panel rounded-3xl p-5 space-y-4">
                       <div className="flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-indigo-600" />
-                        <h3 className="text-base font-black text-slate-900 tracking-tight">Pace & Timeline</h3>
+                        <Activity className="w-4 h-4 text-[#E07A5F]" />
+                        <h3 className="text-base font-black text-[#2D2A26] tracking-tight">Pace & Timeline</h3>
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-white/80 border border-slate-100 rounded-2xl p-4 space-y-1">
-                          <span className="text-[9px] font-mono uppercase font-bold text-slate-400 block flex items-center gap-1">
-                            <TrendingUp className="w-3 h-3 text-[#00C482]" /> REQUIRED PACE
+                        <div className="bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl p-4 space-y-1">
+                          <span className="text-[9px] font-mono uppercase font-bold text-[#9C948B] block flex items-center gap-1">
+                            <TrendingUp className="w-3 h-3 text-[#2A9D8F]" /> REQUIRED PACE
                           </span>
-                          <span className="text-[10px] text-slate-400 font-medium block">Daily target</span>
-                          <p className="text-xl font-black text-indigo-700 font-mono">
-                            ₹{requiredPace}<span className="text-xs text-slate-400 font-normal">/d</span>
+                          <span className="text-[10px] text-[#9C948B] font-medium block">Daily target</span>
+                          <p className="text-xl font-black text-[#E07A5F] font-mono">
+                            ₹{requiredPace}<span className="text-xs text-[#9C948B] font-normal">/d</span>
                           </p>
-                          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mt-2">
-                            <div className="h-full bg-[#00C482] rounded-full" style={{ width: '45%' }} />
+                          <div className="h-1.5 w-full bg-white rounded-full overflow-hidden mt-2 border border-[#EADBCC]">
+                            <div className="h-full bg-[#2A9D8F] rounded-full" style={{ width: '45%' }} />
                           </div>
                         </div>
 
-                        <div className="bg-white/80 border border-slate-100 rounded-2xl p-4 space-y-1">
-                          <span className="text-[9px] font-mono uppercase font-bold text-slate-400 block flex items-center gap-1">
-                            <Calendar className="w-3 h-3 text-indigo-600" /> HORIZON
+                        <div className="bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl p-4 space-y-1">
+                          <span className="text-[9px] font-mono uppercase font-bold text-[#9C948B] block flex items-center gap-1">
+                            <Calendar className="w-3 h-3 text-[#E07A5F]" /> HORIZON
                           </span>
-                          <span className="text-[10px] text-slate-400 font-medium block">Time remaining</span>
-                          <p className="text-xl font-black text-slate-900 font-mono">
-                            {daysLeft} <span className="text-xs font-normal text-slate-400">days</span>
+                          <span className="text-[10px] text-[#9C948B] font-medium block">Time remaining</span>
+                          <p className="text-xl font-black text-[#2D2A26] font-mono">
+                            {daysLeft} <span className="text-xs font-normal text-[#9C948B]">days</span>
                           </p>
-                          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mt-2">
-                            <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${timeProgressPct}%` }} />
+                          <div className="h-1.5 w-full bg-white rounded-full overflow-hidden mt-2 border border-[#EADBCC]">
+                            <div className="h-full bg-[#E07A5F] rounded-full" style={{ width: `${timeProgressPct}%` }} />
                           </div>
                         </div>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-semibold">
-                        <span className="text-slate-500">
+                      <div className="pt-2 border-t border-[#F1E8DF] flex items-center justify-between text-xs font-semibold">
+                        <span className="text-[#7D756D]">
                           {trajectoryStatus === 'delay' ? 'Pace adjustment recommended' : 'On track to meet goals.'}
                         </span>
                         <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                          trajectoryStatus === 'delay' ? 'bg-rose-50 text-rose-600' : 'bg-[#E6FBF5] text-[#00C482]'
+                          trajectoryStatus === 'delay' ? 'bg-[#E76F51]/15 text-[#E76F51]' : 'bg-[#2A9D8F]/15 text-[#2A9D8F]'
                         }`}>
                           {trajectoryStatus === 'delay' ? 'Needs Focus' : 'Healthy'}
                         </span>
@@ -1454,17 +1443,17 @@ export default function App() {
                     </div>
 
                     {/* Goal Transaction Stream */}
-                    <div className="glass-panel rounded-3xl p-5 space-y-3">
+                    <div className="ceramic-panel rounded-3xl p-5 space-y-3">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-xs font-black text-slate-900 tracking-wide uppercase">Transaction Stream</h3>
-                        <span className="text-[10px] font-mono font-bold bg-[#EEF2FF] text-indigo-700 px-2.5 py-0.5 rounded-full">
+                        <h3 className="text-xs font-black text-[#2D2A26] tracking-wide uppercase">Transaction Stream</h3>
+                        <span className="text-[10px] font-mono font-bold bg-[#FAF7F2] text-[#E07A5F] border border-[#EADBCC] px-2.5 py-0.5 rounded-full">
                           {currentTxs.length} records
                         </span>
                       </div>
 
-                      <div className="divide-y divide-slate-100 max-h-60 overflow-y-auto">
+                      <div className="divide-y divide-[#F1E8DF] max-h-60 overflow-y-auto">
                         {currentTxs.length === 0 ? (
-                          <p className="text-xs text-slate-400 py-4 text-center">No transactions logged yet.</p>
+                          <p className="text-xs text-[#9C948B] py-4 text-center">No transactions logged yet.</p>
                         ) : (
                           currentTxs.slice(0, 6).map((tx) => {
                             const isWithdraw = tx.action === 'withdraw';
@@ -1472,19 +1461,19 @@ export default function App() {
                               <div key={tx.id} className="py-2.5 flex items-center justify-between">
                                 <div className="flex items-center gap-2.5">
                                   <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
-                                    isWithdraw ? 'bg-rose-50 text-rose-600' : 'bg-[#EEF2FF] text-indigo-600'
+                                    isWithdraw ? 'bg-[#E76F51]/15 text-[#E76F51]' : 'bg-[#2A9D8F]/15 text-[#2A9D8F]'
                                   }`}>
                                     {tx.type === 'online' ? <Smartphone className="w-4 h-4" /> : <Banknote className="w-4 h-4" />}
                                   </div>
                                   <div>
-                                    <p className="text-xs font-bold text-slate-900 leading-tight">{tx.note || 'Savings Entry'}</p>
-                                    <p className="text-[10px] text-slate-400 capitalize">{tx.type} • {tx.date}</p>
+                                    <p className="text-xs font-bold text-[#2D2A26] leading-tight">{tx.note || 'Savings Entry'}</p>
+                                    <p className="text-[10px] text-[#9C948B] capitalize">{tx.type} • {tx.date}</p>
                                   </div>
                                 </div>
                                 <span className={`text-xs font-black px-2 py-0.5 rounded-lg font-mono border ${
                                   isWithdraw 
-                                    ? 'bg-rose-50 text-rose-600 border-rose-100' 
-                                    : 'bg-[#E6FBF5] text-[#00C482] border-[#B7F4E0]'
+                                    ? 'bg-[#E76F51]/10 text-[#E76F51] border-[#E76F51]/25' 
+                                    : 'bg-[#2A9D8F]/10 text-[#2A9D8F] border-[#2A9D8F]/25'
                                 }`}>
                                   {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
                                 </span>
@@ -1505,32 +1494,32 @@ export default function App() {
           {activeTab === 'settings' && (
             <div className="space-y-6 max-w-lg mx-auto">
               <div>
-                <h1 className="text-2xl font-black text-slate-900 tracking-tight">Vault Settings</h1>
-                <p className="text-xs text-slate-500 font-medium">Manage preferences, records, and access.</p>
+                <h1 className="text-2xl font-black text-[#2D2A26] tracking-tight">Vault Settings</h1>
+                <p className="text-xs text-[#9C948B] font-medium">Manage preferences, records, and access.</p>
               </div>
               
-              <div className="glass-panel rounded-3xl p-5 space-y-4">
-                <h3 className="text-xs font-mono font-bold uppercase text-slate-400 tracking-wider">Account Details</h3>
+              <div className="ceramic-panel rounded-3xl p-5 space-y-4">
+                <h3 className="text-xs font-mono font-bold uppercase text-[#9C948B] tracking-wider">Account Details</h3>
                 <div className="flex items-center justify-between text-xs font-semibold">
-                  <span className="text-slate-500">Signed in user</span>
-                  <span className="text-slate-900 font-bold">{user.email}</span>
+                  <span className="text-[#7D756D]">Signed in user</span>
+                  <span className="text-[#2D2A26] font-bold">{user.email}</span>
                 </div>
 
                 <button
                   onClick={() => supabase.auth.signOut()}
-                  className="w-full bg-white/70 hover:bg-white text-slate-700 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 border border-slate-200 transition"
+                  className="w-full bg-[#FAF7F2] hover:bg-white text-[#7D756D] font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 border border-[#EADBCC] transition"
                 >
-                  <LogOut className="w-4 h-4 text-slate-500" /> Sign Out
+                  <LogOut className="w-4 h-4 text-[#9C948B]" /> Sign Out
                 </button>
               </div>
 
-              <div className="glass-panel border border-rose-200 rounded-3xl p-5 space-y-3">
-                <div className="flex items-center gap-2 text-rose-600">
+              <div className="ceramic-panel border border-[#E76F51]/30 rounded-3xl p-5 space-y-3">
+                <div className="flex items-center gap-2 text-[#E76F51]">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <h3 className="text-xs font-mono font-bold uppercase tracking-wider">Danger Zone</h3>
                 </div>
 
-                <p className="text-xs text-slate-500 leading-relaxed">
+                <p className="text-xs text-[#7D756D] leading-relaxed">
                   Resetting all data will permanently wipe every goal, historical ledger record, and cash/bank balance for this account.
                 </p>
 
@@ -1539,9 +1528,9 @@ export default function App() {
                     setResetInput('');
                     setIsResetModalOpen(true);
                   }}
-                  className="w-full bg-rose-50/90 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold text-xs py-3.5 rounded-2xl flex items-center justify-center gap-2 transition active:scale-98 shadow-xs"
+                  className="w-full bg-[#E76F51]/10 hover:bg-[#E76F51]/20 text-[#E76F51] border border-[#E76F51]/30 font-bold text-xs py-3.5 rounded-2xl flex items-center justify-center gap-2 transition active:scale-98 shadow-xs"
                 >
-                  <RotateCcw className="w-4 h-4 text-rose-600" />
+                  <RotateCcw className="w-4 h-4 text-[#E76F51]" />
                   <span>Reset All Data</span>
                 </button>
               </div>
@@ -1552,13 +1541,13 @@ export default function App() {
       </div>
 
       {/* MOBILE BOTTOM NAV */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-slate-200 px-6 py-2 z-40">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 ceramic-panel border-t border-[#F1E8DF] px-6 py-2 z-40">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <button
             onClick={() => setActiveTab('home')}
-            className={`flex flex-col items-center gap-1 transition ${activeTab === 'home' ? 'text-[#00C482]' : 'text-slate-400'}`}
+            className={`flex flex-col items-center gap-1 transition ${activeTab === 'home' ? 'text-[#2A9D8F]' : 'text-[#9C948B]'}`}
           >
-            <div className={`p-1.5 rounded-full ${activeTab === 'home' ? 'bg-[#00E599] text-white px-4' : ''}`}>
+            <div className={`p-1.5 rounded-full ${activeTab === 'home' ? 'bg-[#2A9D8F] text-white px-4' : ''}`}>
               <HomeIcon className="w-5 h-5" />
             </div>
             <span className="text-[10px] font-mono font-bold">Home</span>
@@ -1566,9 +1555,9 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab('history')}
-            className={`flex flex-col items-center gap-1 transition ${activeTab === 'history' ? 'text-[#00C482]' : 'text-slate-400'}`}
+            className={`flex flex-col items-center gap-1 transition ${activeTab === 'history' ? 'text-[#2A9D8F]' : 'text-[#9C948B]'}`}
           >
-            <div className={`p-1.5 rounded-full ${activeTab === 'history' ? 'bg-[#00E599] text-white px-4' : ''}`}>
+            <div className={`p-1.5 rounded-full ${activeTab === 'history' ? 'bg-[#2A9D8F] text-white px-4' : ''}`}>
               <History className="w-5 h-5" />
             </div>
             <span className="text-[10px] font-mono font-bold">History</span>
@@ -1576,9 +1565,9 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab('goals')}
-            className={`flex flex-col items-center gap-1 transition ${activeTab === 'goals' ? 'text-indigo-600' : 'text-slate-400'}`}
+            className={`flex flex-col items-center gap-1 transition ${activeTab === 'goals' ? 'text-[#E07A5F]' : 'text-[#9C948B]'}`}
           >
-            <div className={`p-1.5 rounded-full ${activeTab === 'goals' ? 'bg-indigo-600 text-white px-4' : ''}`}>
+            <div className={`p-1.5 rounded-full ${activeTab === 'goals' ? 'bg-[#E07A5F] text-white px-4' : ''}`}>
               <Target className="w-5 h-5" />
             </div>
             <span className="text-[10px] font-mono font-bold">Goals</span>
@@ -1586,9 +1575,9 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex flex-col items-center gap-1 transition ${activeTab === 'settings' ? 'text-indigo-600' : 'text-slate-400'}`}
+            className={`flex flex-col items-center gap-1 transition ${activeTab === 'settings' ? 'text-[#E07A5F]' : 'text-[#9C948B]'}`}
           >
-            <div className={`p-1.5 rounded-full ${activeTab === 'settings' ? 'bg-indigo-600 text-white px-4' : ''}`}>
+            <div className={`p-1.5 rounded-full ${activeTab === 'settings' ? 'bg-[#E07A5F] text-white px-4' : ''}`}>
               <Settings className="w-5 h-5" />
             </div>
             <span className="text-[10px] font-mono font-bold">Profile</span>
@@ -1598,16 +1587,16 @@ export default function App() {
 
       {/* 1. TRANSACTION MODAL */}
       {isTxModalOpen && activeGoal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm glass-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#2D2A26]/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm ceramic-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
             
             <div className="flex items-center justify-between gap-2">
-              <div className="flex-1 bg-[#EEF2FF] p-1 rounded-full flex">
+              <div className="flex-1 bg-[#FAF7F2] p-1 rounded-full flex border border-[#EADBCC]">
                 <button
                   type="button"
                   onClick={() => setActionType('deposit')}
                   className={`flex-1 py-2 text-xs font-mono font-bold rounded-full transition ${
-                    actionType === 'deposit' ? 'bg-[#00C482] text-white shadow-xs' : 'text-slate-600'
+                    actionType === 'deposit' ? 'bg-[#2A9D8F] text-white shadow-xs' : 'text-[#7D756D]'
                   }`}
                 >
                   Deposit (+)
@@ -1616,7 +1605,7 @@ export default function App() {
                   type="button"
                   onClick={() => setActionType('withdraw')}
                   className={`flex-1 py-2 text-xs font-mono font-bold rounded-full transition ${
-                    actionType === 'withdraw' ? 'bg-rose-500 text-white shadow-xs' : 'text-slate-600'
+                    actionType === 'withdraw' ? 'bg-[#E76F51] text-white shadow-xs' : 'text-[#7D756D]'
                   }`}
                 >
                   Withdraw (-)
@@ -1625,18 +1614,18 @@ export default function App() {
 
               <button 
                 onClick={() => setIsTxModalOpen(false)} 
-                className="w-9 h-9 rounded-full bg-[#EEF2FF] text-slate-500 flex items-center justify-center shrink-0"
+                className="w-9 h-9 rounded-full bg-[#FAF7F2] text-[#7D756D] border border-[#EADBCC] flex items-center justify-center shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="bg-white/80 border border-indigo-100/60 rounded-2xl p-4 text-center mt-4">
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700 block">
+            <div className="bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl p-4 text-center mt-4">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#7D756D] block">
                 {actionType === 'deposit' ? 'ADD TO GOAL' : 'WITHDRAW FROM GOAL'} ({activeGoal.name.toUpperCase()})
               </span>
-              <div className="text-2xl font-mono font-bold text-slate-900 mt-1">
-                <span className="text-slate-400 mr-1 text-lg">₹</span>
+              <div className="text-2xl font-mono font-bold text-[#2D2A26] mt-1">
+                <span className="text-[#E07A5F] mr-1 text-lg">₹</span>
                 {amountStr ? Number(amountStr).toLocaleString() : '0'}
               </div>
             </div>
@@ -1647,11 +1636,11 @@ export default function App() {
                 onClick={() => setWalletType('online')}
                 className={`p-3 rounded-2xl border text-left transition flex items-center gap-2 ${
                   walletType === 'online' 
-                    ? 'bg-[#E6FBF5] border-[#00C482] text-[#009360] ring-1 ring-[#00C482]' 
-                    : 'bg-white border-slate-200 text-slate-700'
+                    ? 'bg-[#2A9D8F]/10 border-[#2A9D8F] text-[#1D6C63] ring-1 ring-[#2A9D8F]' 
+                    : 'bg-white border-[#EADBCC] text-[#7D756D]'
                 }`}
               >
-                <Smartphone className="w-4 h-4 shrink-0 text-[#00C482]" />
+                <Smartphone className="w-4 h-4 shrink-0 text-[#2A9D8F]" />
                 <div>
                   <span className="text-xs font-bold block leading-tight">Online</span>
                   <span className="text-[11px] font-mono font-bold">(₹{totalOnline.toLocaleString()})</span>
@@ -1663,11 +1652,11 @@ export default function App() {
                 onClick={() => setWalletType('cash')}
                 className={`p-3 rounded-2xl border text-left transition flex items-center gap-2 ${
                   walletType === 'cash' 
-                    ? 'bg-[#E6FBF5] border-[#00C482] text-[#009360] ring-1 ring-[#00C482]' 
-                    : 'bg-white border-slate-200 text-slate-700'
+                    ? 'bg-[#2A9D8F]/10 border-[#2A9D8F] text-[#1D6C63] ring-1 ring-[#2A9D8F]' 
+                    : 'bg-white border-[#EADBCC] text-[#7D756D]'
                 }`}
               >
-                <Banknote className="w-4 h-4 shrink-0 text-slate-500" />
+                <Banknote className="w-4 h-4 shrink-0 text-[#9C948B]" />
                 <div>
                   <span className="text-xs font-bold block leading-tight">Cash</span>
                   <span className="text-[11px] font-mono font-bold">(₹{totalCash.toLocaleString()})</span>
@@ -1681,7 +1670,7 @@ export default function App() {
                   key={digit}
                   type="button"
                   onClick={() => handleTxKeypad(digit)}
-                  className="h-12 bg-white text-slate-800 font-bold text-lg rounded-2xl border border-slate-200 active:bg-slate-100 flex items-center justify-center transition active:scale-95"
+                  className="h-12 bg-white text-[#2D2A26] font-bold text-lg rounded-2xl border border-[#EADBCC] active:bg-[#FAF7F2] flex items-center justify-center transition active:scale-95"
                 >
                   {digit}
                 </button>
@@ -1689,23 +1678,23 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setAmountStr('')}
-                className="h-12 bg-[#EEF2FF] text-slate-700 font-bold text-xs rounded-2xl border border-slate-200 flex items-center justify-center active:scale-95 font-mono"
+                className="h-12 bg-[#FAF7F2] text-[#7D756D] font-bold text-xs rounded-2xl border border-[#EADBCC] flex items-center justify-center active:scale-95 font-mono"
               >
                 Clear
               </button>
               <button
                 type="button"
                 onClick={() => handleTxKeypad('0')}
-                className="h-12 bg-white text-slate-800 font-bold text-lg rounded-2xl border border-slate-200 active:bg-slate-100 flex items-center justify-center active:scale-95"
+                className="h-12 bg-white text-[#2D2A26] font-bold text-lg rounded-2xl border border-[#EADBCC] active:bg-[#FAF7F2] flex items-center justify-center active:scale-95"
               >
                 0
               </button>
               <button
                 type="button"
                 onClick={() => setAmountStr((prev) => prev.slice(0, -1))}
-                className="h-12 bg-rose-50 text-rose-600 font-bold text-xs rounded-2xl border border-rose-100 flex items-center justify-center active:scale-95"
+                className="h-12 bg-[#E76F51]/10 text-[#E76F51] font-bold text-xs rounded-2xl border border-[#E76F51]/30 flex items-center justify-center active:scale-95"
               >
-                <Delete className="w-4 h-4 text-rose-500" />
+                <Delete className="w-4 h-4 text-[#E76F51]" />
               </button>
             </div>
 
@@ -1714,14 +1703,18 @@ export default function App() {
               placeholder="Memo / Note (optional)"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="w-full bg-white/80 border border-slate-200 rounded-2xl px-4 py-2.5 text-xs text-slate-900 mt-3 font-medium focus:outline-none focus:bg-white"
+              className="w-full bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-4 py-2.5 text-xs text-[#2D2A26] mt-3 font-medium focus:outline-none focus:bg-white focus:border-[#E07A5F]"
             />
 
             <button
               type="button"
               onClick={handleTransactionSubmit}
               disabled={!amountStr || Number(amountStr) <= 0}
-              className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-bold text-xs rounded-2xl mt-3 shadow-md shadow-indigo-600/20 disabled:opacity-40"
+              className={`w-full py-3.5 text-white font-bold text-xs rounded-2xl mt-3 shadow-md disabled:opacity-40 transition active:scale-98 ${
+                actionType === 'deposit' 
+                  ? 'bg-[#2A9D8F] hover:bg-[#238276] shadow-[#2A9D8F]/25' 
+                  : 'bg-[#E76F51] hover:bg-[#D55F42] shadow-[#E76F51]/25'
+              }`}
             >
               Confirm {actionType === 'deposit' ? 'Deposit' : 'Withdrawal'}
             </button>
@@ -1731,22 +1724,22 @@ export default function App() {
 
       {/* 2. DEDICATED CASH <-> BANK SHIFT MODAL */}
       {isTransferModalOpen && activeGoal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm glass-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#2D2A26]/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm ceramic-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
             
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F1E8DF]">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-[#EEF2FF] text-indigo-600 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full bg-[#E07A5F]/15 text-[#E07A5F] flex items-center justify-center">
                   <ArrowLeftRight className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-black text-sm text-slate-900">Shift Vault Funds</h3>
-                  <p className="text-[10px] text-slate-400">Move balance between Cash and Bank</p>
+                  <h3 className="font-black text-sm text-[#2D2A26]">Shift Vault Funds</h3>
+                  <p className="text-[10px] text-[#9C948B]">Move balance between Cash and Bank</p>
                 </div>
               </div>
               <button 
                 onClick={() => setIsTransferModalOpen(false)} 
-                className="w-8 h-8 rounded-full bg-[#EEF2FF] text-slate-500 flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-[#FAF7F2] border border-[#EADBCC] text-[#7D756D] flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1761,21 +1754,21 @@ export default function App() {
                 }}
                 className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
                   transferDirection === 'cash_to_bank' 
-                    ? 'border-[#00C482] ring-2 ring-[#00C482]/20 bg-white' 
-                    : 'border-slate-200 bg-white/70'
+                    ? 'border-[#2A9D8F] ring-2 ring-[#2A9D8F]/20 bg-white' 
+                    : 'border-[#EADBCC] bg-[#FAF7F2]'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black flex items-center gap-1 text-slate-900">
-                    <Banknote className="w-3.5 h-3.5 text-[#00C482]" /> Cash ➔ Bank
+                  <span className="text-xs font-black flex items-center gap-1 text-[#2D2A26]">
+                    <Banknote className="w-3.5 h-3.5 text-[#2A9D8F]" /> Cash ➔ Bank
                   </span>
                   {transferDirection === 'cash_to_bank' && (
-                    <span className="w-2 h-2 rounded-full bg-[#00C482]" />
+                    <span className="w-2 h-2 rounded-full bg-[#2A9D8F]" />
                   )}
                 </div>
                 <div className="mt-2 text-xs font-semibold">
-                  <span className="text-[10px] text-slate-400 block">Available:</span>
-                  <span className="font-mono font-black text-slate-900">₹{totalCash.toLocaleString()}</span>
+                  <span className="text-[10px] text-[#9C948B] block">Available:</span>
+                  <span className="font-mono font-black text-[#2D2A26]">₹{totalCash.toLocaleString()}</span>
                 </div>
               </button>
 
@@ -1787,44 +1780,44 @@ export default function App() {
                 }}
                 className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
                   transferDirection === 'bank_to_cash' 
-                    ? 'border-indigo-600 ring-2 ring-indigo-600/20 bg-white' 
-                    : 'border-slate-200 bg-white/70'
+                    ? 'border-[#E07A5F] ring-2 ring-[#E07A5F]/20 bg-white' 
+                    : 'border-[#EADBCC] bg-[#FAF7F2]'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black flex items-center gap-1 text-slate-900">
-                    <Smartphone className="w-3.5 h-3.5 text-indigo-600" /> Bank ➔ Cash
+                  <span className="text-xs font-black flex items-center gap-1 text-[#2D2A26]">
+                    <Smartphone className="w-3.5 h-3.5 text-[#E07A5F]" /> Bank ➔ Cash
                   </span>
                   {transferDirection === 'bank_to_cash' && (
-                    <span className="w-2 h-2 rounded-full bg-indigo-600" />
+                    <span className="w-2 h-2 rounded-full bg-[#E07A5F]" />
                   )}
                 </div>
                 <div className="mt-2 text-xs font-semibold">
-                  <span className="text-[10px] text-slate-400 block">Available:</span>
-                  <span className="font-mono font-black text-indigo-600">₹{totalOnline.toLocaleString()}</span>
+                  <span className="text-[10px] text-[#9C948B] block">Available:</span>
+                  <span className="font-mono font-black text-[#E07A5F]">₹{totalOnline.toLocaleString()}</span>
                 </div>
               </button>
             </div>
 
             <div className="flex items-center justify-between px-1 text-xs mt-3">
-              <span className="text-slate-500 font-medium">
+              <span className="text-[#7D756D] font-medium">
                 Source: {transferDirection === 'cash_to_bank' ? 'Cash Stash' : 'Bank Account'}
               </span>
               <button
                 type="button"
                 onClick={() => setTransferAmountStr(String(transferDirection === 'cash_to_bank' ? totalCash : totalOnline))}
-                className="font-mono text-[11px] font-bold text-indigo-600 bg-[#EEF2FF] border border-indigo-200 px-2.5 py-1 rounded-xl"
+                className="font-mono text-[11px] font-bold text-[#E07A5F] bg-[#FAF7F2] border border-[#EADBCC] px-2.5 py-1 rounded-xl"
               >
                 Shift Max (₹{(transferDirection === 'cash_to_bank' ? totalCash : totalOnline).toLocaleString()})
               </button>
             </div>
 
-            <div className="bg-white/80 border border-indigo-100 rounded-2xl p-3.5 text-center mt-2">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block">
+            <div className="bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl p-3.5 text-center mt-2">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B] block">
                 TRANSFER SUM
               </span>
-              <div className="text-2xl font-mono font-bold text-slate-900 mt-0.5">
-                <span className="text-indigo-600 mr-1 text-lg">₹</span>
+              <div className="text-2xl font-mono font-bold text-[#2D2A26] mt-0.5">
+                <span className="text-[#E07A5F] mr-1 text-lg">₹</span>
                 {transferAmountStr ? Number(transferAmountStr).toLocaleString() : '0'}
               </div>
             </div>
@@ -1835,7 +1828,7 @@ export default function App() {
                   key={digit}
                   type="button"
                   onClick={() => handleTransferKeypad(digit)}
-                  className="h-11 bg-white text-slate-800 font-bold text-lg rounded-2xl border border-slate-200 active:bg-slate-100 flex items-center justify-center transition active:scale-95"
+                  className="h-11 bg-white text-[#2D2A26] font-bold text-lg rounded-2xl border border-[#EADBCC] active:bg-[#FAF7F2] flex items-center justify-center transition active:scale-95"
                 >
                   {digit}
                 </button>
@@ -1843,23 +1836,23 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setTransferAmountStr('')}
-                className="h-11 bg-[#EEF2FF] text-slate-700 font-bold text-xs rounded-2xl border border-slate-200 flex items-center justify-center font-mono"
+                className="h-11 bg-[#FAF7F2] text-[#7D756D] font-bold text-xs rounded-2xl border border-[#EADBCC] flex items-center justify-center font-mono"
               >
                 Clear
               </button>
               <button
                 type="button"
                 onClick={() => handleTransferKeypad('0')}
-                className="h-11 bg-white text-slate-800 font-bold text-lg rounded-2xl border border-slate-200 active:bg-slate-100 flex items-center justify-center active:scale-95"
+                className="h-11 bg-white text-[#2D2A26] font-bold text-lg rounded-2xl border border-[#EADBCC] active:bg-[#FAF7F2] flex items-center justify-center active:scale-95"
               >
                 0
               </button>
               <button
                 type="button"
                 onClick={() => setTransferAmountStr((prev) => prev.slice(0, -1))}
-                className="h-11 bg-rose-50 text-rose-600 font-bold text-xs rounded-2xl border border-rose-100 flex items-center justify-center"
+                className="h-11 bg-[#E76F51]/10 text-[#E76F51] font-bold text-xs rounded-2xl border border-[#E76F51]/30 flex items-center justify-center"
               >
-                <Delete className="w-4 h-4 text-rose-500" />
+                <Delete className="w-4 h-4 text-[#E76F51]" />
               </button>
             </div>
 
@@ -1868,14 +1861,14 @@ export default function App() {
               placeholder="Transfer note (e.g. ATM withdrawal, bank deposit)"
               value={transferNote}
               onChange={(e) => setTransferNote(e.target.value)}
-              className="w-full bg-white/80 border border-slate-200 rounded-2xl px-4 py-2.5 text-xs text-slate-900 mt-2 font-medium focus:outline-none focus:bg-white"
+              className="w-full bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-4 py-2.5 text-xs text-[#2D2A26] mt-2 font-medium focus:outline-none focus:bg-white focus:border-[#E07A5F]"
             />
 
             <button
               type="button"
               onClick={handleTransferSubmit}
               disabled={!transferAmountStr || Number(transferAmountStr) <= 0}
-              className="w-full py-3.5 bg-[#00E599] hover:bg-[#00C482] text-slate-900 font-bold text-xs rounded-2xl mt-3 shadow-md shadow-[#00E599]/20 disabled:opacity-40"
+              className="w-full py-3.5 bg-[#2A9D8F] hover:bg-[#238276] text-white font-bold text-xs rounded-2xl mt-3 shadow-md shadow-[#2A9D8F]/20 disabled:opacity-40"
             >
               Confirm Transfer (₹{transferAmountStr ? Number(transferAmountStr).toLocaleString() : '0'})
             </button>
@@ -1885,22 +1878,22 @@ export default function App() {
 
       {/* 3. DEDICATED CROSS-GOAL TRANSFER MODAL */}
       {isGoalTransferModalOpen && activeGoal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm glass-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#2D2A26]/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm ceramic-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
             
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F1E8DF]">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full bg-[#2A9D8F]/15 text-[#2A9D8F] flex items-center justify-center">
                   <Share2 className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-black text-sm text-slate-900">Transfer to Another Goal</h3>
-                  <p className="text-[10px] text-slate-400">Shift surplus from {activeGoal.name}</p>
+                  <h3 className="font-black text-sm text-[#2D2A26]">Transfer to Another Goal</h3>
+                  <p className="text-[10px] text-[#9C948B]">Shift surplus from {activeGoal.name}</p>
                 </div>
               </div>
               <button 
                 onClick={() => setIsGoalTransferModalOpen(false)} 
-                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-[#FAF7F2] border border-[#EADBCC] text-[#7D756D] flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1908,13 +1901,13 @@ export default function App() {
 
             <form onSubmit={handleCrossGoalTransferSubmit} className="space-y-3 mt-3">
               <div>
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B] block mb-1">
                   Destination Goal
                 </label>
                 <select
                   value={targetGoalId}
                   onChange={(e) => setTargetGoalId(e.target.value)}
-                  className="w-full bg-white/80 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-emerald-600"
+                  className="w-full bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs font-bold text-[#2D2A26] focus:outline-none focus:border-[#2A9D8F]"
                   required
                 >
                   {eligibleTargetGoals.map((g) => (
@@ -1926,7 +1919,7 @@ export default function App() {
               </div>
 
               <div>
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B] block mb-1">
                   Take From Balance
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -1935,14 +1928,14 @@ export default function App() {
                     onClick={() => setGoalTransferWallet('online')}
                     className={`py-2 px-3 rounded-2xl border text-left transition ${
                       goalTransferWallet === 'online' 
-                        ? 'border-emerald-500 bg-emerald-50/70 ring-2 ring-emerald-500/20' 
-                        : 'border-slate-200 bg-white'
+                        ? 'border-[#2A9D8F] bg-[#2A9D8F]/10 ring-2 ring-[#2A9D8F]/20' 
+                        : 'border-[#EADBCC] bg-white'
                     }`}
                   >
-                    <span className="text-xs font-bold flex items-center gap-1 text-slate-900">
-                      <Smartphone className="w-3.5 h-3.5 text-indigo-600" /> Online
+                    <span className="text-xs font-bold flex items-center gap-1 text-[#2D2A26]">
+                      <Smartphone className="w-3.5 h-3.5 text-[#E07A5F]" /> Online
                     </span>
-                    <span className="text-[11px] font-mono font-bold text-slate-500 block mt-0.5">
+                    <span className="text-[11px] font-mono font-bold text-[#7D756D] block mt-0.5">
                       ₹{totalOnline.toLocaleString()}
                     </span>
                   </button>
@@ -1952,14 +1945,14 @@ export default function App() {
                     onClick={() => setGoalTransferWallet('cash')}
                     className={`py-2 px-3 rounded-2xl border text-left transition ${
                       goalTransferWallet === 'cash' 
-                        ? 'border-emerald-500 bg-emerald-50/70 ring-2 ring-emerald-500/20' 
-                        : 'border-slate-200 bg-white'
+                        ? 'border-[#2A9D8F] bg-[#2A9D8F]/10 ring-2 ring-[#2A9D8F]/20' 
+                        : 'border-[#EADBCC] bg-white'
                     }`}
                   >
-                    <span className="text-xs font-bold flex items-center gap-1 text-slate-900">
-                      <Banknote className="w-3.5 h-3.5 text-emerald-600" /> Cash
+                    <span className="text-xs font-bold flex items-center gap-1 text-[#2D2A26]">
+                      <Banknote className="w-3.5 h-3.5 text-[#2A9D8F]" /> Cash
                     </span>
-                    <span className="text-[11px] font-mono font-bold text-slate-500 block mt-0.5">
+                    <span className="text-[11px] font-mono font-bold text-[#7D756D] block mt-0.5">
                       ₹{totalCash.toLocaleString()}
                     </span>
                   </button>
@@ -1967,22 +1960,22 @@ export default function App() {
               </div>
 
               <div className="flex items-center justify-between px-1 text-xs">
-                <span className="text-slate-500 font-medium">Available to shift:</span>
+                <span className="text-[#7D756D] font-medium">Available to shift:</span>
                 <button
                   type="button"
                   onClick={() => setGoalTransferAmountStr(String(goalTransferWallet === 'cash' ? totalCash : totalOnline))}
-                  className="font-mono text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-xl"
+                  className="font-mono text-[11px] font-bold text-[#2A9D8F] bg-[#FAF7F2] border border-[#EADBCC] px-2.5 py-0.5 rounded-xl"
                 >
                   Send Max (₹{(goalTransferWallet === 'cash' ? totalCash : totalOnline).toLocaleString()})
                 </button>
               </div>
 
-              <div className="bg-white/80 border border-slate-200 rounded-2xl p-3 text-center">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
+              <div className="bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl p-3 text-center">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B] block">
                   AMOUNT TO TRANSFER
                 </span>
-                <div className="text-2xl font-mono font-bold text-slate-900 mt-0.5">
-                  <span className="text-emerald-600 mr-1 text-lg">₹</span>
+                <div className="text-2xl font-mono font-bold text-[#2D2A26] mt-0.5">
+                  <span className="text-[#2A9D8F] mr-1 text-lg">₹</span>
                   {goalTransferAmountStr ? Number(goalTransferAmountStr).toLocaleString() : '0'}
                 </div>
               </div>
@@ -1993,7 +1986,7 @@ export default function App() {
                     key={digit}
                     type="button"
                     onClick={() => handleGoalTransferKeypad(digit)}
-                    className="h-11 bg-white text-slate-800 font-bold text-lg rounded-2xl border border-slate-200 active:bg-slate-100 flex items-center justify-center transition active:scale-95"
+                    className="h-11 bg-white text-[#2D2A26] font-bold text-lg rounded-2xl border border-[#EADBCC] active:bg-[#FAF7F2] flex items-center justify-center transition active:scale-95"
                   >
                     {digit}
                   </button>
@@ -2001,23 +1994,23 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setGoalTransferAmountStr('')}
-                  className="h-11 bg-slate-100 text-slate-700 font-bold text-xs rounded-2xl border border-slate-200 flex items-center justify-center font-mono"
+                  className="h-11 bg-[#FAF7F2] text-[#7D756D] font-bold text-xs rounded-2xl border border-[#EADBCC] flex items-center justify-center font-mono"
                 >
                   Clear
                 </button>
                 <button
                   type="button"
                   onClick={() => handleGoalTransferKeypad('0')}
-                  className="h-11 bg-white text-slate-800 font-bold text-lg rounded-2xl border border-slate-200 active:bg-slate-100 flex items-center justify-center active:scale-95"
+                  className="h-11 bg-white text-[#2D2A26] font-bold text-lg rounded-2xl border border-[#EADBCC] active:bg-[#FAF7F2] flex items-center justify-center active:scale-95"
                 >
                   0
                 </button>
                 <button
                   type="button"
                   onClick={() => setGoalTransferAmountStr((prev) => prev.slice(0, -1))}
-                  className="h-11 bg-rose-50 text-rose-600 font-bold text-xs rounded-2xl border border-rose-100 flex items-center justify-center"
+                  className="h-11 bg-[#E76F51]/10 text-[#E76F51] font-bold text-xs rounded-2xl border border-[#E76F51]/30 flex items-center justify-center"
                 >
-                  <Delete className="w-4 h-4 text-rose-500" />
+                  <Delete className="w-4 h-4 text-[#E76F51]" />
                 </button>
               </div>
 
@@ -2026,13 +2019,13 @@ export default function App() {
                 placeholder="Reason (e.g. Surplus funds transferred)"
                 value={goalTransferNote}
                 onChange={(e) => setGoalTransferNote(e.target.value)}
-                className="w-full bg-white/80 border border-slate-200 rounded-2xl px-4 py-2.5 text-xs text-slate-900 font-medium focus:outline-none focus:bg-white"
+                className="w-full bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-4 py-2.5 text-xs text-[#2D2A26] font-medium focus:outline-none focus:bg-white focus:border-[#2A9D8F]"
               />
 
               <button
                 type="submit"
                 disabled={!goalTransferAmountStr || Number(goalTransferAmountStr) <= 0 || !targetGoalId}
-                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-bold text-xs rounded-2xl shadow-md shadow-emerald-600/20 disabled:opacity-40"
+                className="w-full py-3.5 bg-[#2A9D8F] hover:bg-[#238276] active:scale-98 text-white font-bold text-xs rounded-2xl shadow-md shadow-[#2A9D8F]/20 disabled:opacity-40"
               >
                 Execute Goal Transfer
               </button>
@@ -2043,19 +2036,19 @@ export default function App() {
 
       {/* 4. NEW FINANCIAL GOAL MODAL */}
       {isAddGoalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm glass-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#2D2A26]/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm ceramic-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
             
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F1E8DF]">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-[#EEF2FF] text-indigo-600 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full bg-[#E07A5F]/15 text-[#E07A5F] flex items-center justify-center">
                   <Target className="w-5 h-5" />
                 </div>
-                <h3 className="font-black text-slate-900 text-base">New Financial Goal</h3>
+                <h3 className="font-black text-[#2D2A26] text-base">New Financial Goal</h3>
               </div>
               <button 
                 onClick={() => setIsAddGoalOpen(false)} 
-                className="w-8 h-8 rounded-full bg-[#EEF2FF] text-slate-500 flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-[#FAF7F2] border border-[#EADBCC] text-[#7D756D] flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2063,7 +2056,7 @@ export default function App() {
 
             <form onSubmit={handleCreateGoal} className="mt-4 space-y-3.5">
               <div>
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B] block mb-2">
                   CATEGORY
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -2077,11 +2070,11 @@ export default function App() {
                         onClick={() => setNewGoalCategory(cat.id)}
                         className={`p-2.5 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1 ${
                           isSelected 
-                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' 
-                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                            ? 'bg-[#E07A5F] text-white border-[#E07A5F] shadow-sm' 
+                            : 'bg-white text-[#7D756D] border-[#EADBCC] hover:bg-[#FAF7F2]'
                         }`}
                       >
-                        <CatIcon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-[#00C482]'}`} />
+                        <CatIcon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-[#2A9D8F]'}`} />
                         <span className="text-[11px] font-bold">{cat.label}</span>
                       </button>
                     );
@@ -2090,7 +2083,7 @@ export default function App() {
               </div>
 
               <div>
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B]">
                   GOAL TITLE
                 </label>
                 <input
@@ -2098,13 +2091,13 @@ export default function App() {
                   placeholder="e.g. 5-Year Savings, MacBook, Bali Trip"
                   value={newGoalName}
                   onChange={(e) => setNewGoalName(e.target.value)}
-                  className="w-full mt-1 bg-white border border-slate-200 rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-indigo-600"
+                  className="w-full mt-1 bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#E07A5F]"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B]">
                   TARGET CAPITAL (₹)
                 </label>
                 <input
@@ -2112,34 +2105,34 @@ export default function App() {
                   placeholder="e.g. 1000000"
                   value={newGoalAmount}
                   onChange={(e) => setNewGoalAmount(e.target.value)}
-                  className="w-full mt-1 bg-white border border-slate-200 rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-indigo-600"
+                  className="w-full mt-1 bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-[#E07A5F]"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                  <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B]">
                     START DATE
                   </label>
                   <input
                     type="date"
                     value={newGoalStartDate}
                     onChange={(e) => setNewGoalStartDate(e.target.value)}
-                    className="w-full mt-1 bg-white border border-slate-200 rounded-2xl px-3 py-2 text-xs font-semibold"
+                    className="w-full mt-1 bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-3 py-2 text-xs font-semibold"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                  <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B]">
                     TARGET DATE
                   </label>
                   <input
                     type="date"
                     value={newGoalDate}
                     onChange={(e) => setNewGoalDate(e.target.value)}
-                    className="w-full mt-1 bg-white border border-slate-200 rounded-2xl px-3 py-2 text-xs font-semibold"
+                    className="w-full mt-1 bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-3 py-2 text-xs font-semibold"
                     required
                   />
                 </div>
@@ -2147,7 +2140,7 @@ export default function App() {
 
               <button
                 type="submit"
-                className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-bold text-xs rounded-2xl shadow-md shadow-indigo-600/20 mt-2"
+                className="w-full py-3.5 bg-[#E07A5F] hover:bg-[#D46B50] active:scale-98 text-white font-bold text-xs rounded-2xl shadow-md shadow-[#E07A5F]/20 mt-2"
               >
                 Launch Financial Target
               </button>
@@ -2158,22 +2151,22 @@ export default function App() {
 
       {/* 5. EXTEND TIMELINE / EDIT GOAL PARAMETERS MODAL */}
       {isEditGoalOpen && activeGoal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm glass-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-[#2D2A26]/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm ceramic-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
             
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F1E8DF]">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full bg-[#E07A5F]/15 text-[#E07A5F] flex items-center justify-center">
                   <Edit3 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-slate-900 text-base">Extend Timeline / Modify</h3>
-                  <p className="text-[10px] text-slate-400">Adjust date or target after unexpected withdrawals</p>
+                  <h3 className="font-black text-[#2D2A26] text-base">Extend Timeline / Modify</h3>
+                  <p className="text-[10px] text-[#9C948B]">Adjust date or target after unexpected withdrawals</p>
                 </div>
               </div>
               <button 
                 onClick={() => setIsEditGoalOpen(false)} 
-                className="w-8 h-8 rounded-full bg-[#EEF2FF] text-slate-500 flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-[#FAF7F2] border border-[#EADBCC] text-[#7D756D] flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2181,46 +2174,46 @@ export default function App() {
 
             <form onSubmit={handleSaveGoalChanges} className="mt-4 space-y-3.5">
               <div>
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B]">
                   Goal Title
                 </label>
                 <input
                   type="text"
                   value={editGoalName}
                   onChange={(e) => setEditGoalName(e.target.value)}
-                  className="w-full mt-1 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-indigo-600"
+                  className="w-full mt-1 bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-[#E07A5F]"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B]">
                   Target Amount (₹)
                 </label>
                 <input
                   type="number"
                   value={editGoalAmount}
                   onChange={(e) => setEditGoalAmount(e.target.value)}
-                  className="w-full mt-1 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-indigo-600"
+                  className="w-full mt-1 bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-[#E07A5F]"
                   required
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                  <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B]">
                     Extended Completion Date
                   </label>
-                  <span className="text-[10px] text-indigo-600 font-bold">Postpone deadline</span>
+                  <span className="text-[10px] text-[#E07A5F] font-bold">Postpone deadline</span>
                 </div>
                 <input
                   type="date"
                   value={editGoalDate}
                   onChange={(e) => setEditGoalDate(e.target.value)}
-                  className="w-full mt-1 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-indigo-600"
+                  className="w-full mt-1 bg-[#FAF7F2] border border-[#EADBCC] rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-[#E07A5F]"
                   required
                 />
-                <p className="text-[10px] text-slate-400 mt-1">
+                <p className="text-[10px] text-[#9C948B] mt-1">
                   Extending the deadline will recalculate and lower your daily required pace.
                 </p>
               </div>
@@ -2229,14 +2222,14 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setIsEditGoalOpen(false)}
-                  className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-2xl transition"
+                  className="w-full py-3 bg-[#FAF7F2] hover:bg-[#F1E8DF] text-[#7D756D] font-bold text-xs rounded-2xl transition border border-[#EADBCC]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingEdit}
-                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-bold text-xs rounded-2xl transition shadow-md shadow-indigo-600/20 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  className="w-full py-3 bg-[#E07A5F] hover:bg-[#D46B50] active:scale-98 text-white font-bold text-xs rounded-2xl transition shadow-md shadow-[#E07A5F]/20 disabled:opacity-50 flex items-center justify-center gap-1.5"
                 >
                   {isSavingEdit ? <Loader2 className="w-4 h-4 animate-spin" /> : <Edit3 className="w-4 h-4" />}
                   <span>Save Updates</span>
@@ -2249,39 +2242,39 @@ export default function App() {
 
       {/* 6. RESET ALL DATA CONFIRMATION MODAL */}
       {isResetModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm glass-panel rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border border-rose-200 flex flex-col animate-sheet-up">
+        <div className="fixed inset-0 z-50 bg-[#2D2A26]/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
+          <div className="relative w-full max-w-sm ceramic-panel rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border border-[#E76F51]/30 flex flex-col animate-sheet-up">
             
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2 text-rose-600">
-                <div className="w-9 h-9 rounded-full bg-rose-50 flex items-center justify-center">
-                  <RotateCcw className="w-5 h-5 text-rose-600" />
+            <div className="flex items-center justify-between pb-3 border-b border-[#F1E8DF]">
+              <div className="flex items-center gap-2 text-[#E76F51]">
+                <div className="w-9 h-9 rounded-full bg-[#E76F51]/10 flex items-center justify-center">
+                  <RotateCcw className="w-5 h-5 text-[#E76F51]" />
                 </div>
-                <h3 className="font-black text-slate-900 text-base">Reset All Data</h3>
+                <h3 className="font-black text-[#2D2A26] text-base">Reset All Data</h3>
               </div>
               <button 
                 onClick={() => setIsResetModalOpen(false)} 
-                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-[#FAF7F2] border border-[#EADBCC] text-[#7D756D] flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleResetAllData} className="mt-4 space-y-4">
-              <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                This action is <span className="text-rose-600 font-bold">permanent and irreversible</span>. All your savings goals, timelines, and transaction records will be permanently deleted from the cloud.
+              <p className="text-xs text-[#7D756D] leading-relaxed font-medium">
+                This action is <span className="text-[#E76F51] font-bold">permanent and irreversible</span>. All your savings goals, timelines, and transaction records will be permanently deleted from the cloud.
               </p>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
-                  Type <span className="text-rose-600 font-black">RESET</span> to confirm
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#9C948B]">
+                  Type <span className="text-[#E76F51] font-black">RESET</span> to confirm
                 </label>
                 <input
                   type="text"
                   placeholder="RESET"
                   value={resetInput}
                   onChange={(e) => setResetInput(e.target.value)}
-                  className="w-full bg-rose-50/50 border border-rose-200 rounded-2xl px-4 py-3 text-xs font-mono font-bold uppercase text-slate-900 focus:outline-none focus:bg-white focus:border-rose-500"
+                  className="w-full bg-[#FAF7F2] border border-[#E76F51]/30 rounded-2xl px-4 py-3 text-xs font-mono font-bold uppercase text-[#2D2A26] focus:outline-none focus:bg-white focus:border-[#E76F51]"
                   required
                 />
               </div>
@@ -2290,14 +2283,14 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setIsResetModalOpen(false)}
-                  className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-2xl transition"
+                  className="w-full py-3 bg-[#FAF7F2] hover:bg-[#F1E8DF] text-[#7D756D] font-bold text-xs rounded-2xl transition border border-[#EADBCC]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={resetInput.trim().toUpperCase() !== 'RESET' || isResetting}
-                  className="w-full py-3 bg-rose-600 hover:bg-rose-700 active:scale-98 text-white font-bold text-xs rounded-2xl transition shadow-md shadow-rose-600/20 disabled:opacity-40 flex items-center justify-center gap-1.5"
+                  className="w-full py-3 bg-[#E76F51] hover:bg-[#D55F42] active:scale-98 text-white font-bold text-xs rounded-2xl transition shadow-md shadow-[#E76F51]/20 disabled:opacity-40 flex items-center justify-center gap-1.5"
                 >
                   {isResetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
                   <span>Wipe Everything</span>
