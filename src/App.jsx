@@ -1380,7 +1380,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Schedule Velocity Card */}
+                    {/* Schedule Velocity Card with exact days remaining */}
                     <div className={`p-4 rounded-3xl border flex flex-col gap-1.5 shadow-2xs ${
                       trajectoryStatus === 'delay' 
                         ? 'bg-rose-50 border-rose-200 text-rose-900' 
@@ -1398,7 +1398,7 @@ export default function App() {
                         <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
                           trajectoryStatus === 'delay' ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'
                         }`}>
-                          {trajectoryStatus === 'delay' ? `-${daysDifference}d Behind (-₹${varianceAmount.toLocaleString()})` : 'On Track'}
+                          {trajectoryStatus === 'delay' ? `-${daysDifference}d Behind (-₹${varianceAmount.toLocaleString()})` : `On Track • ${daysLeft} days remaining`}
                         </span>
                       </div>
                       <p className="text-xs font-semibold leading-snug">
@@ -1411,7 +1411,7 @@ export default function App() {
                           </>
                         ) : (
                           <>
-                            Pace is healthy. Daily target to finish on time: ₹{requiredPace}/day.
+                            Pace is healthy. Daily target to finish on time: ₹{requiredPace}/day. ({daysLeft} days remaining)
                           </>
                         )}
                       </p>
@@ -1466,7 +1466,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Right Column: Pace & Horizon Only (Recent Activity Stream Removed) */}
+                  {/* Right Column: Pace & Horizon Only */}
                   <div className="lg:col-span-5 space-y-4">
                     
                     {/* Velocity & Horizon Card */}
