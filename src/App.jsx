@@ -42,6 +42,44 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
+// Reusable smooth number counter animation
+function AnimatedNumber({ value, duration = 650, decimals = 0, prefix = '', suffix = '' }) {
+  const [displayValue, setDisplayValue] = useState(0);
+  const startValueRef = useRef(0);
+  const startTimeRef = useRef(null);
+
+  useEffect(() => {
+    startValueRef.current = displayValue;
+    startTimeRef.current = null;
+
+    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+    const animate = (timestamp) => {
+      if (!startTimeRef.current) startTimeRef.current = timestamp;
+      const progress = Math.min((timestamp - startTimeRef.current) / duration, 1);
+      const easedProgress = easeOutCubic(progress);
+      const current = startValueRef.current + (value - startValueRef.current) * easedProgress;
+
+      setDisplayValue(current);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        setDisplayValue(value);
+      }
+    };
+
+    const animId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animId);
+  }, [value, duration]);
+
+  const formatted = decimals > 0 
+    ? displayValue.toFixed(decimals) 
+    : Math.round(displayValue).toLocaleString();
+
+  return <>{prefix}{formatted}{suffix}</>;
+}
+
 const CATEGORY_PRESETS = [
   { id: 'tech', label: 'Tech & Devices', icon: Laptop },
   { id: 'savings', label: 'Savings Vault', icon: PiggyBank },
@@ -783,7 +821,9 @@ export default function App() {
         <div className="space-y-3 pt-4 border-t border-[#EAE4D6]">
           <div className="bg-[#FEF6D8] p-3.5 rounded-2xl border border-[#F6E6AA]">
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#706B5E] block">TOTAL VAULT BALANCE</span>
-            <p className="text-xl font-black text-[#1A1A18] mt-0.5">₹{portfolioTotal.toLocaleString()}</p>
+            <p className="text-xl font-black text-[#1A1A18] mt-0.5">
+              ₹<AnimatedNumber value={portfolioTotal} />
+            </p>
           </div>
           <button
             onClick={() => supabase.auth.signOut()}
@@ -878,7 +918,7 @@ export default function App() {
                     TOTAL VAULT CAPITAL
                   </span>
                   <p className="text-3xl sm:text-4xl font-black text-[#1A1A18] mt-1 tracking-tight">
-                    ₹{portfolioTotal.toLocaleString()}
+                    ₹<AnimatedNumber value={portfolioTotal} />
                   </p>
                 </div>
                 <div className="w-14 h-14 rounded-2xl bg-[#1A1A18] text-[#FEF6D8] flex items-center justify-center shadow-md">
@@ -1064,14 +1104,16 @@ export default function App() {
                             {g.badge || 'Goal'}
                           </span>
                         </div>
-                        <span className="text-xs font-mono font-black text-[#1A1A18]">{gPct}%</span>
+                        <span className="text-xs font-mono font-black text-[#1A1A18]">
+                          <AnimatedNumber value={gPct} suffix="%" />
+                        </span>
                       </div>
 
                       <h3 className="text-base font-black text-[#1A1A18] mt-2">{g.name}</h3>
 
                       <div className="flex items-center justify-between text-xs mt-1">
                         <span className="font-semibold text-slate-700">
-                          ₹{gSaved.toLocaleString()} <span className="text-[#706B5E] font-normal">/ ₹{g.targetAmount.toLocaleString()}</span>
+                          ₹<AnimatedNumber value={gSaved} /> <span className="text-[#706B5E] font-normal">/ ₹{g.targetAmount.toLocaleString()}</span>
                         </span>
                         {isDelayed && (
                           <span className="text-[10px] font-mono font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full">
@@ -1081,7 +1123,10 @@ export default function App() {
                       </div>
 
                       <div className="w-full bg-[#EAE4D6] h-1.5 rounded-full overflow-hidden mt-3">
-                        <div className="h-full bg-[#1A1A18] rounded-full" style={{ width: `${gPct}%` }} />
+                        <div 
+                          className="h-full bg-[#1A1A18] rounded-full transition-all duration-700 ease-out" 
+                          style={{ width: `${gPct}%` }} 
+                        />
                       </div>
                     </div>
                   );
@@ -1131,7 +1176,7 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* Clean Date Box */}
+                      {/* Date Box */}
                       <div className="bg-white/80 border border-[#EADBCC] rounded-2xl p-3 flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2 text-slate-700 font-semibold text-[11px]">
                           <Calendar className="w-3.5 h-3.5 text-slate-400" />
@@ -1140,7 +1185,7 @@ export default function App() {
                           <span>{activeGoal.targetDate}</span>
                         </div>
                         <span className="text-[11px] font-bold text-[#1A1A18] bg-[#FAF9F5] border border-[#EADBCC] px-2.5 py-1 rounded-xl">
-                          {daysLeft}d left
+                          <AnimatedNumber value={daysLeft} suffix="d left" />
                         </span>
                       </div>
 
@@ -1187,7 +1232,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Schedule Velocity Card: Emerald Green on Track */}
+                    {/* Schedule Velocity Card */}
                     <div className={`p-4 rounded-2xl border flex flex-col gap-1.5 ${
                       trajectoryStatus === 'delay' 
                         ? 'bg-rose-50 border-rose-200 text-rose-900' 
@@ -1224,51 +1269,72 @@ export default function App() {
                       </p>
                     </div>
 
-                    {/* Total Saved & Sub-Accounts */}
-                    <div className="butter-card rounded-3xl p-5 space-y-3">
+                    {/* Total Saved & Animated Status Bar Card */}
+                    <div className="butter-card rounded-3xl p-5 space-y-3.5">
                       <div className="flex items-baseline justify-between">
                         <div>
-                          <span className="text-[10px] text-[#706B5E] uppercase font-bold block">SAVED CAPITAL</span>
-                          <span className="text-3xl font-black text-[#1A1A18]">₹{totalSaved.toLocaleString()}</span>
+                          <span className="text-[10px] text-[#706B5E] uppercase font-bold block tracking-wider">
+                            SAVED CAPITAL
+                          </span>
+                          <span className="text-3xl font-black text-[#1A1A18] tracking-tight">
+                            ₹<AnimatedNumber value={totalSaved} duration={750} />
+                          </span>
                         </div>
                         <div className="text-right">
-                          <span className="text-2xl font-black text-[#1A1A18]">{percentage}%</span>
-                          <span className="text-[11px] text-[#706B5E] block font-medium">₹{remainingNeeded.toLocaleString()} remaining</span>
+                          <span className="text-2xl font-black text-[#1A1A18]">
+                            <AnimatedNumber value={percentage} decimals={1} suffix="%" />
+                          </span>
+                          <span className="text-[11px] text-[#706B5E] block font-medium">
+                            ₹<AnimatedNumber value={remainingNeeded} /> remaining
+                          </span>
                         </div>
                       </div>
 
-                      <div className="h-2 w-full bg-[#EAE4D6] rounded-full overflow-hidden">
-                        <div className="h-full bg-[#1A1A18] rounded-full" style={{ width: `${percentage}%` }} />
+                      {/* Smooth Liquid Progress Bar with eased transition */}
+                      <div className="h-2.5 w-full bg-[#EAE4D6] rounded-full overflow-hidden p-0.5">
+                        <div 
+                          className="h-full bg-[#1A1A18] rounded-full transition-all duration-700 ease-out shadow-xs" 
+                          style={{ width: `${percentage}%` }} 
+                        />
                       </div>
 
-                      <div className="flex items-center gap-2 pt-2 text-xs">
-                        <div className="bg-[#FAF9F5] border border-[#E6DEC8] px-3 py-1.5 rounded-xl font-bold">
-                          Cash Stash: ₹{totalCash.toLocaleString()}
+                      {/* Animated Sub-Account Cards */}
+                      <div className="flex items-center gap-2 pt-1 text-xs">
+                        <div className="bg-[#FAF9F5] border border-[#E6DEC8] px-3.5 py-1.5 rounded-xl font-bold text-[#1A1A18] flex items-center gap-1.5">
+                          <Banknote className="w-3.5 h-3.5 text-[#706B5E]" />
+                          <span>Cash Stash: ₹<AnimatedNumber value={totalCash} /></span>
                         </div>
-                        <div className="bg-[#FAF9F5] border border-[#E6DEC8] px-3 py-1.5 rounded-xl font-bold">
-                          Bank Account: ₹{totalOnline.toLocaleString()}
+                        <div className="bg-[#FAF9F5] border border-[#E6DEC8] px-3.5 py-1.5 rounded-xl font-bold text-[#1A1A18] flex items-center gap-1.5">
+                          <Smartphone className="w-3.5 h-3.5 text-[#706B5E]" />
+                          <span>Bank Account: ₹<AnimatedNumber value={totalOnline} /></span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Right Column */}
+                  {/* Right Column: Pace & Transaction Stream */}
                   <div className="lg:col-span-5 space-y-4">
                     
                     {/* Pace Box */}
                     <div className="butter-card rounded-3xl p-5 space-y-3">
                       <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-2 text-xs">
                         <span className="font-bold text-[#1A1A18] uppercase tracking-wider">Pace & Horizon</span>
-                        <span className="text-[10px] text-[#706B5E] font-bold">{daysLeft} days remaining</span>
+                        <span className="text-[10px] text-[#706B5E] font-bold">
+                          <AnimatedNumber value={daysLeft} suffix=" days remaining" />
+                        </span>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div className="bg-[#FAF9F5] p-3 rounded-2xl border border-[#E6DEC8]">
                           <span className="text-[10px] text-[#706B5E] font-bold uppercase block">DAILY PACE</span>
-                          <p className="text-lg font-black text-[#1A1A18] mt-0.5">₹{requiredPace}/d</p>
+                          <p className="text-lg font-black text-[#1A1A18] mt-0.5">
+                            ₹<AnimatedNumber value={requiredPace} />/d
+                          </p>
                         </div>
                         <div className="bg-[#FAF9F5] p-3 rounded-2xl border border-[#E6DEC8]">
                           <span className="text-[10px] text-[#706B5E] font-bold uppercase block">TARGET REMAINING</span>
-                          <p className="text-lg font-black text-[#1A1A18] mt-0.5">₹{remainingNeeded.toLocaleString()}</p>
+                          <p className="text-lg font-black text-[#1A1A18] mt-0.5">
+                            ₹<AnimatedNumber value={remainingNeeded} />
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -1442,7 +1508,7 @@ export default function App() {
                 }`}
               >
                 <span className="block font-bold">Online</span>
-                <span className="text-[10px] text-[#706B5E]">₹{totalOnline.toLocaleString()}</span>
+                <span className="text-[10px] text-[#706B5E]">₹<AnimatedNumber value={totalOnline} /></span>
               </button>
               <button
                 type="button"
@@ -1452,7 +1518,7 @@ export default function App() {
                 }`}
               >
                 <span className="block font-bold">Cash</span>
-                <span className="text-[10px] text-[#706B5E]">₹{totalCash.toLocaleString()}</span>
+                <span className="text-[10px] text-[#706B5E]">₹<AnimatedNumber value={totalCash} /></span>
               </button>
             </div>
 
@@ -1520,7 +1586,7 @@ export default function App() {
                 }`}
               >
                 <span className="block font-bold">Cash ➔ Bank</span>
-                <span className="text-[10px] text-[#706B5E]">Available: ₹{totalCash.toLocaleString()}</span>
+                <span className="text-[10px] text-[#706B5E]">Available: ₹<AnimatedNumber value={totalCash} /></span>
               </button>
 
               <button
@@ -1531,7 +1597,7 @@ export default function App() {
                 }`}
               >
                 <span className="block font-bold">Bank ➔ Cash</span>
-                <span className="text-[10px] text-[#706B5E]">Available: ₹{totalOnline.toLocaleString()}</span>
+                <span className="text-[10px] text-[#706B5E]">Available: ₹<AnimatedNumber value={totalOnline} /></span>
               </button>
             </div>
 
@@ -1741,7 +1807,10 @@ export default function App() {
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
-              <span className="font-black text-sm text-[#1A1A18]">Extend Timeline / Modify Goal</span>
+              <div>
+                <span className="font-black text-sm text-[#1A1A18] block">Modify Goal & Extend</span>
+                <span className="text-[10px] text-[#706B5E] font-medium">Adjust capital target or postpone deadline</span>
+              </div>
               <button onClick={() => setIsEditGoalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-[#706B5E] flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
@@ -1749,28 +1818,28 @@ export default function App() {
 
             <form onSubmit={handleSaveGoalChanges} className="space-y-3 mt-3">
               <div>
-                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TITLE</label>
+                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">TITLE</label>
                 <input
                   type="text"
                   value={editGoalName}
                   onChange={(e) => setEditGoalName(e.target.value)}
-                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18]"
+                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18] font-semibold focus:outline-none focus:bg-white"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET AMOUNT (₹)</label>
+                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">TARGET CAPITAL (₹)</label>
                 <input
                   type="number"
                   value={editGoalAmount}
                   onChange={(e) => setEditGoalAmount(e.target.value)}
-                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18]"
+                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18] font-semibold focus:outline-none focus:bg-white"
                   required
                 />
               </div>
 
-              {/* Quick Preset Buttons for Easy Timeline Postponing */}
+              {/* Preset buttons to postpone completion date */}
               <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-3.5 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
@@ -1780,7 +1849,7 @@ export default function App() {
                     </span>
                   </div>
                   <span className="text-[10px] font-bold text-slate-500">
-                    {daysLeft}d left
+                    <AnimatedNumber value={daysLeft} suffix="d currently left" />
                   </span>
                 </div>
 
