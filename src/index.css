@@ -18,6 +18,7 @@
   }
 }
 
+/* Hide scrollbar utility */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -26,7 +27,7 @@
   scrollbar-width: none;
 }
 
-/* Warm Butter Card Elevation */
+/* FinNest Warm Card Surfaces */
 .butter-card {
   background: #FFFFFF;
   border: 1px solid rgba(230, 222, 203, 0.7);
@@ -39,12 +40,14 @@
   box-shadow: 0 6px 24px rgba(230, 195, 75, 0.12);
 }
 
-.dark-session-panel {
-  background: #1B1E22;
-  color: #F4F4F0;
-  border: 1px solid #2B3036;
+/* Updated Warm Session History Panel (Replaces Dark Panel) */
+.session-history-panel {
+  background: #FFFFFF;
+  border: 1px solid #E6DEC8;
+  box-shadow: 0 8px 30px rgba(180, 160, 120, 0.08);
 }
 
+/* Modal Bottom-sheet Animation */
 @keyframes butterSheetUp {
   from {
     opacity: 0;
