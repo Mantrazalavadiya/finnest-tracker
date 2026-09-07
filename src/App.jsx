@@ -40,8 +40,7 @@ import {
   SlidersHorizontal,
   Clock,
   CheckCircle2,
-  Archive,
-  Hourglass
+  Archive
 } from 'lucide-react';
 
 function AnimatedNumber({ value, duration = 650, decimals = 0, prefix = '', suffix = '' }) {
@@ -362,7 +361,7 @@ export default function App() {
 
   const today = useMemo(() => new Date(), []);
 
-  // Split goals: active on dashboard (already started OR starts within 5 days) vs archived in advance (> 5 days away)
+  // Split active goals vs advance archived goals
   const { activeGoals, archivedGoals } = useMemo(() => {
     const active = [];
     const archived = [];
@@ -372,7 +371,6 @@ export default function App() {
       const diffMs = startDt - today;
       const daysUntilStart = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
-      // If start date is more than 5 days in the future, quarantine into the advance archive
       if (daysUntilStart > 5) {
         archived.push({ ...g, daysUntilStart });
       } else {
@@ -1066,7 +1064,7 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 3: GOALS */}
+          {/* TAB 3: GOALS (Bento Cards Grid) */}
           {activeTab === 'goals' && (
             <div className="space-y-6">
               
@@ -1425,7 +1423,7 @@ export default function App() {
                 </div>
               )}
 
-              {/* ARCHIVE / PRE-LAUNCH QUEUE CARD (Goals created in advance > 5 days away) */}
+              {/* ARCHIVE / PRE-LAUNCH QUEUE CARD (Advance goals > 5 days away) */}
               {archivedGoals.length > 0 && (
                 <div className="butter-card rounded-3xl p-5 sm:p-6 space-y-3 mt-6 border-dashed border-[#D9CBB7]">
                   <div className="flex items-center justify-between border-b border-[#EADBCC] pb-3">
@@ -1436,7 +1434,7 @@ export default function App() {
                       <div>
                         <h3 className="text-sm font-black text-[#1A1A18]">Advance Goals Vault (Archived)</h3>
                         <p className="text-[11px] text-[#706B5E]">
-                          Goals appearing automatically 5 days before start date
+                          Queued targets that automatically reveal on the dashboard 5 days before starting
                         </p>
                       </div>
                     </div>
@@ -1448,25 +1446,47 @@ export default function App() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     {archivedGoals.map((g) => {
                       const CatIcon = ICON_MAP[g.category] || Target;
+
+                      // Exact date when the card will unlock on the dashboard (5 days prior to start)
+                      const startDateObj = new Date(g.startDate);
+                      const dashboardRevealDateObj = new Date(startDateObj);
+                      dashboardRevealDateObj.setDate(dashboardRevealDateObj.getDate() - 5);
+                      const revealDateStr = dashboardRevealDateObj.toISOString().split('T')[0];
+
+                      // Days remaining until the dashboard reveal happens
+                      const daysUntilReveal = Math.max(1, g.daysUntilStart - 5);
+
                       return (
-                        <div key={g.id} className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-3.5 flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-white border border-[#EADBCC] flex items-center justify-center text-[#706B5E]">
-                              <CatIcon className="w-4 h-4" />
+                        <div key={g.id} className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-4 flex flex-col justify-between gap-3 shadow-2xs">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-xl bg-white border border-[#EADBCC] flex items-center justify-center text-[#706B5E] shrink-0">
+                                <CatIcon className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <p className="text-xs font-black text-[#1A1A18] leading-snug">{g.name}</p>
+                                <p className="text-[10px] text-[#706B5E] mt-0.5">
+                                  Start Date: <span className="font-bold text-[#1A1A18]">{g.startDate}</span> • Cap: ₹{g.targetAmount.toLocaleString()}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-xs font-black text-[#1A1A18] leading-snug">{g.name}</p>
-                              <p className="text-[10px] text-[#706B5E] mt-0.5">
-                                Starts: {g.startDate} • Target: ₹{g.targetAmount.toLocaleString()}
-                              </p>
-                            </div>
+
+                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA] shrink-0">
+                              Starts in {g.daysUntilStart}d
+                            </span>
                           </div>
 
-                          <div className="text-right shrink-0">
-                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-[#FEF6D8] text-[#1A1A18] border border-[#F6E6AA] block">
-                              In {g.daysUntilStart} days
+                          {/* Dashboard Launch Horizon Pill */}
+                          <div className="bg-white border border-[#EADBCC] rounded-xl px-3 py-2 flex items-center justify-between text-[11px]">
+                            <div className="flex items-center gap-1.5 text-[#706B5E]">
+                              <Clock className="w-3.5 h-3.5 text-[#1A1A18]" />
+                              <span>
+                                Dashboard launch: <strong className="text-[#1A1A18]">{revealDateStr}</strong>
+                              </span>
+                            </div>
+                            <span className="font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md text-[10px]">
+                              Live in {daysUntilReveal}d
                             </span>
-                            <span className="text-[9px] text-[#706B5E] block mt-0.5 font-medium">Pre-Launch</span>
                           </div>
                         </div>
                       );
@@ -1674,7 +1694,7 @@ export default function App() {
       {isTransferModalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
+            <div className="flex items-center justify-between border-b border-[#EADBCC] pb-3">
               <span className="font-black text-sm text-[#1A1A18]">Shift Vault Funds</span>
               <button onClick={() => setIsTransferModalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-[#706B5E] flex items-center justify-center">
                 <X className="w-4 h-4" />
@@ -1940,7 +1960,6 @@ export default function App() {
                 />
               </div>
 
-              {/* Preset buttons to postpone completion date */}
               <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-3.5 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
