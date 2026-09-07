@@ -37,7 +37,8 @@ import {
   Share2,
   PiggyBank,
   Edit3,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Clock
 } from 'lucide-react';
 
 const CATEGORY_PRESETS = [
@@ -239,7 +240,7 @@ export default function App() {
   const [newGoalStartDate, setNewGoalStartDate] = useState(todayStr);
   const [newGoalDate, setNewGoalDate] = useState('');
 
-  // Goal Editing
+  // Goal Editing & Timeline Extension
   const [editGoalName, setEditGoalName] = useState('');
   const [editGoalAmount, setEditGoalAmount] = useState('');
   const [editGoalDate, setEditGoalDate] = useState('');
@@ -632,6 +633,13 @@ export default function App() {
     setIsEditGoalOpen(true);
   };
 
+  // Helper to extend timeline by given number of days from current target
+  const handleQuickExtendDays = (days) => {
+    const base = editGoalDate ? new Date(editGoalDate) : new Date();
+    base.setDate(base.getDate() + days);
+    setEditGoalDate(base.toISOString().split('T')[0]);
+  };
+
   const handleSaveGoalChanges = async (e) => {
     e.preventDefault();
     if (!activeGoal || !editGoalName.trim() || !editGoalAmount || !editGoalDate) return;
@@ -656,7 +664,7 @@ export default function App() {
 
       setIsEditGoalOpen(false);
       fetchData();
-      alert('Timeline parameters updated successfully!');
+      alert('Goal details and extended timeline updated successfully!');
     } catch (err) {
       alert('Failed to update: ' + err.message);
     } finally {
@@ -1106,10 +1114,11 @@ export default function App() {
                         </div>
 
                         <div className="flex items-center gap-1">
+                          {/* EDIT BUTTON (Opens modal containing Timeline Extension and Goal Parameters) */}
                           <button 
                             onClick={handleOpenEditGoal} 
                             className="p-2 text-[#706B5E] hover:text-black hover:bg-white/60 rounded-xl transition"
-                            title="Extend Timeline / Modify Goal"
+                            title="Edit Goal / Extend Timeline"
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
@@ -1123,7 +1132,7 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* Date Box */}
+                      {/* Clean Date Box: REMOVED the clickable (Extend ->) button and kept clean badge */}
                       <div className="bg-white/80 border border-[#EADBCC] rounded-2xl p-3 flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2 text-slate-700 font-semibold text-[11px]">
                           <Calendar className="w-3.5 h-3.5 text-slate-400" />
@@ -1131,12 +1140,9 @@ export default function App() {
                           <ArrowRight className="w-3 h-3 text-slate-400" />
                           <span>{activeGoal.targetDate}</span>
                         </div>
-                        <button
-                          onClick={handleOpenEditGoal}
-                          className="text-[11px] font-bold text-[#1A1A18] bg-[#FAF9F5] border border-[#EADBCC] hover:bg-white px-2.5 py-1 rounded-xl transition"
-                        >
-                          {daysLeft}d left (Extend ➔)
-                        </button>
+                        <span className="text-[11px] font-bold text-[#1A1A18] bg-[#FAF9F5] border border-[#EADBCC] px-2.5 py-1 rounded-xl">
+                          {daysLeft}d left
+                        </span>
                       </div>
 
                       {/* Action Buttons */}
@@ -1383,7 +1389,6 @@ export default function App() {
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
               <div className="flex-1 bg-[#FAF9F5] p-1 rounded-2xl flex border border-[#EADBCC]">
-                {/* ACTIVE GREEN TAB FOR DEPOSIT / ADD MONEY */}
                 <button
                   type="button"
                   onClick={() => setActionType('deposit')}
@@ -1395,7 +1400,6 @@ export default function App() {
                 >
                   Deposit (+)
                 </button>
-                {/* ACTIVE RED TAB FOR WITHDRAW */}
                 <button
                   type="button"
                   onClick={() => setActionType('withdraw')}
@@ -1643,7 +1647,7 @@ export default function App() {
 
             <form onSubmit={handleCreateGoal} className="space-y-3 mt-3">
               <div>
-                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">CATEGORY</label>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">CATEGORY</label>
                 <div className="grid grid-cols-3 gap-2">
                   {CATEGORY_PRESETS.map((cat) => {
                     const CatIcon = cat.icon;
@@ -1654,7 +1658,7 @@ export default function App() {
                         type="button"
                         onClick={() => setNewGoalCategory(cat.id)}
                         className={`p-2.5 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1 ${
-                          isSelected ? 'bg-[#1A1A18] text-[#FEF6D8] border-[#1A1A18]' : 'bg-[#FAF9F5] text-[#706B5E] border-[#EADBCC]'
+                          isSelected ? 'bg-[#1A1A18] text-[#FEF6D8] border-[#1A1A18]' : 'bg-[#FAF9F5] text-slate-600 border-[#EADBCC]'
                         }`}
                       >
                         <CatIcon className="w-4 h-4" />
@@ -1666,7 +1670,7 @@ export default function App() {
               </div>
 
               <div>
-                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">TARGET TITLE</label>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET TITLE</label>
                 <input
                   type="text"
                   placeholder="e.g. MacBook Air M2, Bali Trip"
@@ -1678,7 +1682,7 @@ export default function App() {
               </div>
 
               <div>
-                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">TARGET CAPITAL (₹)</label>
+                <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET CAPITAL (₹)</label>
                 <input
                   type="number"
                   placeholder="e.g. 120000"
@@ -1691,7 +1695,7 @@ export default function App() {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">START DATE</label>
+                  <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">START DATE</label>
                   <input
                     type="date"
                     value={newGoalStartDate}
@@ -1701,7 +1705,7 @@ export default function App() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">TARGET END DATE</label>
+                  <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET END DATE</label>
                   <input
                     type="date"
                     value={newGoalDate}
@@ -1723,58 +1727,120 @@ export default function App() {
         </div>
       )}
 
-      {/* 5. EXTEND TIMELINE / EDIT MODAL */}
+      {/* 5. EDIT GOAL & EXTEND TIMELINE MODAL (Comprehensive controls moved here) */}
       {isEditGoalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#EAE4D6] pb-3">
-              <span className="font-black text-sm text-[#1A1A18]">Extend Timeline / Modify Goal</span>
+              <div>
+                <span className="font-black text-sm text-[#1A1A18] block">Modify Goal & Extend</span>
+                <span className="text-[10px] text-[#706B5E] font-medium">Adjust capital target or postpone deadline</span>
+              </div>
               <button onClick={() => setIsEditGoalOpen(false)} className="w-8 h-8 rounded-full bg-[#FAF9F5] text-[#706B5E] flex items-center justify-center">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveGoalChanges} className="space-y-3 mt-3">
+            <form onSubmit={handleSaveGoalChanges} className="space-y-4 mt-3">
               <div>
-                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">TITLE</label>
+                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">GOAL TITLE</label>
                 <input
                   type="text"
                   value={editGoalName}
                   onChange={(e) => setEditGoalName(e.target.value)}
-                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18]"
+                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18] font-semibold focus:outline-none focus:bg-white"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">TARGET AMOUNT (₹)</label>
+                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">TARGET CAPITAL (₹)</label>
                 <input
                   type="number"
                   value={editGoalAmount}
                   onChange={(e) => setEditGoalAmount(e.target.value)}
-                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18]"
+                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18] font-semibold focus:outline-none focus:bg-white"
                   required
                 />
               </div>
 
-              <div>
-                <label className="text-[10px] text-[#706B5E] uppercase font-bold block mb-1">EXTENDED COMPLETION DATE</label>
-                <input
-                  type="date"
-                  value={editGoalDate}
-                  onChange={(e) => setEditGoalDate(e.target.value)}
-                  className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18]"
-                  required
-                />
+              {/* TIMELINE EXTENSION SECTION INSIDE EDIT MODAL */}
+              <div className="bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl p-3.5 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-[#1A1A18]" />
+                    <span className="text-[10px] text-[#1A1A18] font-extrabold uppercase tracking-wider">
+                      Extend Completion Deadline
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-500">
+                    {daysLeft}d currently left
+                  </span>
+                </div>
+
+                {/* Quick Add Presets (+30d, +90d, +180d, +1 yr) */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickExtendDays(30)}
+                    className="flex-1 py-1 text-[10px] font-bold bg-white border border-[#EADBCC] hover:bg-[#FEF6D8] rounded-xl transition"
+                  >
+                    +30d
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickExtendDays(90)}
+                    className="flex-1 py-1 text-[10px] font-bold bg-white border border-[#EADBCC] hover:bg-[#FEF6D8] rounded-xl transition"
+                  >
+                    +3 mo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickExtendDays(180)}
+                    className="flex-1 py-1 text-[10px] font-bold bg-white border border-[#EADBCC] hover:bg-[#FEF6D8] rounded-xl transition"
+                  >
+                    +6 mo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickExtendDays(365)}
+                    className="flex-1 py-1 text-[10px] font-bold bg-white border border-[#EADBCC] hover:bg-[#FEF6D8] rounded-xl transition"
+                  >
+                    +1 yr
+                  </button>
+                </div>
+
+                <div>
+                  <label className="text-[9px] text-[#706B5E] font-semibold block mb-1">Or pick exact date:</label>
+                  <input
+                    type="date"
+                    value={editGoalDate}
+                    onChange={(e) => setEditGoalDate(e.target.value)}
+                    className="w-full bg-white border border-[#EADBCC] rounded-xl px-3 py-2 text-xs text-[#1A1A18] font-semibold"
+                    required
+                  />
+                </div>
+                <p className="text-[10px] text-[#706B5E] leading-tight">
+                  Extending the deadline will recalculate and lower your required daily pace.
+                </p>
               </div>
 
-              <button
-                type="submit"
-                disabled={isSavingEdit}
-                className="w-full py-3.5 bg-[#1A1A18] hover:bg-black text-[#FEF6D8] font-bold text-xs rounded-2xl mt-2 transition"
-              >
-                {isSavingEdit ? 'Saving...' : 'Save Extended Timeline'}
-              </button>
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setIsEditGoalOpen(false)}
+                  className="py-3 bg-[#FAF9F5] border border-[#EADBCC] text-slate-700 font-bold text-xs rounded-2xl hover:bg-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingEdit}
+                  className="py-3 bg-[#1A1A18] hover:bg-black text-[#FEF6D8] font-bold text-xs rounded-2xl transition shadow-sm disabled:opacity-40"
+                >
+                  {isSavingEdit ? 'Saving...' : 'Save Updates'}
+                </button>
+              </div>
             </form>
           </div>
         </div>
