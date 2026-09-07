@@ -1466,7 +1466,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Right Column: Pace & Transaction Stream */}
+                  {/* Right Column: Pace & Horizon Only (Recent Activity Stream Removed) */}
                   <div className="lg:col-span-5 space-y-4">
                     
                     {/* Velocity & Horizon Card */}
@@ -1490,35 +1490,6 @@ export default function App() {
                             ₹<AnimatedNumber value={remainingNeeded} />
                           </p>
                         </div>
-                      </div>
-                    </div>
-
-                    {/* Stream Card (Recent activity for selected goal only) */}
-                    <div className="butter-card rounded-3xl p-5 space-y-3 shadow-sm">
-                      <div className="flex items-center justify-between border-b border-[#EADBCC] pb-2.5 text-xs">
-                        <span className="font-bold text-[#1A1A18] uppercase tracking-wider">Recent Activity</span>
-                        <span className="text-[10px] text-[#706B5E] font-semibold">{currentTxs.length} items</span>
-                      </div>
-
-                      <div className="divide-y divide-[#EADBCC] max-h-72 overflow-y-auto pr-1">
-                        {currentTxs.length === 0 ? (
-                          <p className="text-xs text-[#706B5E] py-8 text-center">No transactions recorded for this goal.</p>
-                        ) : (
-                          currentTxs.slice(0, 7).map((tx) => {
-                            const isWithdraw = tx.action === 'withdraw';
-                            return (
-                              <div key={tx.id} className="py-2.5 flex items-center justify-between text-xs">
-                                <div>
-                                  <p className="font-bold text-[#1A1A18]">{tx.note || 'Savings Entry'}</p>
-                                  <p className="text-[10px] text-[#706B5E]">{tx.type} • {tx.date}</p>
-                                </div>
-                                <span className={`font-mono font-bold text-sm ${isWithdraw ? 'text-rose-600 font-black' : 'text-emerald-600 font-black'}`}>
-                                  {isWithdraw ? '-' : '+'}₹{tx.amount.toLocaleString()}
-                                </span>
-                              </div>
-                            );
-                          })
-                        )}
                       </div>
                     </div>
 
@@ -1966,7 +1937,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 5. EXTEND TIMELINE / EDIT MODAL (With Category Correction) */}
+      {/* 5. EXTEND TIMELINE / EDIT MODAL (With Category Correction & Fixed Save) */}
       {isEditGoalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
           <div className="relative w-full max-w-sm butter-card rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-butter-up max-h-[92vh] overflow-y-auto">
