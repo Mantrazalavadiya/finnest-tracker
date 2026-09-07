@@ -39,6 +39,129 @@ import {
   Edit3
 } from 'lucide-react';
 
+/* 3D Animated Interactive Background Canvas */
+function Ambient3DCanvas() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', handleResize);
+
+    // Particle nodes for subtle floating depth
+    const particleCount = width < 768 ? 22 : 45;
+    const particles = Array.from({ length: particleCount }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      z: Math.random() * 0.8 + 0.2, // 3D depth scale
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      radius: Math.random() * 2.5 + 1.5,
+      hue: Math.random() > 0.5 ? 245 : 160 // Violet/Indigo or Mint/Emerald
+    }));
+
+    let mouseX = width / 2;
+    let mouseY = height / 2;
+
+    const handleMouseMove = (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+
+    const render = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      // Large subtle gradient ambient orbs
+      const time = Date.now() * 0.0008;
+      const orb1X = width * 0.25 + Math.sin(time) * 45;
+      const orb1Y = height * 0.3 + Math.cos(time) * 40;
+      const orb1 = ctx.createRadialGradient(orb1X, orb1Y, 10, orb1X, orb1Y, width * 0.45);
+      orb1.addColorStop(0, 'rgba(99, 102, 241, 0.08)');
+      orb1.addColorStop(1, 'transparent');
+      ctx.fillStyle = orb1;
+      ctx.fillRect(0, 0, width, height);
+
+      const orb2X = width * 0.8 + Math.cos(time * 0.8) * 50;
+      const orb2Y = height * 0.7 + Math.sin(time * 0.8) * 45;
+      const orb2 = ctx.createRadialGradient(orb2X, orb2Y, 10, orb2X, orb2Y, width * 0.45);
+      orb2.addColorStop(0, 'rgba(0, 229, 153, 0.06)');
+      orb2.addColorStop(1, 'transparent');
+      ctx.fillStyle = orb2;
+      ctx.fillRect(0, 0, width, height);
+
+      // Connect near particles with 3D depth lines
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 110) {
+            const alpha = (1 - dist / 110) * 0.15 * Math.min(particles[i].z, particles[j].z);
+            ctx.strokeStyle = `rgba(165, 180, 252, ${alpha})`;
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Draw and animate particles
+      particles.forEach((p) => {
+        // Perspective shift based on cursor
+        const offsetX = (mouseX - width / 2) * 0.015 * p.z;
+        const offsetY = (mouseY - height / 2) * 0.015 * p.z;
+
+        p.x += p.vx * p.z;
+        p.y += p.vy * p.z;
+
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x + offsetX, p.y + offsetY, p.radius * p.z, 0, Math.PI * 2);
+        ctx.fillStyle = p.hue === 245 
+          ? `rgba(99, 102, 241, ${0.25 * p.z})` 
+          : `rgba(0, 229, 153, ${0.3 * p.z})`;
+        ctx.fill();
+      });
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mousemove', handleMouseMove);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return (
+    <canvas 
+      ref={canvasRef} 
+      className="fixed inset-0 pointer-events-none z-0 opacity-80"
+    />
+  );
+}
+
 const CATEGORY_PRESETS = [
   { id: 'savings', label: 'Savings', icon: PiggyBank },
   { id: 'tech', label: 'Gadgets', icon: Laptop },
@@ -122,8 +245,9 @@ function AuthScreen({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-sm bg-white border border-slate-200/80 shadow-lg rounded-3xl p-6 sm:p-8">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col items-center justify-center p-4 relative">
+      <Ambient3DCanvas />
+      <div className="w-full max-w-sm glass-panel rounded-3xl p-6 sm:p-8 relative z-10 shadow-xl border border-slate-200">
         <div className="flex flex-col items-center text-center space-y-2 mb-6">
           <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-md mb-1">
             <Layers className="w-6 h-6" />
@@ -151,7 +275,7 @@ function AuthScreen({ onLogin }) {
                 placeholder="name@domain.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#F1F5F9]/50 border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold focus:outline-none focus:bg-white focus:border-indigo-600 transition"
+                className="w-full bg-white/70 border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold focus:outline-none focus:bg-white focus:border-indigo-600 transition"
               />
             </div>
           </div>
@@ -166,7 +290,7 @@ function AuthScreen({ onLogin }) {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#F1F5F9]/50 border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold focus:outline-none focus:bg-white focus:border-indigo-600 transition"
+                className="w-full bg-white/70 border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold focus:outline-none focus:bg-white focus:border-indigo-600 transition"
               />
             </div>
           </div>
@@ -240,7 +364,7 @@ export default function App() {
   const [newGoalStartDate, setNewGoalStartDate] = useState(todayStr);
   const [newGoalDate, setNewGoalDate] = useState('');
 
-  // Edit Goal / Extend Timeline states
+  // Edit Goal states
   const [editGoalName, setEditGoalName] = useState('');
   const [editGoalAmount, setEditGoalAmount] = useState('');
   const [editGoalDate, setEditGoalDate] = useState('');
@@ -637,7 +761,6 @@ export default function App() {
     }
   };
 
-  // OPEN EDIT / EXTEND TIMELINE MODAL
   const handleOpenEditGoal = () => {
     if (!activeGoal) return;
     setEditGoalName(activeGoal.name);
@@ -646,7 +769,6 @@ export default function App() {
     setIsEditGoalOpen(true);
   };
 
-  // SAVE EDITED GOAL (EXTEND TIMELINE / ADJUST TARGET)
   const handleSaveGoalChanges = async (e) => {
     e.preventDefault();
     if (!activeGoal || !editGoalName.trim() || !editGoalAmount || !editGoalDate) return;
@@ -734,10 +856,13 @@ export default function App() {
   const eligibleTargetGoals = goals.filter((g) => g.id !== selectedGoalId);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col md:flex-row pb-24 md:pb-0 font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col md:flex-row pb-24 md:pb-0 font-sans relative overflow-x-hidden">
       
+      {/* 3D Ambient Background Layer */}
+      <Ambient3DCanvas />
+
       {/* LAPTOP SIDEBAR */}
-      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 p-5 shrink-0 justify-between sticky top-0 h-screen">
+      <aside className="hidden md:flex flex-col w-64 glass-panel border-r border-slate-200 p-5 shrink-0 justify-between sticky top-0 h-screen z-20">
         <div className="space-y-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md">
@@ -753,7 +878,7 @@ export default function App() {
             <button
               onClick={() => setActiveTab('home')}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'home' ? 'bg-[#E6FBF5] text-[#009360]' : 'text-slate-600 hover:bg-slate-50'
+                activeTab === 'home' ? 'bg-[#E6FBF5] text-[#009360]' : 'text-slate-600 hover:bg-slate-50/80'
               }`}
             >
               <HomeIcon className="w-4 h-4" /> Home
@@ -762,7 +887,7 @@ export default function App() {
             <button
               onClick={() => setActiveTab('goals')}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'goals' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'
+                activeTab === 'goals' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50/80'
               }`}
             >
               <Target className="w-4 h-4" /> Goals & Tracker
@@ -771,7 +896,7 @@ export default function App() {
             <button
               onClick={() => setActiveTab('history')}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'history' ? 'bg-[#E6FBF5] text-[#009360]' : 'text-slate-600 hover:bg-slate-50'
+                activeTab === 'history' ? 'bg-[#E6FBF5] text-[#009360]' : 'text-slate-600 hover:bg-slate-50/80'
               }`}
             >
               <History className="w-4 h-4" /> Transactions
@@ -780,7 +905,7 @@ export default function App() {
             <button
               onClick={() => setActiveTab('settings')}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
-                activeTab === 'settings' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'
+                activeTab === 'settings' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50/80'
               }`}
             >
               <Settings className="w-4 h-4" /> Settings
@@ -789,7 +914,7 @@ export default function App() {
         </div>
 
         <div className="space-y-3 pt-4 border-t border-slate-100">
-          <div className="bg-[#FAFBFD] p-3 rounded-2xl border border-slate-100">
+          <div className="bg-white/60 backdrop-blur-md p-3 rounded-2xl border border-slate-200/60 shadow-2xs">
             <span className="text-[10px] font-mono text-slate-400 uppercase font-bold block">PORTFOLIO VAULT</span>
             <p className="text-lg font-black text-slate-900 mt-0.5">₹{portfolioTotal.toLocaleString()}</p>
           </div>
@@ -802,11 +927,11 @@ export default function App() {
         </div>
       </aside>
 
-      {/* MAIN CONTAINER */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* MAIN WORKSPACE */}
+      <div className="flex-1 flex flex-col min-w-0 relative z-10">
         
         {/* Mobile Header */}
-        <header className="md:hidden bg-white px-5 pt-4 pb-3 border-b border-slate-100 sticky top-0 z-20 flex items-center justify-between">
+        <header className="md:hidden glass-panel px-5 pt-4 pb-3 border-b border-slate-100 sticky top-0 z-20 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-full bg-[#EEF2FF] flex items-center justify-center text-indigo-600 font-black text-sm">
               {user.email ? user.email.charAt(0).toUpperCase() : 'A'}
@@ -820,7 +945,7 @@ export default function App() {
         </header>
 
         {/* Laptop Subheader */}
-        <div className="hidden md:flex items-center justify-between px-8 py-4 bg-white border-b border-slate-200">
+        <div className="hidden md:flex items-center justify-between px-8 py-4 glass-panel border-b border-slate-200">
           <div>
             <h1 className="text-lg font-black text-slate-900 capitalize">{activeTab}</h1>
             <p className="text-xs text-slate-400 font-medium">Logged in as {user.email}</p>
@@ -858,7 +983,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* WORKSPACE */}
+        {/* CONTENT */}
         <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full flex-1">
 
           {/* TAB 1: HOME */}
@@ -873,7 +998,7 @@ export default function App() {
                 </p>
               </div>
 
-              <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-xs flex items-center justify-between">
+              <div className="glass-panel rounded-3xl p-6 flex items-center justify-between">
                 <div>
                   <span className="text-xs font-mono uppercase tracking-wider text-slate-400 font-bold block">
                     Total Vault
@@ -896,7 +1021,7 @@ export default function App() {
                       setTransferNote('');
                       setIsTransferModalOpen(true);
                     }}
-                    className="bg-white border border-slate-200 hover:bg-slate-50 text-indigo-600 font-bold text-xs py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-98 shadow-xs transition"
+                    className="glass-panel hover:bg-white text-indigo-600 font-bold text-xs py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow-xs"
                   >
                     <ArrowLeftRight className="w-4 h-4" /> Shift Funds (Cash/Bank)
                   </button>
@@ -922,7 +1047,7 @@ export default function App() {
                       setGoalTransferNote('');
                       setIsGoalTransferModalOpen(true);
                     }}
-                    className="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs py-3.5 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow-xs"
+                    className="w-full bg-emerald-50/90 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 font-bold text-xs py-3.5 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition shadow-xs backdrop-blur-md"
                   >
                     <Share2 className="w-4 h-4 text-emerald-600" /> Transfer Money to Another Goal
                   </button>
@@ -939,7 +1064,7 @@ export default function App() {
                 <p className="text-xs font-semibold text-slate-400">Recent savings and deposit records.</p>
               </div>
 
-              <div className="bg-white border border-slate-100 rounded-3xl p-5 shadow-xs space-y-4">
+              <div className="glass-panel rounded-3xl p-5 space-y-4">
                 <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block border-b border-slate-100 pb-2">
                   All Records
                 </span>
@@ -1004,7 +1129,7 @@ export default function App() {
                 </div>
 
                 {goals.length === 0 ? (
-                  <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-8 text-center">
+                  <div className="glass-panel border-2 border-dashed border-slate-300 rounded-3xl p-8 text-center">
                     <button
                       onClick={() => setIsAddGoalOpen(true)}
                       className="w-10 h-10 rounded-full border border-slate-300 text-slate-400 mx-auto flex items-center justify-center"
@@ -1040,10 +1165,10 @@ export default function App() {
                         <div
                           key={g.id}
                           onClick={() => setSelectedGoalId(g.id)}
-                          className={`bg-white p-4 sm:p-5 rounded-3xl border transition-all cursor-pointer ${
+                          className={`glass-panel p-4 sm:p-5 rounded-3xl border transition-all cursor-pointer ${
                             isSelected 
-                              ? 'border-indigo-500 ring-2 ring-indigo-500/10 shadow-sm' 
-                              : 'border-slate-200/80 hover:border-slate-300 shadow-2xs'
+                              ? 'border-indigo-500 ring-2 ring-indigo-500/15 shadow-md' 
+                              : 'hover:border-slate-300'
                           }`}
                         >
                           <div className="flex items-center justify-between">
@@ -1088,10 +1213,10 @@ export default function App() {
                   <div className="lg:col-span-7 space-y-4">
                     
                     {/* Goal Header */}
-                    <div className="bg-white border border-slate-200/80 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
+                    <div className="glass-panel rounded-3xl p-5 sm:p-6 space-y-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-2xl bg-[#EEF2FF] text-indigo-600 flex items-center justify-center">
+                          <div className="w-12 h-12 rounded-2xl bg-[#EEF2FF] text-indigo-600 flex items-center justify-center shadow-xs">
                             <ActiveIcon className="w-6 h-6" />
                           </div>
                           <div>
@@ -1108,7 +1233,6 @@ export default function App() {
                         </div>
 
                         <div className="flex items-center gap-1">
-                          {/* EDIT / EXTEND TIMELINE BUTTON */}
                           <button 
                             onClick={handleOpenEditGoal}
                             className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition"
@@ -1127,8 +1251,8 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* Date Box with Extend Indicator */}
-                      <div className="bg-[#FAFBFD] border border-slate-100 rounded-2xl p-3 flex items-center justify-between text-xs">
+                      {/* Date Box */}
+                      <div className="bg-white/70 border border-slate-200/60 rounded-2xl p-3 flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2 text-slate-600 font-semibold text-[11px]">
                           <Calendar className="w-3.5 h-3.5 text-slate-400" />
                           <span>{activeGoal.startDate}</span>
@@ -1143,7 +1267,7 @@ export default function App() {
                         </button>
                       </div>
 
-                      {/* Action Buttons: Shift, Cross-Goal, Add/Withdraw */}
+                      {/* Action Buttons */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <button
                           onClick={() => {
@@ -1151,7 +1275,7 @@ export default function App() {
                             setTransferNote('');
                             setIsTransferModalOpen(true);
                           }}
-                          className="bg-white border border-slate-200 hover:bg-slate-50 text-indigo-600 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 active:scale-98 shadow-xs transition"
+                          className="bg-white/80 border border-slate-200 hover:bg-white text-indigo-600 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-1.5 active:scale-98 shadow-xs transition"
                         >
                           <ArrowLeftRight className="w-3.5 h-3.5" /> Shift Funds
                         </button>
@@ -1189,8 +1313,8 @@ export default function App() {
                     {/* Schedule Status Card */}
                     <div className={`p-4 rounded-3xl border flex flex-col gap-2 ${
                       trajectoryStatus === 'delay' 
-                        ? 'bg-rose-50/70 border-rose-100 text-rose-950' 
-                        : 'bg-[#E6FBF5] border-[#B7F4E0] text-emerald-950'
+                        ? 'bg-rose-50/80 border-rose-100 text-rose-950 backdrop-blur-md' 
+                        : 'bg-[#E6FBF5]/90 border-[#B7F4E0] text-emerald-950 backdrop-blur-md'
                     }`}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -1219,7 +1343,7 @@ export default function App() {
                     </div>
 
                     {/* Total Saved Card */}
-                    <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-xs space-y-4">
+                    <div className="glass-panel rounded-3xl p-5 space-y-4">
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between text-[11px] font-mono font-bold text-slate-400">
                           <span>TIMELINE WINDOW</span>
@@ -1283,14 +1407,14 @@ export default function App() {
                   <div className="lg:col-span-5 space-y-4">
                     
                     {/* Pace & Timeline Card */}
-                    <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-xs space-y-4">
+                    <div className="glass-panel rounded-3xl p-5 space-y-4">
                       <div className="flex items-center gap-2">
                         <Activity className="w-4 h-4 text-indigo-600" />
                         <h3 className="text-base font-black text-slate-900 tracking-tight">Pace & Timeline</h3>
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-[#FAFBFD] border border-slate-100 rounded-2xl p-4 space-y-1">
+                        <div className="bg-white/80 border border-slate-100 rounded-2xl p-4 space-y-1">
                           <span className="text-[9px] font-mono uppercase font-bold text-slate-400 block flex items-center gap-1">
                             <TrendingUp className="w-3 h-3 text-[#00C482]" /> REQUIRED PACE
                           </span>
@@ -1303,7 +1427,7 @@ export default function App() {
                           </div>
                         </div>
 
-                        <div className="bg-[#FAFBFD] border border-slate-100 rounded-2xl p-4 space-y-1">
+                        <div className="bg-white/80 border border-slate-100 rounded-2xl p-4 space-y-1">
                           <span className="text-[9px] font-mono uppercase font-bold text-slate-400 block flex items-center gap-1">
                             <Calendar className="w-3 h-3 text-indigo-600" /> HORIZON
                           </span>
@@ -1329,8 +1453,8 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Goal-Specific Transaction Stream */}
-                    <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-xs space-y-3">
+                    {/* Goal Transaction Stream */}
+                    <div className="glass-panel rounded-3xl p-5 space-y-3">
                       <div className="flex items-center justify-between">
                         <h3 className="text-xs font-black text-slate-900 tracking-wide uppercase">Transaction Stream</h3>
                         <span className="text-[10px] font-mono font-bold bg-[#EEF2FF] text-indigo-700 px-2.5 py-0.5 rounded-full">
@@ -1385,7 +1509,7 @@ export default function App() {
                 <p className="text-xs text-slate-500 font-medium">Manage preferences, records, and access.</p>
               </div>
               
-              <div className="bg-white border border-slate-200/80 rounded-3xl p-5 space-y-4 shadow-xs">
+              <div className="glass-panel rounded-3xl p-5 space-y-4">
                 <h3 className="text-xs font-mono font-bold uppercase text-slate-400 tracking-wider">Account Details</h3>
                 <div className="flex items-center justify-between text-xs font-semibold">
                   <span className="text-slate-500">Signed in user</span>
@@ -1394,13 +1518,13 @@ export default function App() {
 
                 <button
                   onClick={() => supabase.auth.signOut()}
-                  className="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 border border-slate-200 transition"
+                  className="w-full bg-white/70 hover:bg-white text-slate-700 font-bold text-xs py-3 rounded-2xl flex items-center justify-center gap-2 border border-slate-200 transition"
                 >
                   <LogOut className="w-4 h-4 text-slate-500" /> Sign Out
                 </button>
               </div>
 
-              <div className="bg-white border border-rose-200 rounded-3xl p-5 space-y-3 shadow-xs">
+              <div className="glass-panel border border-rose-200 rounded-3xl p-5 space-y-3">
                 <div className="flex items-center gap-2 text-rose-600">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <h3 className="text-xs font-mono font-bold uppercase tracking-wider">Danger Zone</h3>
@@ -1415,7 +1539,7 @@ export default function App() {
                     setResetInput('');
                     setIsResetModalOpen(true);
                   }}
-                  className="w-full bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold text-xs py-3.5 rounded-2xl flex items-center justify-center gap-2 transition active:scale-98 shadow-xs"
+                  className="w-full bg-rose-50/90 hover:bg-rose-100 text-rose-600 border border-rose-200 font-bold text-xs py-3.5 rounded-2xl flex items-center justify-center gap-2 transition active:scale-98 shadow-xs"
                 >
                   <RotateCcw className="w-4 h-4 text-rose-600" />
                   <span>Reset All Data</span>
@@ -1428,7 +1552,7 @@ export default function App() {
       </div>
 
       {/* MOBILE BOTTOM NAV */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-6 py-2 z-40">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-slate-200 px-6 py-2 z-40">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <button
             onClick={() => setActiveTab('home')}
@@ -1475,7 +1599,7 @@ export default function App() {
       {/* 1. TRANSACTION MODAL */}
       {isTxModalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
+          <div className="relative w-full max-w-sm glass-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
             
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1 bg-[#EEF2FF] p-1 rounded-full flex">
@@ -1507,7 +1631,7 @@ export default function App() {
               </button>
             </div>
 
-            <div className="bg-[#EEF2FF]/60 border border-indigo-100/60 rounded-2xl p-4 text-center mt-4">
+            <div className="bg-white/80 border border-indigo-100/60 rounded-2xl p-4 text-center mt-4">
               <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700 block">
                 {actionType === 'deposit' ? 'ADD TO GOAL' : 'WITHDRAW FROM GOAL'} ({activeGoal.name.toUpperCase()})
               </span>
@@ -1590,7 +1714,7 @@ export default function App() {
               placeholder="Memo / Note (optional)"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="w-full bg-[#EEF2FF]/60 border border-slate-200 rounded-2xl px-4 py-2.5 text-xs text-slate-900 mt-3 font-medium focus:outline-none focus:bg-white"
+              className="w-full bg-white/80 border border-slate-200 rounded-2xl px-4 py-2.5 text-xs text-slate-900 mt-3 font-medium focus:outline-none focus:bg-white"
             />
 
             <button
@@ -1608,7 +1732,7 @@ export default function App() {
       {/* 2. DEDICATED CASH <-> BANK SHIFT MODAL */}
       {isTransferModalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
+          <div className="relative w-full max-w-sm glass-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
             
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
@@ -1638,7 +1762,7 @@ export default function App() {
                 className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
                   transferDirection === 'cash_to_bank' 
                     ? 'border-[#00C482] ring-2 ring-[#00C482]/20 bg-white' 
-                    : 'border-slate-200 bg-[#FAFBFD]'
+                    : 'border-slate-200 bg-white/70'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -1664,7 +1788,7 @@ export default function App() {
                 className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
                   transferDirection === 'bank_to_cash' 
                     ? 'border-indigo-600 ring-2 ring-indigo-600/20 bg-white' 
-                    : 'border-slate-200 bg-[#FAFBFD]'
+                    : 'border-slate-200 bg-white/70'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -1695,7 +1819,7 @@ export default function App() {
               </button>
             </div>
 
-            <div className="bg-[#EEF2FF]/60 border border-indigo-100 rounded-2xl p-3.5 text-center mt-2">
+            <div className="bg-white/80 border border-indigo-100 rounded-2xl p-3.5 text-center mt-2">
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block">
                 TRANSFER SUM
               </span>
@@ -1744,7 +1868,7 @@ export default function App() {
               placeholder="Transfer note (e.g. ATM withdrawal, bank deposit)"
               value={transferNote}
               onChange={(e) => setTransferNote(e.target.value)}
-              className="w-full bg-[#EEF2FF]/60 border border-slate-200 rounded-2xl px-4 py-2.5 text-xs text-slate-900 mt-2 font-medium focus:outline-none focus:bg-white"
+              className="w-full bg-white/80 border border-slate-200 rounded-2xl px-4 py-2.5 text-xs text-slate-900 mt-2 font-medium focus:outline-none focus:bg-white"
             />
 
             <button
@@ -1762,7 +1886,7 @@ export default function App() {
       {/* 3. DEDICATED CROSS-GOAL TRANSFER MODAL */}
       {isGoalTransferModalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border border-emerald-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
+          <div className="relative w-full max-w-sm glass-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
             
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
@@ -1790,7 +1914,7 @@ export default function App() {
                 <select
                   value={targetGoalId}
                   onChange={(e) => setTargetGoalId(e.target.value)}
-                  className="w-full bg-[#FAFBFD] border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-emerald-600"
+                  className="w-full bg-white/80 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-emerald-600"
                   required
                 >
                   {eligibleTargetGoals.map((g) => (
@@ -1811,7 +1935,7 @@ export default function App() {
                     onClick={() => setGoalTransferWallet('online')}
                     className={`py-2 px-3 rounded-2xl border text-left transition ${
                       goalTransferWallet === 'online' 
-                        ? 'border-emerald-500 bg-emerald-50/60 ring-2 ring-emerald-500/20' 
+                        ? 'border-emerald-500 bg-emerald-50/70 ring-2 ring-emerald-500/20' 
                         : 'border-slate-200 bg-white'
                     }`}
                   >
@@ -1828,7 +1952,7 @@ export default function App() {
                     onClick={() => setGoalTransferWallet('cash')}
                     className={`py-2 px-3 rounded-2xl border text-left transition ${
                       goalTransferWallet === 'cash' 
-                        ? 'border-emerald-500 bg-emerald-50/60 ring-2 ring-emerald-500/20' 
+                        ? 'border-emerald-500 bg-emerald-50/70 ring-2 ring-emerald-500/20' 
                         : 'border-slate-200 bg-white'
                     }`}
                   >
@@ -1853,7 +1977,7 @@ export default function App() {
                 </button>
               </div>
 
-              <div className="bg-[#FAFBFD] border border-slate-200 rounded-2xl p-3 text-center">
+              <div className="bg-white/80 border border-slate-200 rounded-2xl p-3 text-center">
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
                   AMOUNT TO TRANSFER
                 </span>
@@ -1902,7 +2026,7 @@ export default function App() {
                 placeholder="Reason (e.g. Surplus funds transferred)"
                 value={goalTransferNote}
                 onChange={(e) => setGoalTransferNote(e.target.value)}
-                className="w-full bg-[#FAFBFD] border border-slate-200 rounded-2xl px-4 py-2.5 text-xs text-slate-900 font-medium focus:outline-none focus:bg-white"
+                className="w-full bg-white/80 border border-slate-200 rounded-2xl px-4 py-2.5 text-xs text-slate-900 font-medium focus:outline-none focus:bg-white"
               />
 
               <button
@@ -1917,10 +2041,10 @@ export default function App() {
         </div>
       )}
 
-      {/* 4. NEW FINANCIAL GOAL MODAL (Includes SAVINGS Category) */}
+      {/* 4. NEW FINANCIAL GOAL MODAL */}
       {isAddGoalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
+          <div className="relative w-full max-w-sm glass-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
             
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
@@ -2035,7 +2159,7 @@ export default function App() {
       {/* 5. EXTEND TIMELINE / EDIT GOAL PARAMETERS MODAL */}
       {isEditGoalOpen && activeGoal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
+          <div className="relative w-full max-w-sm glass-panel rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl flex flex-col animate-sheet-up max-h-[92vh] overflow-y-auto">
             
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
@@ -2064,7 +2188,7 @@ export default function App() {
                   type="text"
                   value={editGoalName}
                   onChange={(e) => setEditGoalName(e.target.value)}
-                  className="w-full mt-1 bg-[#FAFBFD] border border-slate-200 rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-indigo-600"
+                  className="w-full mt-1 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-indigo-600"
                   required
                 />
               </div>
@@ -2077,7 +2201,7 @@ export default function App() {
                   type="number"
                   value={editGoalAmount}
                   onChange={(e) => setEditGoalAmount(e.target.value)}
-                  className="w-full mt-1 bg-[#FAFBFD] border border-slate-200 rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-indigo-600"
+                  className="w-full mt-1 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-indigo-600"
                   required
                 />
               </div>
@@ -2093,7 +2217,7 @@ export default function App() {
                   type="date"
                   value={editGoalDate}
                   onChange={(e) => setEditGoalDate(e.target.value)}
-                  className="w-full mt-1 bg-[#FAFBFD] border border-slate-200 rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-indigo-600"
+                  className="w-full mt-1 bg-white border border-slate-200 rounded-2xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-indigo-600"
                   required
                 />
                 <p className="text-[10px] text-slate-400 mt-1">
@@ -2126,7 +2250,7 @@ export default function App() {
       {/* 6. RESET ALL DATA CONFIRMATION MODAL */}
       {isResetModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-          <div className="relative w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border border-rose-100 flex flex-col animate-sheet-up">
+          <div className="relative w-full max-w-sm glass-panel rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border border-rose-200 flex flex-col animate-sheet-up">
             
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2 text-rose-600">
@@ -2157,7 +2281,7 @@ export default function App() {
                   placeholder="RESET"
                   value={resetInput}
                   onChange={(e) => setResetInput(e.target.value)}
-                  className="w-full bg-rose-50/40 border border-rose-200 rounded-2xl px-4 py-3 text-xs font-mono font-bold uppercase text-slate-900 focus:outline-none focus:bg-white focus:border-rose-500"
+                  className="w-full bg-rose-50/50 border border-rose-200 rounded-2xl px-4 py-3 text-xs font-mono font-bold uppercase text-slate-900 focus:outline-none focus:bg-white focus:border-rose-500"
                   required
                 />
               </div>
