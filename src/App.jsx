@@ -84,6 +84,7 @@ function AnimatedNumber({ value, duration = 650, decimals = 0, prefix = '', suff
 }
 
 const CATEGORY_PRESETS = [
+  { id: 'mobile', label: 'Mobile or Smartphone', icon: Smartphone },
   { id: 'tech', label: 'Tech & Devices', icon: Laptop },
   { id: 'savings', label: 'Savings Vault', icon: PiggyBank },
   { id: 'travel', label: 'Travel', icon: Plane },
@@ -96,6 +97,7 @@ const CATEGORY_PRESETS = [
 ];
 
 const ICON_MAP = {
+  mobile: Smartphone,
   tech: Laptop,
   savings: PiggyBank,
   travel: Plane,
@@ -277,7 +279,7 @@ export default function App() {
   // Goal Creation
   const todayStr = new Date().toISOString().split('T')[0];
   const [newGoalName, setNewGoalName] = useState('');
-  const [newGoalCategory, setNewGoalCategory] = useState('tech');
+  const [newGoalCategory, setNewGoalCategory] = useState('mobile');
   const [newGoalAmount, setNewGoalAmount] = useState('');
   const [newGoalStartDate, setNewGoalStartDate] = useState(todayStr);
   const [newGoalDate, setNewGoalDate] = useState('');
@@ -686,7 +688,7 @@ export default function App() {
 
     if (!error && data && data.length > 0) {
       setNewGoalName('');
-      setNewGoalCategory('tech');
+      setNewGoalCategory('mobile');
       setNewGoalAmount('');
       setNewGoalStartDate(todayStr);
       setNewGoalDate('');
@@ -1904,7 +1906,7 @@ export default function App() {
                 <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">TARGET TITLE</label>
                 <input
                   type="text"
-                  placeholder="e.g. MacBook Air M2, Bali Trip"
+                  placeholder="e.g. iPhone 16 Pro, Bali Trip"
                   value={newGoalName}
                   onChange={(e) => setNewGoalName(e.target.value)}
                   className="w-full bg-[#FAF9F5] border border-[#EADBCC] rounded-2xl px-3.5 py-2.5 text-xs text-[#1A1A18]"
