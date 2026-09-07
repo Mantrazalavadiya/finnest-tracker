@@ -476,26 +476,31 @@ export default function App() {
   const requiredPace = isCompleted ? 0 : Math.ceil(remainingNeeded / daysLeft);
   const baselineDailyPace = activeGoal ? Math.max(1, Math.round(activeGoal.targetAmount / totalDurationDays)) : 1;
 
-  // Strict ₹20 tolerance calculation
+  // Precise delay calculation based on savings shortfall vs daily rate
   const { trajectoryStatus, daysDifference, varianceAmount } = useMemo(() => {
     if (!activeGoal) return { trajectoryStatus: 'on-track', daysDifference: 0, varianceAmount: 0 };
     if (isCompleted) return { trajectoryStatus: 'completed', daysDifference: 0, varianceAmount: 0 };
 
-    const timeFraction = Math.min(1, Math.max(0, daysElapsed / totalDurationDays));
-    const expectedSavedByNow = Math.round(activeGoal.targetAmount * timeFraction);
-    const variance = totalSaved - expectedSavedByNow;
-    const diffDays = Math.max(1, Math.round(Math.abs(variance) / baselineDailyPace));
-
+    const totalDays = Math.max(1, Math.floor((targetDt - startDt) / (1000 * 60 * 60 * 24)));
+    const elapsedDays = Math.max(0, Math.floor((today - startDt) / (1000 * 60 * 60 * 24)));
+    
+    const idealDailyRate = activeGoal.targetAmount / totalDays;
+    const expectedSavings = idealDailyRate * elapsedDays;
+    const variance = totalSaved - expectedSavings;
     const TOLERANCE = 20;
 
     if (variance < -TOLERANCE) {
-      return { trajectoryStatus: 'delay', daysDifference: diffDays, varianceAmount: Math.abs(variance) };
+      const shortfall = Math.abs(variance);
+      const delayDays = Math.ceil(shortfall / (idealDailyRate || 1));
+      return { trajectoryStatus: 'delay', daysDifference: delayDays, varianceAmount: shortfall };
     } else if (variance > TOLERANCE) {
-      return { trajectoryStatus: 'advance', daysDifference: diffDays, varianceAmount: variance };
+      const surplus = variance;
+      const advanceDays = Math.ceil(surplus / (idealDailyRate || 1));
+      return { trajectoryStatus: 'advance', daysDifference: advanceDays, varianceAmount: surplus };
     } else {
       return { trajectoryStatus: 'on-track', daysDifference: 0, varianceAmount: 0 };
     }
-  }, [activeGoal, isCompleted, daysElapsed, totalDurationDays, totalSaved, baselineDailyPace]);
+  }, [activeGoal, isCompleted, startDt, targetDt, today, totalSaved]);
 
   const handleTxKeypad = (digit) => {
     if (amountStr.length >= 8) return;
@@ -1380,7 +1385,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Schedule Velocity Card with exact days remaining */}
+                    {/* Schedule Velocity Card with exact shortfall / delay calculation */}
                     <div className={`p-4 rounded-3xl border flex flex-col gap-1.5 shadow-2xs ${
                       trajectoryStatus === 'delay' 
                         ? 'bg-rose-50 border-rose-200 text-rose-900' 
@@ -1398,20 +1403,20 @@ export default function App() {
                         <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
                           trajectoryStatus === 'delay' ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'
                         }`}>
-                          {trajectoryStatus === 'delay' ? `-${daysDifference}d Behind (-₹${varianceAmount.toLocaleString()})` : `On Track • ${daysLeft} days remaining`}
+                          {trajectoryStatus === 'delay' ? `${daysDifference} Days Delayed (-₹${varianceAmount.toLocaleString()})` : `On Track • ${daysLeft} days remaining`}
                         </span>
                       </div>
                       <p className="text-xs font-semibold leading-snug">
                         {trajectoryStatus === 'delay' ? (
                           <>
-                            Schedule lag: {daysDifference} days. Suggested daily rate: ₹{requiredPace}/day.
-                            <span onClick={handleOpenEditGoal} className="ml-1 underline font-bold cursor-pointer text-rose-700">
-                              Extend target date?
+                            You are behind by <strong className="text-rose-950">{daysDifference} days</strong> worth of savings (Shortfall: ₹{varianceAmount.toLocaleString()}). Suggested daily rate to catch up: ₹{requiredPace}/day.
+                            <span onClick={handleOpenEditGoal} className="ml-1 underline font-bold cursor-pointer text-rose-700 block mt-1">
+                              Extend target date to adjust pace?
                             </span>
                           </>
                         ) : (
                           <>
-                            Pace is healthy. Daily target to finish on time: ₹{requiredPace}/day. ({daysLeft} days remaining)
+                            Pace is healthy. You are on track with your savings! Daily target: ₹{requiredPace}/day ({daysLeft} days remaining).
                           </>
                         )}
                       </p>
